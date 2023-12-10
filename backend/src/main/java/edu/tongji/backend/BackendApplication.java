@@ -1,11 +1,11 @@
-package com.mybatisplus.backend;
+package edu.tongji.backend;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@MapperScan("com.mybatisplus.backend.mapper")
+@MapperScan("edu.tongji.backend.mapper")
 public class BackendApplication {
 
     public static void main(String[] args) {
