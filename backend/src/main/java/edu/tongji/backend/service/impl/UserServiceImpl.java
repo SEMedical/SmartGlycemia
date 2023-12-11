@@ -13,7 +13,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, user> implements IU
     UserMapper userMapper;
     @Override
     public boolean login(Long id, String password){
-        return userMapper.selectById(id).getPassword().equals(password);
+        System.out.println(userMapper);
+        Boolean result = userMapper.selectById(id).getPassword().equals(password);
+        System.out.println("Password"+(result?"Correct":"Wrong"));
+        return result;
     }
 
     @Override

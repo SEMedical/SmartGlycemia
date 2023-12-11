@@ -6,8 +6,9 @@ spring:
     password: ${DB_PASSWORD}
     url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    type: com.alibaba.druid.pool.DruidDataSource
+    #type: com .alibaba.druid.pool.DruidDataSource
 mybatis-plus:
+  mapper-locations: classpath:*Mapper.xml
   global-config:
     db-config:
         logic-delete-field: deleted
