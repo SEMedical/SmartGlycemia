@@ -2,9 +2,9 @@ server:
   port: 81
 spring:
   datasource:
-    username: root
-    password: rootroot
-    url: jdbc:mysql://localhost:3306/glycemia?useSSL=false&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
     #type: com.alibaba.druid.pool.DruidDataSource
 mybatis-plus:
