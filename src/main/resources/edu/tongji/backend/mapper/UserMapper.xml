@@ -4,7 +4,6 @@
 
 <mapper namespace="edu.tongji.backend.mapper.UserMapper">
     <select id="selectById" resultType="edu.tongji.backend.entity.user">
-        <!-- 这里是 SQL 语句 -->
         SELECT * FROM user WHERE user_id = #{id}
     </select>
 </mapper>
