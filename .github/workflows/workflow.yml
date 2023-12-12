@@ -3,12 +3,12 @@ on:
   pull_request:
     branches: [ build ]
     paths:
-      - 'src/**'
+      - '**'
       - '.github/workflows/app-workflow.yaml'
   push:
     branches: [ build ]
     paths:
-      - 'src/**'
+      - '**'
       - '.github/workflows/app-workflow.yaml'
 
 jobs:
