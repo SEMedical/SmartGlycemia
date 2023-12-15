@@ -95,13 +95,13 @@ jobs:
           chmod 777 deploy.sh
       - name: Add Server key
         run: |
-          touch key.txt && echo "${{ secrets.SERVER_KEY }}" > key.txt
+          touch key.txt && echo "${{ env.SERVER_KEY }}" > key.txt
           chmod 600 key.txt
       - name: Deploy the application
         env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ env.SERVER_HOST }}
+          SERVER_PORT: ${{ env.SERVER_PORT }}
+          SERVER_USER: ${{ env.SERVER_USER }}
         run: |
           set -e
           ./deploy.sh
