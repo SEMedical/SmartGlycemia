@@ -100,6 +100,7 @@ jobs:
     environment: SERVER
     needs:
       - docker-build
+      - cleanup
     steps:
       - uses: actions/checkout@v3
       - name: Set execute permission for deploy.sh
