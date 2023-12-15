@@ -1,11 +1,10 @@
-# 使用官方的 Nginx 镜像作为另一个基础镜像
-FROM nginx:latest
+# 使用官方的 MySQL 镜像作为基础镜像
+FROM mysql:latest
 
-# 将本地的 Nginx 配置文件复制到镜像中
-COPY nginx.conf /etc/nginx/nginx.conf
+# 设置 MySQL root 用户的密码
+ENV MYSQL_ROOT_PASSWORD=rootpassword
 
-# 暴露 Nginx 的 HTTP 端口
-EXPOSE 80
-
-# 设置容器启动时执行的命令
-CMD ["nginx", "-g", "daemon off;"]
+# 创建一个新的数据库和用户
+ENV MYSQL_DATABASE=glycemia
+ENV MYSQL_USER=myuser
+ENV MYSQL_PASSWORD=mypassword
