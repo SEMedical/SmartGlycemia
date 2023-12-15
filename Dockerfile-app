@@ -1,1 +1,11 @@
+# 使用官方的 Nginx 镜像作为另一个基础镜像
+FROM nginx:latest
 
+# 将本地的 Nginx 配置文件复制到镜像中
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# 暴露 Nginx 的 HTTP 端口
+EXPOSE 80
+
+# 设置容器启动时执行的命令
+CMD ["nginx", "-g", "daemon off;"]
