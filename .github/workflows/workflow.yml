@@ -1,4 +1,4 @@
-name: BMI application workflow
+name: Glycemia SE Huangjie
 on:
   pull_request:
     branches: [ docker ]
@@ -86,6 +86,7 @@ jobs:
   deploy:
     if: ${{ github.ref == 'refs/heads/docker' }}
     runs-on: ubuntu-latest
+    environment: SERVER
     needs:
       - docker-build
     steps:
@@ -95,13 +96,13 @@ jobs:
           chmod 777 deploy.sh
       - name: Add Server key
         run: |
-          touch key.txt && echo "${{ env.SERVER_KEY }}" > key.txt
+          touch key.txt && echo "${{ env.KEY }}" > key.txt
           chmod 600 key.txt
       - name: Deploy the application
         env:
-          SERVER_HOST: ${{ env.SERVER_HOST }}
-          SERVER_PORT: ${{ env.SERVER_PORT }}
-          SERVER_USER: ${{ env.SERVER_USER }}
+          SERVER_HOST: ${{ env.HOST }}
+          SERVER_PORT: ${{ env.PORT }}
+          SERVER_USER: ${{ env.USER }}
         run: |
           set -e
           ./deploy.sh
