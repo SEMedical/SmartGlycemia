@@ -90,6 +90,9 @@ jobs:
       - docker-build
     steps:
       - uses: actions/checkout@v3
+      - name: Set execute permission for deploy.sh
+        run: |
+          chmod 777 deploy.sh
       - name: Add Server key
         run: |
           touch key.txt && echo "${{ secrets.SERVER_KEY }}" > key.txt
