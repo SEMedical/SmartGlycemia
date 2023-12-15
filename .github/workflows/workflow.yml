@@ -83,6 +83,17 @@ jobs:
           file: Dockerfile-app
           push: true
           tags: ${{ secrets.DOCKERHUB_TAG01 }}
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: 🗑 Delete deployment
+        uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          environment: SERVER
+          onlyRemoveDeployments: true
   deploy:
     if: ${{ github.ref == 'refs/heads/docker' }}
     runs-on: ubuntu-latest
