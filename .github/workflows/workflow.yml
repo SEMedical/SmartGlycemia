@@ -82,7 +82,7 @@ jobs:
           context: .
           file: Dockerfile-app
           push: true
-          tags: tericcabrel/bmi:latest
+          tags: ${{ secrets.DOCKERHUB_TAG01 }}
   deploy:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
