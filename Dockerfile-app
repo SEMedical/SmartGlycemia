@@ -1,9 +1,10 @@
-FROM maven:latest AS MAVEN_BUILD
-COPY ./ /build
-WORKDIR /build
-RUN mvn clean package
-
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY --from=MAVEN_BUILD /build/target/backend-0.0.1-SNAPSHOT.jar /app/
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+# Copy the Maven dependencies from the cache
+COPY ~/.m2 /root/.m2
+
+# Copy the application JAR
+COPY target/backend-0.0.1-SNAPSHOT.jar /app
+
+ENTRYPOINT ["java", "-jar", "/app/backend-0.0.1-SNAPSHOT.jar"]
