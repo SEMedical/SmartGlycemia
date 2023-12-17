@@ -1,4 +1,4 @@
-FROM maven:3.5.2-jdk-8-slim AS MAVEN_BUILD
+FROM maven:latest AS MAVEN_BUILD
 COPY ./ /build
 WORKDIR /build
 RUN mvn clean package
