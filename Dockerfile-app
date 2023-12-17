@@ -1,10 +1,5 @@
-# 使用官方的 MySQL 镜像作为基础镜像
-FROM mysql:latest
+FROM openjdk:17.0-jre-buster
 
-# 设置 MySQL root 用户的密码
-ENV MYSQL_ROOT_PASSWORD=rootpassword
+COPY backend-0.0.1-SNAPSHOT.jar /app.jar
 
-# 创建一个新的数据库和用户
-ENV MYSQL_DATABASE=glycemia
-ENV MYSQL_USER=myuser
-ENV MYSQL_PASSWORD=mypassword
+ENTRYPOINT ["java", "-jar", "/app.jar"]
