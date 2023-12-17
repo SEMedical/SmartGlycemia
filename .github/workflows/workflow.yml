@@ -81,10 +81,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Find all jars
-        run: find . -name "*.jar"
-      - name: Find all jars2
-        run: find /home/runner/work/Tangxiaozhi_Sports_Backend/Tangxiaozhi_Sports_Backend/target -name "*.jar"
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
