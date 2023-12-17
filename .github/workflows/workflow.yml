@@ -45,6 +45,10 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
       - name: Generate Packages
         run: mvn package
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
   docker-build:
     if: ${{ github.ref == 'refs/heads/docker' }}
     runs-on: ubuntu-latest
