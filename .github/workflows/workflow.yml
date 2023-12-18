@@ -1,16 +1,21 @@
 name: Glycemia SE Huangjie
 on:
   pull_request:
-    branches: [ docker ]
+    branches: [ main ]
     paths:
-      - '**'
-      - '.github/workflows/app-workflow.yaml'
+      - 'src'
+      - '.github/workflow/*'
+      - 'deploy.sh'
+      - 'Dockerfile'
+      - 'pom.xml'
   push:
-    branches: [ docker ]
+    branches: [ main ]
     paths:
-      - '**'
-      - '.github/workflows/app-workflow.yaml'
-
+      - 'src'
+      - '.github/workflow/*'
+      - 'deploy.sh'
+      - 'Dockerfile'
+      - 'pom.xml'
 jobs:
   project-build:
     runs-on: ubuntu-latest
