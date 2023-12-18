@@ -83,6 +83,8 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_TAG01 }}
+          cache-from: |
+            type=gha,src=~/.m2
           build-args: |
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
