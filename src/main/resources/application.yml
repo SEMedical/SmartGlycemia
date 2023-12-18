@@ -2,9 +2,9 @@ server:
   port: 81
 spring:
   datasource:
-    username: ${DB_USERNAME:-root}
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:123}
-    url: ${DB_URL:-jdbc:mysql://localhost:3306/glycemia}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/glycemia}
     driver-class-name: com.mysql.cj.jdbc.Driver
     #type: com.alibaba.druid.pool.DruidDataSource
 mybatis-plus:
