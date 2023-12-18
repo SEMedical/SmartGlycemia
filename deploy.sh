@@ -3,9 +3,9 @@
 start=$(date +"%s")
 
 ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
-docker pull tericcabrel/bmi:latest
+docker pull victor005/tangxiaozhi_sports_backend:latest
 
-CONTAINER_NAME=bmiapp
+CONTAINER_NAME=glycemiaapp
 if [ "$(docker ps -qa -f name=$CONTAINER_NAME)" ]; then
     if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
         echo "Container is running -> stopping it..."
@@ -13,7 +13,7 @@ if [ "$(docker ps -qa -f name=$CONTAINER_NAME)" ]; then
     fi
 fi
 
-docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME tericcabrel/bmi:latest
+docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_sports_backend:latest
 
 exit
 ENDSSH
