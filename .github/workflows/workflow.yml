@@ -83,10 +83,10 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_TAG01 }}
-          secrets: |
-            "db_username=${{ secrets.DB_USERNAME }}"
-            "db_password=${{ secrets.DB_PASSWORD }}"
-            "db_url=${{ secrets.DB_URL }}"
+          build-args: |
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_URL=${{ secrets.DB_URL }}
           
   cleanup:
     runs-on: ubuntu-latest
