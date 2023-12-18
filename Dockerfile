@@ -12,7 +12,10 @@ RUN mvn dependency:go-offline
 COPY src/ ./src/
 
 # 编译项目
-RUN mvn package
+RUN --mount=type=secret,id=db_url \
+    --mount=type=secret,id=db_username \
+    --mount=type=secret,id=db_password \
+    mvn package
 FROM openjdk:latest
 
 WORKDIR /app
