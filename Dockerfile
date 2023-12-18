@@ -15,11 +15,10 @@ ARG DB_PASSWORD
 ARG DB_URL
 # 编译项目
 RUN mvn package
-FROM openjdk:latest
-
-WORKDIR /app
-
+#RUN ls -la /app
+#FROM openjdk:latest
+#RUN pwd
+#RUN ls -la .
 # Copy the Maven dependencies from the cache
-COPY --from=build target/backend-0.0.1-SNAPSHOT.jar /app
 
-CMD ["java", "-jar", "/app/backend-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/backend-0.0.1-SNAPSHOT.jar"]
