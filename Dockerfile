@@ -1,10 +1,11 @@
-# 使用官方的 MySQL 镜像作为基础镜像
-FROM mysql:latest
+FROM openjdk:latest
 
-# 设置 MySQL root 用户的密码
-ENV MYSQL_ROOT_PASSWORD=rootpassword
+WORKDIR /app
 
-# 创建一个新的数据库和用户
-ENV MYSQL_DATABASE=glycemia
-ENV MYSQL_USER=myuser
-ENV MYSQL_PASSWORD=mypassword
+# Copy the Maven dependencies from the cache
+COPY target/backend-0.0.1-SNAPSHOT.jar /app
+
+# Copy the application JAR
+COPY target/backend-0.0.1-SNAPSHOT.jar /app
+
+CMD ["java", "-jar", "/app/backend-0.0.1-SNAPSHOT.jar"]
