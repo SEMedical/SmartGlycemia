@@ -2,7 +2,7 @@
 
 start=$(date +"%s")
 
-ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no
+ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} 
 
 docker pull victor005/tangxiaozhi_sports_backend:latest
 
