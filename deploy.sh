@@ -3,6 +3,7 @@
 start=$(date +"%s")
 
 ssh -v -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} 
+ifconfig
 docker pull victor005/tangxiaozhi_sports_backend:latest
 
 CONTAINER_NAME=glycemiaapp
