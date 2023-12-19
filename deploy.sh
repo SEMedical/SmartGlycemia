@@ -17,7 +17,6 @@ ifconfig
 docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_sports_backend:latest
 
 exit
-ENDSSH
 
 if [ $? -eq 0 ]; then
   exit 0
