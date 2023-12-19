@@ -1,11 +1,8 @@
 #!/bin/bash
-echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/ssh_config
-echo "KbdInteractiveAuthentication yes" | sudo tee -a /etc/ssh/ssh_config
-echo "PermitTTY yes" | sudo tee -a /etc/ssh/ssh_config
 
 start=$(date +"%s")
 
-ssh -v -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
+ssh -v -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} 
 docker pull victor005/tangxiaozhi_sports_backend:latest
 
 CONTAINER_NAME=glycemiaapp
