@@ -2,7 +2,7 @@
 
 start=$(date +"%s")
 
-ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
+ssh -v -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
 docker pull victor005/tangxiaozhi_sports_backend:latest
 
 CONTAINER_NAME=glycemiaapp
