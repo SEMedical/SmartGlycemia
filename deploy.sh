@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/ssh_config
+echo "KbdInteractiveAuthentication yes" | sudo tee -a /etc/ssh/ssh_config
+echo "PermitTTY yes" | sudo tee -a /etc/ssh/ssh_config
 
 start=$(date +"%s")
 
