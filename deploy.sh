@@ -19,8 +19,10 @@ docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_spo
 exit
 
 if [ $? -eq 0 ]; then
+  echo "Docker run command succeed!"
   exit 0
 else
+  echo "Docker run command failed!"
   exit 1
 fi
 
