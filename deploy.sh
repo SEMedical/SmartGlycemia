@@ -2,7 +2,7 @@
 
 start=$(date +"%s")
 
-ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} 
+ssh -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
 
 docker pull victor005/tangxiaozhi_sports_backend:latest
 
@@ -15,6 +15,9 @@ if [ "$(docker ps -qa -f name=$CONTAINER_NAME)" ]; then
 fi
 ifconfig
 docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_sports_backend:latest
+exit
+
+ENDSSH
 
 if [ $? -eq 0 ]; then
   echo "Docker run command succeed!"
