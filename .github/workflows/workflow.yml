@@ -1,14 +1,14 @@
 name: Glycemia SE Huangjie
 on:
   pull_request:
-    branches: [ main2 ]
+    branches: [ main ]
     paths:
       - 'src'
       - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
   push:
-    branches: [ main2 ]
+    branches: [ main ]
     paths:
       - 'src'
       - '.github/workflows/*'
@@ -40,6 +40,11 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_URL: ${{ secrets.DB_URL }}
+      - name: Upload JAR as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Maven Jar File
+          path: target/${{ env.JAR_NAME }}
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -47,7 +52,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_URL: ${{ secrets.DB_URL }}
   docker-build:
-    if: ${{ github.ref == 'refs/heads/main2' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs:
       - project-build
@@ -107,7 +112,7 @@ jobs:
           environment: SERVER
           onlyRemoveDeployments: true
   deploy:
-    if: ${{ github.ref == 'refs/heads/main2' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     environment: SERVER
     needs:
@@ -115,9 +120,6 @@ jobs:
       - cleanup
     steps:
       - uses: actions/checkout@v3
-      - name: Set execute permission for deploy.sh
-        run: |
-          chmod 777 deploy.sh
       - name: Deploy the application
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -127,19 +129,30 @@ jobs:
           port: ${{ secrets.PORT }}
           script: | 
             # 获取本地镜像列表
-            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }})
+            existing_image=$(docker images -q ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }})
 
             # 如果镜像不存在，则拉取最新的镜像
             if [ -z "$existing_image" ]; then
               echo "Pulling the latest Docker image..."
-              docker pull ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+              docker pull ${{ vars.DOCKERHUB_IMAGE01 }}:${{ vars.DOCKERHUB_TAG }}
             else
               echo "Using the existing Docker image."
             fi  
-            docker stop ${{ secrets.CONTAINER_NAME }}
-            docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+            echo "Stop the container"
+            docker stop ${{ vars.CONTAINER_NAME }}
+            echo "Remove the container"
+            docker rm ${{ vars.CONTAINER_NAME }}
+            echo "Run the new container"
+            docker run -d --rm -p ${{ vars.HOST_PORT }}:${{ vars.CONTAINER_PORT }}  --name ${{ vars.CONTAINER_NAME }} ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }}
+            echo "Remove the file under backup directories"
             rm -rf $JAR_BACKUP
-            docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            echo "copy jar from docker to server"
+            docker cp ${{ vars.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            echo "Sync the master"
             rsync -av --update $JAR_BACKUP $JAR_HOME
+            echo "Kill existing tomcat process"
             killtomcat.sh
-            java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar
+            echo "Run tomcat(background)"
+            nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
+            echo "Show tomcat logs"
+            cat tomcat.log
