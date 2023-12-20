@@ -120,7 +120,7 @@ jobs:
       - name: Set execute permission for deploy.sh
         run: |
           chmod 777 deploy.sh
-      - name: executing remote ssh commands using password
+      - name: Deploy the application
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.HOST }}
@@ -128,14 +128,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: | 
-            docker pull victor005/tangxiaozhi_sports_backend:latest
+            docker pull ${{ secrets.DOCKERHUB_TAG01 }}
             CONTAINER_NAME=glycemiaapp
-            docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_sports_backend:latest
-      - name: Deploy the application
-        env:
-          SERVER_HOST: ${{ secrets.HOST }}
-          SERVER_PORT: ${{ secrets.PORT }}
-          SERVER_USER: ${{ secrets.USER }}
-        run: |
-          set -e
-          ./deploy.sh
+            docker stop $CONTAINER_NAME
+            docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME ${{ secrets.DOCKERHUB_TAG01 }}
