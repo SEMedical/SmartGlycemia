@@ -126,6 +126,14 @@ jobs:
       - name: Print SSH Key
         run: |
           cat $HOME/.ssh/id_rsa.pub
+      - name: Cache SSH Key
+        uses: actions/cache@v2
+        with:
+          path: |
+            $HOME/.ssh/id_rsa
+          key: ssh-key-${{ runner.os }}-${{ hashFiles('**/id_rsa') }}
+          restore-keys: |
+            ssh-key-${{ runner.os }}-
       - name: Add Server key
         run: |
           touch key.txt && echo "${{ secrets.KEY }}" > key.txt
