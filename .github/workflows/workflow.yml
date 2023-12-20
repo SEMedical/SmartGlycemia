@@ -129,25 +129,25 @@ jobs:
           port: ${{ secrets.PORT }}
           script: | 
             # 获取本地镜像列表
-            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }})
+            existing_image=$(docker images -q ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }})
 
             # 如果镜像不存在，则拉取最新的镜像
             if [ -z "$existing_image" ]; then
               echo "Pulling the latest Docker image..."
-              docker pull ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+              docker pull ${{ vars.DOCKERHUB_IMAGE01 }}:${{ vars.DOCKERHUB_TAG }}
             else
               echo "Using the existing Docker image."
             fi  
             echo "Stop the container"
-            docker stop ${{ secrets.CONTAINER_NAME }}
+            docker stop ${{ vars.CONTAINER_NAME }}
             echo "Remove the container"
-            docker rm ${{ secrets.CONTAINER_NAME }}
+            docker rm ${{ vars.CONTAINER_NAME }}
             echo "Run the new container"
-            docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+            docker run -d --rm -p ${{ vars.HOST_PORT }}:${{ vars.CONTAINER_PORT }}  --name ${{ vars.CONTAINER_NAME }} ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }}
             echo "Remove the file under backup directories"
             rm -rf $JAR_BACKUP
             echo "copy jar from docker to server"
-            docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            docker cp ${{ vars.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
             echo "Sync the master"
             rsync -av --update $JAR_BACKUP $JAR_HOME
             echo "Kill existing tomcat process"
