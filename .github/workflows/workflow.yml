@@ -127,12 +127,12 @@ jobs:
           port: ${{ secrets.PORT }}
           script: | 
             # 获取本地镜像列表
-            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_TAG01 }})
+            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }})
 
             # 如果镜像不存在，则拉取最新的镜像
             if [ -z "$existing_image" ]; then
               echo "Pulling the latest Docker image..."
-              docker pull ${{ secrets.DOCKERHUB_TAG01 }}
+              docker pull ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
             else
               echo "Using the existing Docker image."
             fi  
