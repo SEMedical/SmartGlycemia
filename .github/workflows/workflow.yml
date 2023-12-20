@@ -40,6 +40,11 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_URL: ${{ secrets.DB_URL }}
+      - name: Upload JAR as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Maven Dependencies
+          path: target/
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -134,6 +139,7 @@ jobs:
               echo "Using the existing Docker image."
             fi  
             docker stop ${{ secrets.CONTAINER_NAME }}
+            docker rm ${{ secrets.CONTAINER_NAME }}
             docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
             rm -rf $JAR_BACKUP
             docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
