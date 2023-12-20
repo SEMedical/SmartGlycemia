@@ -128,7 +128,16 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: | 
-            docker pull ${{ secrets.DOCKERHUB_TAG01 }}
+            # 获取本地镜像列表
+            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_TAG01 }})
+
+            # 如果镜像不存在，则拉取最新的镜像
+            if [ -z "$existing_image" ]; then
+              echo "Pulling the latest Docker image..."
+              docker pull ${{ secrets.DOCKERHUB_TAG01 }}
+            else
+              echo "Using the existing Docker image."
+            fi  
             CONTAINER_NAME=glycemiaapp
             docker stop $CONTAINER_NAME
             docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME ${{ secrets.DOCKERHUB_TAG01 }}
