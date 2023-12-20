@@ -115,9 +115,6 @@ jobs:
       - cleanup
     steps:
       - uses: actions/checkout@v3
-      - name: Set execute permission for deploy.sh
-        run: |
-          chmod 777 deploy.sh
       - name: Deploy the application
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -142,4 +139,5 @@ jobs:
             docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
             rsync -av --update $JAR_BACKUP $JAR_HOME
             killtomcat.sh
-            java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar
+            nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
+            cat tomcat.log
