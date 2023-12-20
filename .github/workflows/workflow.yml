@@ -127,11 +127,10 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          script: whoami
-      - name: Add Server key
-        run: |
-          touch key.txt && echo "${{ secrets.KEY }}" > key.txt
-          chmod 600 key.txt
+          script: | 
+            docker pull victor005/tangxiaozhi_sports_backend:latest
+            CONTAINER_NAME=glycemiaapp
+            docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME victor005/tangxiaozhi_sports_backend:latest
       - name: Deploy the application
         env:
           SERVER_HOST: ${{ secrets.HOST }}
