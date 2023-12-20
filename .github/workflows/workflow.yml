@@ -120,6 +120,14 @@ jobs:
       - name: Set execute permission for deploy.sh
         run: |
           chmod 777 deploy.sh
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: whoami
       - name: Add Server key
         run: |
           touch key.txt && echo "${{ secrets.KEY }}" > key.txt
