@@ -125,7 +125,7 @@ jobs:
           ssh-keygen -t rsa -b 4096 -f $HOME/.ssh/id_rsa -N ""
       - name: Copy id to server
         run: |
-          ssh-copyid ${{ secrets.HOST }}
+          ssh-copy-id ${{ secrets.HOST }}
       - name: Add Server key
         run: |
           touch key.txt && echo "${{ secrets.KEY }}" > key.txt
