@@ -1,19 +1,17 @@
 name: Glycemia SE Huangjie
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main2 ]
     paths:
       - 'src'
-      - '.github/workflow/*'
-      - 'deploy.sh'
+      - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
   push:
-    branches: [ main ]
+    branches: [ main2 ]
     paths:
       - 'src'
-      - '.github/workflow/*'
-      - 'deploy.sh'
+      - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
 jobs:
@@ -49,7 +47,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_URL: ${{ secrets.DB_URL }}
   docker-build:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main2' }}
     runs-on: ubuntu-latest
     needs:
       - project-build
@@ -109,7 +107,7 @@ jobs:
           environment: SERVER
           onlyRemoveDeployments: true
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main2' }}
     runs-on: ubuntu-latest
     environment: SERVER
     needs:
@@ -120,15 +118,23 @@ jobs:
       - name: Set execute permission for deploy.sh
         run: |
           chmod 777 deploy.sh
-      - name: Add Server key
-        run: |
-          touch key.txt && echo "${{ secrets.KEY }}" > key.txt
-          chmod 600 key.txt
       - name: Deploy the application
-        env:
-          SERVER_HOST: ${{ secrets.HOST }}
-          SERVER_PORT: ${{ secrets.PORT }}
-          SERVER_USER: ${{ secrets.USER }}
-        run: |
-          set -e
-          ./deploy.sh
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: | 
+            # 获取本地镜像列表
+            existing_image=$(docker images -q ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }})
+
+            # 如果镜像不存在，则拉取最新的镜像
+            if [ -z "$existing_image" ]; then
+              echo "Pulling the latest Docker image..."
+              docker pull ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+            else
+              echo "Using the existing Docker image."
+            fi  
+            docker stop ${{ secrets.CONTAINER_NAME }}
+            docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
