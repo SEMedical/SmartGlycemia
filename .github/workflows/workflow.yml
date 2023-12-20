@@ -1,14 +1,14 @@
 name: Glycemia SE Huangjie
 on:
   pull_request:
-    branches: [ main2 ]
+    branches: [ main ]
     paths:
       - 'src'
       - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
   push:
-    branches: [ main2 ]
+    branches: [ main ]
     paths:
       - 'src'
       - '.github/workflows/*'
