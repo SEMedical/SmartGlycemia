@@ -123,17 +123,9 @@ jobs:
       - name: Generate SSH Key
         run: |
           ssh-keygen -t rsa -b 4096 -f $HOME/.ssh/id_rsa -N ""
-      - name: Print SSH Key
+      - name: Copy id to server
         run: |
-          cat $HOME/.ssh/id_rsa.pub
-      - name: Cache SSH Key
-        uses: actions/cache@v2
-        with:
-          path: |
-            $HOME/.ssh/id_rsa
-          key: ssh-key-${{ runner.os }}-${{ hashFiles('**/id_rsa') }}
-          restore-keys: |
-            ssh-key-${{ runner.os }}-
+          ssh-copyid ${{ secrets.HOST }}
       - name: Add Server key
         run: |
           touch key.txt && echo "${{ secrets.KEY }}" > key.txt
