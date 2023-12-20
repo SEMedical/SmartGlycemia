@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mknod -m 644 /dev/tty c 5 0
+chmod o+rw /dev/tty
 start=$(date +"%s")
 
 ssh -v -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST} -i key.txt -t -t -o StrictHostKeyChecking=no << 'ENDSSH'
