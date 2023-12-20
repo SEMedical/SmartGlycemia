@@ -5,7 +5,6 @@ on:
     paths:
       - 'src'
       - '.github/workflows/*'
-      - 'deploy.sh'
       - 'Dockerfile'
       - 'pom.xml'
   push:
@@ -13,7 +12,6 @@ on:
     paths:
       - 'src'
       - '.github/workflows/*'
-      - 'deploy.sh'
       - 'Dockerfile'
       - 'pom.xml'
 jobs:
@@ -138,6 +136,5 @@ jobs:
             else
               echo "Using the existing Docker image."
             fi  
-            CONTAINER_NAME=glycemiaapp
-            docker stop $CONTAINER_NAME
-            docker run -d --rm -p 8000:8000 --name $CONTAINER_NAME ${{ secrets.DOCKERHUB_TAG01 }}
+            docker stop ${{ secrets.CONTAINER_NAME }}
+            docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
