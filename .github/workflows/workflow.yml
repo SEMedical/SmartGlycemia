@@ -43,8 +43,8 @@ jobs:
       - name: Upload JAR as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Maven Dependencies
-          path: target/
+          name: Maven Jar File
+          path: target/backend-0.0.1-SNAPSHOT.jar
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -138,12 +138,21 @@ jobs:
             else
               echo "Using the existing Docker image."
             fi  
+            echo "Stop the container"
             docker stop ${{ secrets.CONTAINER_NAME }}
+            echo "Remove the container"
             docker rm ${{ secrets.CONTAINER_NAME }}
+            echo "Run the new container"
             docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+            echo "Remove the file under backup directories"
             rm -rf $JAR_BACKUP
+            echo "copy jar from docker to server"
             docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            echo "Sync the master"
             rsync -av --update $JAR_BACKUP $JAR_HOME
+            echo "Kill existing tomcat process"
             killtomcat.sh
+            echo "Run tomcat(background)"
             nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
+            echo "Show tomcat logs"
             cat tomcat.log
