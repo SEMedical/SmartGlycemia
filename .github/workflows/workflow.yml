@@ -138,3 +138,8 @@ jobs:
             fi  
             docker stop ${{ secrets.CONTAINER_NAME }}
             docker run -d --rm -p ${{ secrets.HOST_PORT }}:${{ secrets.CONTAINER_PORT }}  --name ${{ secrets.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_IMAGE01 }}:${{ secrets.DOCKERHUB_TAG01 }}
+            rm -rf $JAR_BACKUP
+            docker cp ${{ secrets.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            rsync -av --update $JAR_BACKUP $JAR_HOME
+            killtomcat.sh
+            java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar
