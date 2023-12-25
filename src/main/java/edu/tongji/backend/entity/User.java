@@ -12,23 +12,23 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "user_id", nullable = false)
-    private int userId;
+    private Integer userId;
     @Basic
-    @Column(name = "height", nullable = true)
+    @Column(name = "height")
     private Integer height;
     @Basic
-    @Column(name = "address", nullable = true, length = 100)
+    @Column(name = "address", length = 100)
     private String address;
     @Basic
-    @Column(name = "name", nullable = true, length = 45)
+    @Column(name = "name", length = 45)
     private String name;
     @Basic
-    @Column(name = "contact", nullable = true, length = 11)
+    @Column(name = "contact", length = 11)
     private String contact;
     @Basic
-    @Column(name = "password", nullable = true, length = 64)
+    @Column(name = "password", length = 64)
     private String password;
     @Basic
-    @Column(name = "role", nullable = true, length = 10)
+    @Column(name = "role", length = 10)
     private String role;
 }
