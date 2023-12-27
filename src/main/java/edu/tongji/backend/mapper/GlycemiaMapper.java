@@ -9,5 +9,5 @@ import java.time.LocalTime;
 
 @Mapper
 public interface GlycemiaMapper extends BaseMapper<Glycemia> {
-    Double selectByIdAndTime(String id, LocalDateTime time);
+    Double selectByIdAndTime(String id, String time);
 }

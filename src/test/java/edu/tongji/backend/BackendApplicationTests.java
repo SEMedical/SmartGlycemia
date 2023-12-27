@@ -1,5 +1,7 @@
 package edu.tongji.backend;
 
+import edu.tongji.backend.controller.GlycemiaController;
+import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
@@ -12,12 +14,15 @@ class BackendApplicationTests {
     UserMapper userMapper;
     @Autowired
     ProfileMapper profileMapper;
+    @Autowired
+    GlycemiaMapper glycemiaMapper;
+    @Autowired
+    GlycemiaController glycemiaController;
     @Test
     void contextLoads() {
     }
     @Test
     void testSelect(){
-        System.out.println(userMapper.selectById(1));
-        System.out.println(profileMapper.selectById(1));
+        glycemiaController.LookupChart("1","Realtime");
     }
 }

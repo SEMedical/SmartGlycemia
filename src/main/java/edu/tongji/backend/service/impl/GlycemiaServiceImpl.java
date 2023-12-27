@@ -1,7 +1,7 @@
 package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.POJO.Chart;
+import edu.tongji.backend.entity.Chart;
 import edu.tongji.backend.entity.Glycemia;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.service.IGlycemiaService;
@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     @Override
     public Chart showGlycemiaDiagram(String type, String user_id, LocalDate date) {
         Chart chart=new Chart();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         //Just for initialization
         LocalDateTime endTime=LocalDateTime.now();
         if(type=="Realtime") {
@@ -55,9 +57,13 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             System.out.println(startDateTime);
             startDateTime = startDateTime.plus(interval);
             if(type=="Realtime") {
-                Double glycemiaValue=glycemiaMapper.selectByIdAndTime(user_id, startDateTime);
+                Double glycemiaValue=glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
+                if(glycemiaValue==null) {
+                    System.out.println("No data found at" + startDateTime.format(formatter));
+                    continue;
+                }
                 Map<LocalDateTime,Double> data = new HashMap<>();
-                data.put( startDateTime,glycemiaValue);
+                data.put(startDateTime,glycemiaValue);
                 res.add(data);
             }
         }
