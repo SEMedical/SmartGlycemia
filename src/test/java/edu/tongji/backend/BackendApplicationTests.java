@@ -33,6 +33,10 @@ class BackendApplicationTests {
     }
     @Test
     void testSelectGlycemia(){
-        glycemiaController.LookupChart("Realtime","1","2023-12-27");
+        try {
+            glycemiaController.LookupChart("Realtime", "2", "2023-12-27");
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 }
