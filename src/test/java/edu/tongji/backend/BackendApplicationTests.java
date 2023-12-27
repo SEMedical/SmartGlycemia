@@ -1,6 +1,7 @@
 package edu.tongji.backend;
 
 import edu.tongji.backend.controller.GlycemiaController;
+import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -9,6 +10,8 @@ import edu.tongji.backend.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class BackendApplicationTests {
@@ -33,10 +36,8 @@ class BackendApplicationTests {
     }
     @Test
     void testSelectGlycemia(){
-        try {
-            glycemiaController.LookupChart("Realtime", "2", "2023-12-27");
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+        assertThrows(GlycemiaException.class, () -> {
+            glycemiaController.LookupChart("History", "2", "2023-12-27");
+        });
     }
 }

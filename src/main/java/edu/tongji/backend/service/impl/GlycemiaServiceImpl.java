@@ -3,6 +3,7 @@ package edu.tongji.backend.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.entity.Chart;
 import edu.tongji.backend.entity.Glycemia;
+import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.service.IGlycemiaService;
 import org.eclipse.persistence.jpa.jpql.parser.DateTime;
@@ -37,7 +38,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         else if(type=="History") {
             if(date==null) {
                 chart.setError_code(400);
-                throw new RuntimeException("Date is required in history mode");
+                throw new GlycemiaException("Date is required in history mode");
             }
         }
         List<Map<LocalDateTime,Double>> res=new ArrayList<>();
