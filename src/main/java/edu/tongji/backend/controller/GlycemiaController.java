@@ -36,7 +36,7 @@ public class GlycemiaController {
         LocalDate formattedDate=LocalDate.parse(date);
         if(formattedDate.isBefore(LocalDate.of(2023,12,1)))
             throw new RuntimeException("date must older than 2023-12-01");
-        if(formattedDate.isAfter(LocalDate.now().plus(Duration.ofDays(1))))
+        if(formattedDate.isAfter(LocalDate.now().plusDays(1)))
             throw new RuntimeException("date must older than tomorrow");
         //确认类型必须为history或realtime
         if(!type.equals("History")&&!type.equals("Realtime"))
