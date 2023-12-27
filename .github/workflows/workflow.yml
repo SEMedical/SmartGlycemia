@@ -4,16 +4,14 @@ on:
     branches: [ "*" ]
     paths:
       - 'src'
-      - '.github/workflow/*'
-      - 'deploy.sh'
+      - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
   push:
     branches: [ "*" ]
     paths:
       - 'src'
-      - '.github/workflow/*'
-      - 'deploy.sh'
+      - '.github/workflows/*'
       - 'Dockerfile'
       - 'pom.xml'
 jobs:
@@ -42,6 +40,11 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_URL: ${{ secrets.DB_URL }}
+      - name: Upload JAR as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Maven Jar File
+          path: target/${{ env.JAR_NAME }}
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -117,18 +120,39 @@ jobs:
       - cleanup
     steps:
       - uses: actions/checkout@v3
-      - name: Set execute permission for deploy.sh
-        run: |
-          chmod 777 deploy.sh
-      - name: Add Server key
-        run: |
-          touch key.txt && echo "${{ secrets.KEY }}" > key.txt
-          chmod 600 key.txt
       - name: Deploy the application
-        env:
-          SERVER_HOST: ${{ secrets.HOST }}
-          SERVER_PORT: ${{ secrets.PORT }}
-          SERVER_USER: ${{ secrets.USER }}
-        run: |
-          set -e
-          ./deploy.sh
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: | 
+            # 获取本地镜像列表
+            existing_image=$(docker images -q ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }})
+
+            # 如果镜像不存在，则拉取最新的镜像
+            if [ -z "$existing_image" ]; then
+              echo "Pulling the latest Docker image..."
+              docker pull ${{ vars.DOCKERHUB_IMAGE01 }}:${{ vars.DOCKERHUB_TAG }}
+            else
+              echo "Using the existing Docker image."
+            fi  
+            echo "Stop the container"
+            docker stop ${{ vars.CONTAINER_NAME }}
+            echo "Remove the container"
+            docker rm ${{ vars.CONTAINER_NAME }}
+            echo "Run the new container"
+            docker run -d --rm -p ${{ vars.HOST_PORT }}:${{ vars.CONTAINER_PORT }}  --name ${{ vars.CONTAINER_NAME }} ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }}
+            echo "Remove the file under backup directories"
+            rm -rf $JAR_BACKUP
+            echo "copy jar from docker to server"
+            docker cp ${{ vars.CONTAINER_NAME }}:/app/target/backend-0.0.1-SNAPSHOT.jar $JAR_BACKUP
+            echo "Sync the master"
+            rsync -av --update $JAR_BACKUP $JAR_HOME
+            echo "Kill existing tomcat process"
+            killtomcat.sh
+            echo "Run tomcat(background)"
+            nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
+            echo "Show tomcat logs"
+            cat tomcat.log

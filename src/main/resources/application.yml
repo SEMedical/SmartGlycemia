@@ -16,6 +16,3 @@ mybatis-plus:
         logic-not-delete-value: 0
     table-prefix: tbl_
     id-type: auto
-
-
-
