@@ -2,5 +2,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="edu.tongji.backend.mapper.GlycemiaMapper">
-
+    <select id="selectByIdAndTime" resultType="java.lang.Double">
+        SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
+    </select>
 </mapper>
