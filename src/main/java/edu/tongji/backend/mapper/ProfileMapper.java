@@ -6,5 +6,5 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface ProfileMapper extends BaseMapper<Profile> {
-
+    Profile getByPatientIdProfile(Integer patient_id);
 }

@@ -11,24 +11,24 @@ import lombok.NoArgsConstructor;
 public class Profile {
     private int patientId;
 
-    private Boolean gender;
+    private String gender;
 
-    private Object type;
+    private String type;
 
     private Integer age;
 
     private String familyHistory;
 
-    private Object diagnosedYear;
+    private String diagnosedYear;
     private String anamnesis;
 
-    private Object medicationPattern;
+    private String medicationPattern;
 
     private String allergy;
 
     private String medicationHistory;
-    private Byte dietaryTherapy;
-    private Byte exerciseTherapy;
-    private Byte oralTherapy;
-    private Byte insulinTherapy;
+    private Boolean dietaryTherapy;
+    private Boolean exerciseTherapy;
+    private Boolean oralTherapy;
+    private Boolean insulinTherapy;
 }

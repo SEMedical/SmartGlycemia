@@ -23,6 +23,6 @@ class BackendApplicationTests {
     }
     @Test
     void testSelect(){
-        glycemiaController.LookupChart("1","Realtime");
+        glycemiaController.LookupChart("Realtime","1","2023-12-27");
     }
 }

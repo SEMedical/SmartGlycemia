@@ -11,4 +11,11 @@ import org.springframework.stereotype.Service;
 public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> implements IProfileService {
     @Autowired
     ProfileMapper profileMapper;
+    //TODO: shorten the profile
+
+    @Override
+    public Profile getByPatientId(String patient_id) {
+        return profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+    }
+
 }
