@@ -2,7 +2,9 @@ package edu.tongji.backend.controller;
 
 import edu.tongji.backend.entity.Chart;
 import edu.tongji.backend.entity.CompositeChart;
+import edu.tongji.backend.entity.Intervals;
 import edu.tongji.backend.exception.GlycemiaException;
+import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IGlycemiaService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IUserService;
@@ -20,6 +22,8 @@ public class GlycemiaController {
     IUserService userService;
     @Autowired
     IProfileService profileService;
+    @Autowired
+    IExerciseService exerciseService;
     @GetMapping("/chart") //对应的api路径
     public Chart LookupChart(@RequestParam String type,@RequestParam String user_id,@RequestParam String date)//把请求中的内容映射到user
     {
@@ -75,5 +79,18 @@ public class GlycemiaController {
         //LOG
         System.out.println(result);
         return result;
+    }
+    @GetMapping("/is_exercise")
+    public Intervals GetExerciseIntervals(String type,String user_id,String date){
+        //确认用户是否存在，是否是病人
+        this.checkUser(user_id);
+        //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+        LocalDate formattedDate=this.checkDate(date,LocalDate.of(2023,12,1),LocalDate.now().plusDays(1));
+        //运动类型必须为慢跑或瑜伽...
+        if(!type.equals("Jogging")&&!type.equals("Yoga"))
+            throw new GlycemiaException("exercise category must be one of the followings:" +
+                    "Jogging,Yoga...");
+        Intervals res=exerciseService.getExerciseIntervalsInOneDay(type,user_id,formattedDate.toString());
+        return res;
     }
 }
