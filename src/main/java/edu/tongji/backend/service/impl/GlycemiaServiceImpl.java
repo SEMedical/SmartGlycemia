@@ -7,7 +7,6 @@ import edu.tongji.backend.entity.Glycemia;
 import edu.tongji.backend.entity.Statistics;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.service.IGlycemiaService;
-import org.eclipse.persistence.jpa.jpql.parser.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
@@ -92,6 +91,39 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         }
         chart.setData(Res);
         //chart.setError_code(200);
+
+        return chart;
+    }
+
+    @Override
+    public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
+        CompositeChart chart = new CompositeChart();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        //Just for initialization
+        LocalDateTime endTime = LocalDateTime.now();
+        List<Map<LocalDate, Statistics>> Res = new ArrayList<>();
+        LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(0, 0, 0));
+        if (span == "Week") {
+            endTime = startDateTime.plus(Duration.ofDays(7));
+        } else if (span == "Month") {
+            endTime = startDateTime.plus(Duration.ofDays(30));
+        }
+
+        // 遍历时间点，每15分钟一次，直到当前时间
+        while (startDateTime.isBefore(endTime)) {
+            System.out.println(startDateTime);
+            startDateTime = startDateTime.plus(Duration.ofDays(1));
+            Statistics glycemiaValue = glycemiaMapper.selectWeeklyArchive(user_id, startDateTime.format(formatter), span);
+            if (glycemiaValue == null) {
+                System.out.println("No data found at" + startDateTime.format(formatter));
+                continue;
+            }
+            Map<LocalDate,Statistics> data = new HashMap<>();
+            data.put(startDateTime.toLocalDate(),glycemiaValue);
+            Res.add(data);
+        }
+        chart.setData(Res);
+        chart.setError_code(200);
 
         return chart;
     }
