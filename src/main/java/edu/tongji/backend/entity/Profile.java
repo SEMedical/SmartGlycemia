@@ -23,7 +23,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "gender", nullable = true)
+    @Column(name = "gender")
     private Object gender;
 
     public Object getGender() {
@@ -35,7 +35,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "type", nullable = true)
+    @Column(name = "type")
     private Object type;
 
     public Object getType() {
@@ -47,7 +47,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "age", nullable = true)
+    @Column(name = "age")
     private Integer age;
 
     public Integer getAge() {
@@ -59,7 +59,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "family_history", nullable = true, length = -1)
+    @Column(name = "family_history", length = -1)
     private String familyHistory;
 
     public String getFamilyHistory() {
@@ -71,7 +71,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "diagnosed_year", nullable = true)
+    @Column(name = "diagnosed_year")
     private Object diagnosedYear;
 
     public Object getDiagnosedYear() {
@@ -83,7 +83,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "anamnesis", nullable = true, length = -1)
+    @Column(name = "anamnesis", length = -1)
     private String anamnesis;
 
     public String getAnamnesis() {
@@ -95,7 +95,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "medication_pattern", nullable = true)
+    @Column(name = "medication_pattern")
     private Object medicationPattern;
 
     public Object getMedicationPattern() {
@@ -107,7 +107,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "allergy", nullable = true, length = -1)
+    @Column(name = "allergy", length = -1)
     private String allergy;
 
     public String getAllergy() {
@@ -119,7 +119,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "medication_history", nullable = true, length = -1)
+    @Column(name = "medication_history", length = -1)
     private String medicationHistory;
 
     public String getMedicationHistory() {
@@ -131,7 +131,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "dietary_therapy", nullable = true)
+    @Column(name = "dietary_therapy")
     private Byte dietaryTherapy;
 
     public Byte getDietaryTherapy() {
@@ -143,7 +143,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "exercise_therapy", nullable = true)
+    @Column(name = "exercise_therapy")
     private Byte exerciseTherapy;
 
     public Byte getExerciseTherapy() {
@@ -155,7 +155,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "oral_therapy", nullable = true)
+    @Column(name = "oral_therapy")
     private Byte oralTherapy;
 
     public Byte getOralTherapy() {
@@ -167,7 +167,7 @@ public class Profile {
     }
 
     @Basic
-    @Column(name = "insulin_therapy", nullable = true)
+    @Column(name = "insulin_therapy")
     private Byte insulinTherapy;
 
     public Byte getInsulinTherapy() {

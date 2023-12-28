@@ -5,6 +5,7 @@ import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.entity.User;
 
 public interface IUserService extends IService<User> {
-    LoginDTO login(Integer id, String password);
-    Integer register(String name, String password, Integer age, String contact);
+    LoginDTO login(String contact, String password);
+    Integer register(String name, String password, String contact, String gender, Integer age);
+    Integer register(String name, String password, String contact);
 }
