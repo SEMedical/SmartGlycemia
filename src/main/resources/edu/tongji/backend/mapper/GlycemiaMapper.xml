@@ -6,7 +6,8 @@
         SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
     </select>
     <select id="selectWeeklyArchive" resultType="edu.tongji.backend.entity.Statistics">
-        SELECT 'max_glycemia','min_glycemia','avg_glycemia','hypo_percent','eu_percent','hyper_percent' FROM weekly_glycemia_summary WHERE patient_id = #{userId} and
-        week_num=DAYOFWEEK( #{startDate} ) and day_of_week=DAYOFWEEK( #{startDate} );
+        SELECT 'max_glycemia','min_glycemia','avg_glycemia','hypo_percent','eu_percent','hyper_percent'
+        FROM weekly_glycemia_summary WHERE patient_id = #{userId} and
+        week_number=DAYOFWEEK( #{startDate} ) and day_of_week=DAYOFWEEK( #{startDate} );
     </select>
 </mapper>

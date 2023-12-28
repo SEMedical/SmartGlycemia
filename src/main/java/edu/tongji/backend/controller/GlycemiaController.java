@@ -53,9 +53,9 @@ public class GlycemiaController {
             throw new GlycemiaException("date must be yyyy-mm-dd");
         LocalDate formattedDate=LocalDate.parse(date);
         if(formattedDate.isBefore(start))
-            throw new GlycemiaException("date must older than "+start);
+            throw new GlycemiaException("date must bigger than "+start);
         if(formattedDate.isAfter(end))
-            throw new GlycemiaException("date must older than "+end);
+            throw new GlycemiaException("date must smaller than "+end);
         return formattedDate;
     }
     @GetMapping("/chart_record") //对应的api路径

@@ -36,8 +36,20 @@ class BackendApplicationTests {
     }
     @Test
     void testSelectGlycemia(){
+        System.out.println("Start test");
+
+        System.out.println("End test");
         assertThrows(GlycemiaException.class, () -> {
             glycemiaController.LookupChart("History", "2", "2023-12-27");
+
         });
+    }
+    @Test
+    void testSelectGlycemiaRecord(){
+        System.out.println("Start test");
+        assertThrows(GlycemiaException.class, () -> {
+            glycemiaController.LookupChartRecord("Week", "2", "2023-12-27");
+        });
+        System.out.println("End test");
     }
 }
