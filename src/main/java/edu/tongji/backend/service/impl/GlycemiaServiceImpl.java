@@ -123,7 +123,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             Res.add(data);
         }
         chart.setData(Res);
-        chart.setError_code(200);
+        //chart.setError_code(200);
 
         return chart;
     }
