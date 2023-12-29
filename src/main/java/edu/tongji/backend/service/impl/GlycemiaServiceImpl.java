@@ -1,10 +1,8 @@
 package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.entity.Chart;
-import edu.tongji.backend.entity.CompositeChart;
-import edu.tongji.backend.entity.Glycemia;
-import edu.tongji.backend.entity.Statistics;
+import edu.tongji.backend.entity.*;
+import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.service.IGlycemiaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,9 +92,22 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
         return chart;
     }
-
+    //实时的标准是15分钟以内
     @Override
     public Double getLatestGlycemia(String user_id) {
-        return glycemiaMapper.getRealtimeGlycemia(user_id);
+        GlycemiaDTO val=glycemiaMapper.getRealtimeGlycemia(user_id);
+        if(val==null)
+            throw new GlycemiaException("All the glycemia data is not accessible!");
+        String latestDate=val.getRecordTime();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime parsed = LocalDateTime.parse(latestDate,formatter);
+        if(parsed.isAfter(LocalDateTime.now().minus(Duration.ofMinutes(15)))) {
+            Double glyValue = val.getGlycemia();
+            System.out.println(glyValue);
+            return glyValue;
+        }else if(LocalDateTime.now().getHour()>22||LocalDateTime.now().getHour()<6){
+            throw new GlycemiaException("Maybe the user is sleeping,remind him/her to keep track of her glycemia");
+        }else
+            throw new GlycemiaException("Latest data is not accessible!");
     }
 }

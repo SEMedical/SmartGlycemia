@@ -7,6 +7,7 @@ import edu.tongji.backend.mapper.ProfileMapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
+import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
 import edu.tongji.backend.util.Jwt;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +27,18 @@ class BackendApplicationTests {
     GlycemiaMapper glycemiaMapper;
     @Autowired
     GlycemiaController glycemiaController;
+    @Autowired
+    GlycemiaServiceImpl glycemiaService;
     @Test
     void contextLoads() {
-        Jwt.generate(Map.of("userId", "1", "userPermission", "patient"));
+
+    }
+    @Test
+    void getLatestGlycemia(){
+        assertThrows(GlycemiaException.class, () -> {
+            glycemiaService.getLatestGlycemia("1");
+        });
+
     }
     @Test
     void testSelect(){
