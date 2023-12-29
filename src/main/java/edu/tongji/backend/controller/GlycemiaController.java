@@ -8,6 +8,8 @@ import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IGlycemiaService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IUserService;
+import edu.tongji.backend.util.Jwt;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +27,10 @@ public class GlycemiaController {
     @Autowired
     IExerciseService exerciseService;
     @GetMapping("/chart") //对应的api路径
-    public Chart LookupChart(@RequestParam String type,@RequestParam String user_id,@RequestParam String date)//把请求中的内容映射到user
+    public Chart LookupChart(HttpServletRequest request, @RequestParam String type,@RequestParam String date)//把请求中的内容映射到user
     {
+        String token = request.getHeader( "Authorization");System.out.println(token);
+        String user_id= (String) Jwt.parse(token).get("userId");
         //确认用户是否存在，是否是病人
         this.checkUser(user_id);
         //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
@@ -63,8 +67,10 @@ public class GlycemiaController {
         return formattedDate;
     }
     @GetMapping("/chart_record") //对应的api路径
-    public CompositeChart LookupChartRecord(@RequestParam String span,@RequestParam String user_id,@RequestParam String startDate)//把请求中的内容映射到user
+    public CompositeChart LookupChartRecord(HttpServletRequest request,@RequestParam String span,@RequestParam String startDate)//把请求中的内容映射到user
     {
+        String token = request.getHeader( "Authorization");System.out.println(token);
+        String user_id= (String) Jwt.parse(token).get("userId");
         //确认用户是否存在，是否是病人
         this.checkUser(user_id);
         //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
@@ -81,7 +87,9 @@ public class GlycemiaController {
         return result;
     }
     @GetMapping("/is_exercise")
-    public Intervals GetExerciseIntervals(String type,String user_id,String date){
+    public Intervals GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
+        String token = request.getHeader( "Authorization");System.out.println(token);
+        String user_id= (String) Jwt.parse(token).get("userId");
         //确认用户是否存在，是否是病人
         this.checkUser(user_id);
         //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
