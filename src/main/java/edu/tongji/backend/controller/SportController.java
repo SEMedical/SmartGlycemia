@@ -1,0 +1,92 @@
+package edu.tongji.backend.controller;
+
+import edu.tongji.backend.dto.SportRecordDTO;
+import edu.tongji.backend.entity.Chart;
+import edu.tongji.backend.exception.GlycemiaException;
+import edu.tongji.backend.service.IExerciseService;
+import edu.tongji.backend.service.IProfileService;
+import edu.tongji.backend.service.IUserService;
+import edu.tongji.backend.util.Jwt;
+import edu.tongji.backend.util.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import org.apache.ibatis.jdbc.Null;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.LinkedList;
+
+@RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
+@RequestMapping("/sports")//对应的api路径
+public class SportController {
+    @Autowired
+    IExerciseService exerciseService;
+    @Autowired
+    IUserService userService;
+    @Autowired
+    IProfileService profileService;
+    @GetMapping("/startDoingSport") //对应的api路径
+    public Response<Null> startExercise(HttpServletRequest request)
+    {
+        String token = request.getHeader( "Authorization");
+        String user_id= (String) Jwt.parse(token).get("userId");
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            Integer ans= exerciseService.addExercise(user_id);
+            if(ans !=null&&ans!=0)
+                return Response.success(null,"开始运动");
+            else
+                return Response.fail("运动方案不存在");
+        }catch (Exception e){
+           return Response.fail("user doesn't exist");
+        }
+    }
+    private void checkUser(String user_id)
+    {
+        if(userService.getById(user_id)==null)
+            throw new GlycemiaException("user doesn't exist");
+        else if(!userService.getById(user_id).getRole().equals("patient"))
+            throw new GlycemiaException("user isn't a patient");
+        else if(profileService.getByPatientId(user_id)==null)
+            throw new GlycemiaException("exception with registration of the user"+user_id);
+    }
+    @GetMapping("/stopDoingSport") //对应的api路径
+    public Response<Null> stopSport(HttpServletRequest request)//把请求中的内容映射到user
+    {
+        String token = request.getHeader( "Authorization");
+        String user_id= (String) Jwt.parse(token).get("userId");
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            Integer ans= exerciseService.finishExercise(user_id);
+            if(ans !=null&&ans!=0)
+                return Response.success(null,"开始运动");
+            else
+                return Response.fail("运动方案不存在");
+        }catch (Exception e){
+            return Response.fail("user doesn't exist");
+        }
+    }
+
+    @GetMapping("/sportRecord") //对应的api路径
+    public Response<SportRecordDTO> LookupChart(HttpServletRequest request)//把请求中的内容映射到user
+    {
+        String token = request.getHeader( "Authorization");
+        String user_id= (String) Jwt.parse(token).get("userId");
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            SportRecordDTO ans= exerciseService.getSportRecord(user_id);
+            if(ans !=null)
+                return Response.success(ans,"成功获取运动记录");
+            else
+                return Response.fail("运动记录不存在");
+        }catch (Exception e){
+            return Response.fail("user doesn't exist");
+        }
+    }
+}

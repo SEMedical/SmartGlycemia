@@ -15,13 +15,14 @@ import java.time.LocalDateTime;
 public class Exercise {
     private Integer patientId;
 
-    private String startTime;
+    private LocalDateTime startTime;
 
-    private Integer duration;//unit:minute
+    private int duration;//unit:minute
 
     private String category;
 
     private String frequency;
 
     private int exerciseId;
+    private int calorie;
 }
