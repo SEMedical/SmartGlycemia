@@ -9,172 +9,26 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Profile {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Id
-    @Column(name = "patient_id", nullable = false)
     private int patientId;
 
-    public int getPatientId() {
-        return patientId;
-    }
+    private String gender;
 
-    public void setPatientId(int patientId) {
-        this.patientId = patientId;
-    }
+    private String type;
 
-    @Basic
-    @Column(name = "gender")
-    private Object gender;
-
-    public Object getGender() {
-        return gender;
-    }
-
-    public void setGender(Object gender) {
-        this.gender = gender;
-    }
-
-    @Basic
-    @Column(name = "type")
-    private Object type;
-
-    public Object getType() {
-        return type;
-    }
-
-    public void setType(Object type) {
-        this.type = type;
-    }
-
-    @Basic
-    @Column(name = "age")
     private Integer age;
 
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    @Basic
-    @Column(name = "family_history", length = -1)
     private String familyHistory;
 
-    public String getFamilyHistory() {
-        return familyHistory;
-    }
-
-    public void setFamilyHistory(String familyHistory) {
-        this.familyHistory = familyHistory;
-    }
-
-    @Basic
-    @Column(name = "diagnosed_year")
-    private Object diagnosedYear;
-
-    public Object getDiagnosedYear() {
-        return diagnosedYear;
-    }
-
-    public void setDiagnosedYear(Object diagnosedYear) {
-        this.diagnosedYear = diagnosedYear;
-    }
-
-    @Basic
-    @Column(name = "anamnesis", length = -1)
+    private String diagnosedYear;
     private String anamnesis;
 
-    public String getAnamnesis() {
-        return anamnesis;
-    }
+    private String medicationPattern;
 
-    public void setAnamnesis(String anamnesis) {
-        this.anamnesis = anamnesis;
-    }
-
-    @Basic
-    @Column(name = "medication_pattern")
-    private Object medicationPattern;
-
-    public Object getMedicationPattern() {
-        return medicationPattern;
-    }
-
-    public void setMedicationPattern(Object medicationPattern) {
-        this.medicationPattern = medicationPattern;
-    }
-
-    @Basic
-    @Column(name = "allergy", length = -1)
     private String allergy;
 
-    public String getAllergy() {
-        return allergy;
-    }
-
-    public void setAllergy(String allergy) {
-        this.allergy = allergy;
-    }
-
-    @Basic
-    @Column(name = "medication_history", length = -1)
     private String medicationHistory;
-
-    public String getMedicationHistory() {
-        return medicationHistory;
-    }
-
-    public void setMedicationHistory(String medicationHistory) {
-        this.medicationHistory = medicationHistory;
-    }
-
-    @Basic
-    @Column(name = "dietary_therapy")
-    private Byte dietaryTherapy;
-
-    public Byte getDietaryTherapy() {
-        return dietaryTherapy;
-    }
-
-    public void setDietaryTherapy(Byte dietaryTherapy) {
-        this.dietaryTherapy = dietaryTherapy;
-    }
-
-    @Basic
-    @Column(name = "exercise_therapy")
-    private Byte exerciseTherapy;
-
-    public Byte getExerciseTherapy() {
-        return exerciseTherapy;
-    }
-
-    public void setExerciseTherapy(Byte exerciseTherapy) {
-        this.exerciseTherapy = exerciseTherapy;
-    }
-
-    @Basic
-    @Column(name = "oral_therapy")
-    private Byte oralTherapy;
-
-    public Byte getOralTherapy() {
-        return oralTherapy;
-    }
-
-    public void setOralTherapy(Byte oralTherapy) {
-        this.oralTherapy = oralTherapy;
-    }
-
-    @Basic
-    @Column(name = "insulin_therapy")
-    private Byte insulinTherapy;
-
-    public Byte getInsulinTherapy() {
-        return insulinTherapy;
-    }
-
-    public void setInsulinTherapy(Byte insulinTherapy) {
-        this.insulinTherapy = insulinTherapy;
-    }
+    private Boolean dietaryTherapy;
+    private Boolean exerciseTherapy;
+    private Boolean oralTherapy;
+    private Boolean insulinTherapy;
 }
