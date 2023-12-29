@@ -94,4 +94,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
         return chart;
     }
+
+    @Override
+    public Double getLatestGlycemia(String user_id) {
+        return glycemiaMapper.getRealtimeGlycemia(user_id);
+    }
 }

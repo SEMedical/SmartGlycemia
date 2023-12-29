@@ -13,4 +13,5 @@ public interface GlycemiaMapper extends BaseMapper<Glycemia> {
     Double selectByIdAndTime(String id, String time);
 
     Statistics selectWeeklyArchive(String userId, String startDate, String span);
+    Double getRealtimeGlycemia(String userId);
 }

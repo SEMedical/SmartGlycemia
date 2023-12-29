@@ -9,6 +9,7 @@ import edu.tongji.backend.service.IGlycemiaService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.Jwt;
+import edu.tongji.backend.util.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,24 +28,34 @@ public class GlycemiaController {
     @Autowired
     IExerciseService exerciseService;
     @GetMapping("/chart") //对应的api路径
-    public Chart LookupChart(HttpServletRequest request, @RequestParam String type,@RequestParam String date)//把请求中的内容映射到user
+    public Response<Chart> LookupChart(HttpServletRequest request, @RequestParam String type, @RequestParam String date)//把请求中的内容映射到user
     {
-        String token = request.getHeader( "Authorization");System.out.println(token);
-        String user_id= (String) Jwt.parse(token).get("userId");
-        //确认用户是否存在，是否是病人
-        this.checkUser(user_id);
-        //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
-        LocalDate formattedDate=this.checkDate(date,LocalDate.of(2023,12,1),LocalDate.now().plusDays(1));
-        //确认类型必须为history或realtime
-        if(!type.equals("History")&&!type.equals("Realtime"))
-            throw new GlycemiaException("type must be history or realtime");
-        //history必须有time
-        if(type.equals("History")&&date==null)
-            throw new GlycemiaException("history must have time");
-        Chart result=glycemiaService.showGlycemiaDiagram(type,user_id,formattedDate);
-        //LOG
-        System.out.println(result);
-        return result;
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = (String) Jwt.parse(token).get("userId");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+            LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
+            //确认类型必须为history或realtime
+            if (!type.equals("History") && !type.equals("Realtime"))
+                throw new GlycemiaException("type must be history or realtime");
+            //history必须有time
+            if (type.equals("History") && date == null)
+                throw new GlycemiaException("history must have time");
+            Chart result = glycemiaService.showGlycemiaDiagram(type, user_id, formattedDate);
+            //LOG
+            System.out.println(result);
+            return Response.success(result,"chart API has passed!");
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal business exception");
+        }catch (RuntimeException|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external business exception or system error!");
+        }
+
     }
     private void checkUser(String user_id)
     {
@@ -67,38 +78,74 @@ public class GlycemiaController {
         return formattedDate;
     }
     @GetMapping("/chart_record") //对应的api路径
-    public CompositeChart LookupChartRecord(HttpServletRequest request,@RequestParam String span,@RequestParam String startDate)//把请求中的内容映射到user
+    public Response<CompositeChart> LookupChartRecord(HttpServletRequest request,@RequestParam String span,@RequestParam String startDate)//把请求中的内容映射到user
     {
-        String token = request.getHeader( "Authorization");System.out.println(token);
-        String user_id= (String) Jwt.parse(token).get("userId");
-        //确认用户是否存在，是否是病人
-        this.checkUser(user_id);
-        //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
-        LocalDate formattedDate=this.checkDate(startDate,LocalDate.of(2023,12,1),LocalDate.now().minusDays(span=="Week"?7:30));
-        //确认类型必须为history或realtime
-        if(!span.equals("Week")&&!span.equals("Month"))
-            throw new GlycemiaException("span must be week or month");
-        //history必须有time
-        if(startDate ==null)
-            throw new GlycemiaException("If you want to loop up the chart record, startTime is required");
-        CompositeChart result=glycemiaService.showGlycemiaHistoryDiagram(span,user_id,formattedDate);
-        //LOG
-        System.out.println(result);
-        return result;
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = (String) Jwt.parse(token).get("userId");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+            LocalDate formattedDate = this.checkDate(startDate, LocalDate.of(2023, 12, 1), LocalDate.now().minusDays(span == "Week" ? 7 : 30));
+            //确认类型必须为history或realtime
+            if (!span.equals("Week") && !span.equals("Month"))
+                throw new GlycemiaException("span must be week or month");
+            //history必须有time
+            if (startDate == null)
+                throw new GlycemiaException("If you want to loop up the chart record, startTime is required");
+            CompositeChart result = glycemiaService.showGlycemiaHistoryDiagram(span, user_id, formattedDate);
+            //LOG
+            System.out.println(result);
+            return Response.success(result,"Successfully get the glycemia record!");
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal business exception");
+        }catch (RuntimeException|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external business exception or system error!");
+        }
     }
     @GetMapping("/is_exercise")
-    public Intervals GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
-        String token = request.getHeader( "Authorization");System.out.println(token);
-        String user_id= (String) Jwt.parse(token).get("userId");
-        //确认用户是否存在，是否是病人
-        this.checkUser(user_id);
-        //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
-        LocalDate formattedDate=this.checkDate(date,LocalDate.of(2023,12,1),LocalDate.now().plusDays(1));
-        //运动类型必须为慢跑或瑜伽...
-        if(!type.equals("Jogging")&&!type.equals("Yoga"))
-            throw new GlycemiaException("exercise category must be one of the followings:" +
-                    "Jogging,Yoga...");
-        Intervals res=exerciseService.getExerciseIntervalsInOneDay(type,user_id,formattedDate.toString());
-        return res;
+    public Response<Intervals> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = (String) Jwt.parse(token).get("userId");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+            LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
+            //运动类型必须为慢跑或瑜伽...
+            if (!type.equals("Jogging") && !type.equals("Yoga"))
+                throw new GlycemiaException("exercise category must be one of the followings:" +
+                        "Jogging,Yoga...");
+            Intervals res = exerciseService.getExerciseIntervalsInOneDay(type, user_id, formattedDate.toString());
+            return Response.success(res, "Successfully get all the intervals during a day!");
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal business failure");
+        }catch (Exception|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external business exception or system error!");
+        }
+    }
+    @GetMapping("/realtime")
+    public Response<Double> GetRealtimeGlycemia(HttpServletRequest request){
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = (String) Jwt.parse(token).get("userId");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            Double data=glycemiaService.getLatestGlycemia(user_id);
+            return Response.success(data,"You've get the latest glycemia data!");
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal failure");
+        }catch (Exception|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external failure");
+        }
     }
 }

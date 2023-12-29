@@ -10,4 +10,9 @@
         FROM daily_glycemia_summary WHERE patient_id = #{userId} and
         week_number=DAYOFWEEK( #{startDate} ) and day_of_week=DAYOFWEEK( #{startDate} );
     </select>
+    <select id="getRealtimeGlycemia" resultType="java.lang.Double">
+        SELECT glycemia FROM glycemia WHERE patient_id= #{id}
+        ORDER BY ABS(TIMESTAMPDIFF(SECOND, record_time, NOW()))
+        LIMIT 1;
+    </select>
 </mapper>
