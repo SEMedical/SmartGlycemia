@@ -1,8 +1,8 @@
 package edu.tongji.backend.controller;
 
-import edu.tongji.backend.entity.Chart;
-import edu.tongji.backend.entity.CompositeChart;
-import edu.tongji.backend.entity.Intervals;
+import edu.tongji.backend.dto.Chart;
+import edu.tongji.backend.dto.CompositeChart;
+import edu.tongji.backend.dto.Intervals;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IGlycemiaService;
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/glycemia")//对应的api路径
@@ -147,5 +148,39 @@ public class GlycemiaController {
             System.err.println(e.getMessage());
             return Response.fail("Unexpected external failure");
         }
+    }
+
+    public Response<String> GetRealtimeTips(HttpServletRequest request){
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = (String) Jwt.parse(token).get("userId");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            Double data=glycemiaService.getLatestGlycemia(user_id);
+            Boolean AfterDinner=(LocalDateTime.now().getHour()>18&&LocalDateTime.now().getHour()<19);
+            Boolean AfterLunch=(LocalDateTime.now().getHour()>12&&LocalDateTime.now().getHour()<14);
+            if(data<70)
+                return Response.success("哎呀！血糖怎么有点低了呢？请吃点东西吧！","Tips generated successfully");
+            else if(data<100){
+                return Response.success("当前血糖处于正常水平，真是令人高兴呐！","Tips generated successfully");
+            }else if(AfterLunch&&data>140){
+                return Response.success("当前血糖水平已经高于正常值了哦，注意饮食，然后请去做一点运动吧！","Tips generated successfully");
+            }else if(AfterDinner&&data>120)
+                return Response.success("当前血糖水平已经高于正常值了哦，之后要注意不要吃太多含糖含碳水量高的食物","Tips generated successfully");
+            else if(AfterDinner ||AfterLunch){
+                return Response.success("饭后血糖上升，不必要过度担心，要时刻注重饮食哦","Tips generated successfully");
+            }else{
+                if(data>100)
+                    return Response.success("当前血糖水平已经高于正常值了哦，然后请去做一点运动吧！","Tips generated successfully");
+            }
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal failure");
+        }catch (Exception|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external failure");
+        }
+        return Response.fail("Fatal error");
     }
 }

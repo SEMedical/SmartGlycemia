@@ -2,15 +2,12 @@ package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.entity.Intervals;
-import edu.tongji.backend.exception.GlycemiaException;
+import edu.tongji.backend.dto.Intervals;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.service.IExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 

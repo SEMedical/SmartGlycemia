@@ -2,7 +2,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="edu.tongji.backend.mapper.GlycemiaMapper">
-    <resultMap id="glycemiaDTOResultMap" type="edu.tongji.backend.entity.GlycemiaDTO">
+    <resultMap id="glycemiaDTOResultMap" type="edu.tongji.backend.dto.GlycemiaDTO">
         <result property="glycemia" column="glycemia"/>
         <result property="recordTime" column="record_time"/>
     </resultMap>
@@ -10,7 +10,7 @@
         SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
     </select>
     <!--TODO:haven't tested-->
-    <select id="selectWeeklyArchive" resultType="edu.tongji.backend.entity.Statistics">
+    <select id="selectWeeklyArchive" resultType="edu.tongji.backend.dto.Statistics">
         SELECT 'max_glycemia','min_glycemia','avg_glycemia','hypo_percent','eu_percent','hyper_percent'
         FROM daily_glycemia_summary WHERE patient_id = #{userId} and
         week_number=DAYOFWEEK( #{startDate} ) and day_of_week=DAYOFWEEK( #{startDate} );

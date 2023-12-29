@@ -2,7 +2,6 @@ package edu.tongji.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.entity.Intervals;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

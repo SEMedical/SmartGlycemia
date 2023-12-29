@@ -1,11 +1,10 @@
-package edu.tongji.backend.entity;
+package edu.tongji.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 @Data
@@ -13,7 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 //复合统计信息的图表
 public class CompositeChart {
-    List<Map<LocalDate,Statistics>> data;
+    List<Map<LocalDate, Statistics>> data;
 
     @Override
     public String toString() {

@@ -1,12 +1,11 @@
 package edu.tongji.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import edu.tongji.backend.entity.Chart;
-import edu.tongji.backend.entity.CompositeChart;
+import edu.tongji.backend.dto.Chart;
+import edu.tongji.backend.dto.CompositeChart;
 import edu.tongji.backend.entity.Glycemia;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface IGlycemiaService extends IService<Glycemia> {
     Chart showGlycemiaDiagram(String type, String user_id, LocalDate date);
