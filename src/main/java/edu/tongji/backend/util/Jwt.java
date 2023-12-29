@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.Map;
 
 public class Jwt {
-    private static final String key = "Tangxiaozhi";
-
+    private static String _key = PropertiesHelper.GetKey("JWT_KEY");
+    private static final String key = _key.isEmpty()?"Tangxiaozhi2023":_key;
     // 生成token
     public static String generate(Map<String, Object> jwtInfo){
         // 7天
