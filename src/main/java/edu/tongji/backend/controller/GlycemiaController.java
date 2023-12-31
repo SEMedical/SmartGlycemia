@@ -154,21 +154,38 @@ public class GlycemiaController {
             String user_id = (String) Jwt.parse(token).get("userId");
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
+            //根据年龄判断血糖阈值
+            Integer age=profileService.getById(user_id).getAge();
+            Integer HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
+            AFTERLUNCH_HYPER_THRESHOLD=150;
+            AFTERDINNER_HYPER_THRESHOLD=130;
+            if(age>60){
+                HYPER_THRESHOLD=162;
+                EU_THRESHOLD=126;
+                AFTERLUNCH_HYPER_THRESHOLD=228;
+                AFTERDINNER_HYPER_THRESHOLD=198;
+            }else if(age<18) {
+                HYPER_THRESHOLD =109 ;
+                EU_THRESHOLD = 80;
+            }else {
+                HYPER_THRESHOLD = 126;
+                EU_THRESHOLD = 110;
+            }
             Double data=glycemiaService.getLatestGlycemia(user_id);
             Boolean AfterDinner=(LocalDateTime.now().getHour()>18&&LocalDateTime.now().getHour()<19);
             Boolean AfterLunch=(LocalDateTime.now().getHour()>12&&LocalDateTime.now().getHour()<14);
-            if(data<70)//RGBA for Red
+            if(data<EU_THRESHOLD)//RGBA for Red
                 return Response.success(new Tip("哎呀！血糖怎么有点低了呢？请吃点东西吧！", MyColor.RED),"Tips generated successfully");
-            else if(data<100){
+            else if(data<HYPER_THRESHOLD){
                 return Response.success(new Tip("当前血糖处于正常水平，真是令人高兴呐！",MyColor.GREEN),"Tips generated successfully");
-            }else if(AfterLunch&&data>140){
+            }else if(AfterLunch&&data>AFTERLUNCH_HYPER_THRESHOLD){
                 return Response.success(new Tip("当前血糖水平已经高于正常值了哦，注意饮食，然后请去做一点运动吧！",MyColor.RED),"Tips generated successfully");
-            }else if(AfterDinner&&data>120)
+            }else if(AfterDinner&&data>AFTERDINNER_HYPER_THRESHOLD)
                 return Response.success(new Tip("当前血糖水平已经高于正常值了哦，之后要注意不要吃太多含糖含碳水量高的食物",MyColor.RED),"Tips generated successfully");
             else if(AfterDinner ||AfterLunch){
                 return Response.success(new Tip("饭后血糖上升，不必要过度担心，要时刻注重饮食哦",MyColor.YELLOW),"Tips generated successfully");
             }else{
-                if(data>100)
+                if(data>HYPER_THRESHOLD)
                     return Response.success(new Tip("当前血糖水平已经高于正常值了哦，然后请去做一点运动吧！",MyColor.RED),"Tips generated successfully");
             }
         }catch (GlycemiaException e){
