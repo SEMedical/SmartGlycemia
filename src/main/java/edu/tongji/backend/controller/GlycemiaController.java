@@ -54,7 +54,6 @@ public class GlycemiaController {
             System.err.println(e.getMessage());
             return Response.fail("Unexpected external business exception or system error!");
         }
-
     }
     private void checkUser(String user_id)
     {

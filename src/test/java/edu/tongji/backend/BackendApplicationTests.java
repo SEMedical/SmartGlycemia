@@ -39,7 +39,6 @@ class BackendApplicationTests {
         assertThrows(GlycemiaException.class, () -> {
             glycemiaService.getLatestGlycemia("1");
         });
-
     }
     @Test
     void testSelect(){
