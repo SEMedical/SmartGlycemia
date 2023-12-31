@@ -11,6 +11,7 @@ import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.util.CalorieCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
