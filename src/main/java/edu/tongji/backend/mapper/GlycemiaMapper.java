@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface GlycemiaMapper extends BaseMapper<Glycemia> {
     Double selectByIdAndTime(String id, String time);
-
-    Statistics selectWeeklyArchive(String userId, String startDate, String span);
+    Statistics selectDailyArchive(String userId, String Date);
     GlycemiaDTO getRealtimeGlycemia(String userId);
 }

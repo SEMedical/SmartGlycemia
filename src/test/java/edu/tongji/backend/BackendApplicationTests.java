@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,7 +32,7 @@ class BackendApplicationTests {
     GlycemiaServiceImpl glycemiaService;
     @Test
     void contextLoads() {
-
+        glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
     }
     @Test
     void getLatestGlycemia(){
@@ -54,7 +55,7 @@ class BackendApplicationTests {
 
         System.out.println("End test");
 //        assertThrows(GlycemiaException.class, () -> {
-//            //glycemiaController.LookupChart("key","History", "2", "2023-12-27");
+//            glycemiaController.LookupChart("key","History", "2", "2023-12-27");
 //
 //        });
     }

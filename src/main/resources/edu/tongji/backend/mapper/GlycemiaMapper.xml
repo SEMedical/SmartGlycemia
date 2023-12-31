@@ -9,11 +9,10 @@
     <select id="selectByIdAndTime" resultType="java.lang.Double">
         SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
     </select>
-    <!--TODO:haven't tested-->
-    <select id="selectWeeklyArchive" resultType="edu.tongji.backend.dto.Statistics">
+    <select id="selectDailyArchive" resultType="edu.tongji.backend.dto.Statistics">
         SELECT 'max_glycemia','min_glycemia','avg_glycemia','hypo_percent','eu_percent','hyper_percent'
         FROM daily_glycemia_summary WHERE patient_id = #{userId} and
-        week_number=DAYOFWEEK( #{startDate} ) and day_of_week=DAYOFWEEK( #{startDate} );
+            record_date= #{Date} ;
     </select>
     <select id="getRealtimeGlycemia" resultMap="glycemiaDTOResultMap">
         SELECT glycemia,record_time FROM glycemia WHERE patient_id= #{userId}

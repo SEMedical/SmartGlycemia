@@ -1,10 +1,7 @@
 package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.dto.Chart;
-import edu.tongji.backend.dto.CompositeChart;
-import edu.tongji.backend.dto.GlycemiaDTO;
-import edu.tongji.backend.dto.Statistics;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.*;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
@@ -12,10 +9,7 @@ import edu.tongji.backend.service.IGlycemiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,32 +60,48 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
         CompositeChart chart = new CompositeChart();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         //Just for initialization
-        LocalDateTime endTime = LocalDateTime.now();
-        List<Map<LocalDate, Statistics>> Res = new ArrayList<>();
-        LocalDateTime startDateTime = LocalDateTime.of(startDate, LocalTime.of(0, 0, 0));
+        LocalDate endTime = LocalDate.now();
+        List<Map<LocalDate, StatisticsCondensed>> Res = new ArrayList<>();
+        //自动发现当前日期所在的周/月/日
         if (span == "Week") {
-            endTime = startDateTime.plus(Duration.ofDays(7));
+            endTime = startDate.with(DayOfWeek.SUNDAY);
+            startDate = startDate.with(DayOfWeek.MONDAY);
         } else if (span == "Month") {
-            endTime = startDateTime.plus(Duration.ofDays(30));
-        }
-
-        // 遍历时间点，每15分钟一次，直到当前时间
-        while (startDateTime.isBefore(endTime)) {
-            System.out.println(startDateTime);
-            startDateTime = startDateTime.plus(Duration.ofDays(1));
-            Statistics glycemiaValue = glycemiaMapper.selectWeeklyArchive(user_id, startDateTime.format(formatter), span);
+            endTime = startDate.withDayOfMonth(startDate.lengthOfMonth());
+            startDate = startDate.withDayOfMonth(1);
+        }else
+            endTime = startDate.plusDays(1);
+        //entoll:总普通血糖比例，hypotoll:总低血糖比例，hypertoll:总高血糖比例
+        Double eutoll=0.0,hypotoll=0.0,hypertoll=0.0;
+        // 遍历时间点，每1天一次，直到当前时间
+        while (startDate.isBefore(endTime)) {
+            System.out.println(startDate);
+            startDate = startDate.plusDays(1);
+            Statistics glycemiaValue=new Statistics();
+            glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter));
+            //TODO:月度统计
             if (glycemiaValue == null) {
-                System.out.println("No data found at" + startDateTime.format(formatter));
+                System.out.println("No data found at" + startDate.format(formatter));
                 continue;
             }
-            Map<LocalDate,Statistics> data = new HashMap<>();
-            data.put(startDateTime.toLocalDate(),glycemiaValue);
+            Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
+            // 计算总的血糖比例
+            StatisticsCondensed glycemiaCondensed = new StatisticsCondensed();
+            glycemiaCondensed.setTime(glycemiaValue.getTime());
+            glycemiaCondensed.setMaxValue(glycemiaValue.getMaxValue());
+            glycemiaCondensed.setMinValue(glycemiaValue.getMinValue());
+            eutoll+=glycemiaValue.getEuGlycemiaPercentage();
+            hypotoll+=glycemiaValue.getHypoglycemiaPercentage();
+            hypertoll+=glycemiaValue.getHyperglycemiaPercentage();
+            data.put(startDate,glycemiaCondensed);
             Res.add(data);
         }
         chart.setData(Res);
-        //chart.setError_code(200);
+        chart.setEuGlycemiaPercentage(eutoll);
+        chart.setHypoglycemiaPercentage(hypotoll);
+        chart.setHyperglycemiaPercentage(hypertoll);
 
         return chart;
     }
