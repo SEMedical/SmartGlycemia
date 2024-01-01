@@ -22,6 +22,14 @@ public class RegisterController {
         {
             return Response.fail("手机号或密码为空");  //返回错误信息
         }
+
+        System.out.println(info);
+        System.out.println(info.getName());
+        System.out.println(info.getPassword());
+        System.out.println(info.getContact());
+        System.out.println(info.getGender());
+        System.out.println(info.getAge());
+
         Integer result = userService.register(info.getName(), info.getPassword(), info.getContact(), info.getGender(), info.getAge());  //调用接口的register函数
         if (result == -1)  //如果返回的result为false
         {
