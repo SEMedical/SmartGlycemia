@@ -42,9 +42,9 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
 
     @Override
     public List<QuestionnaireDTO> getQuestionnaire2(Integer userId, List<Boolean> answer){
-//        if (!insertQuestionnaire1(userId, answer)) {
-//            return null;
-//        }
+        if (!insertQuestionnaire1(userId, answer)) {
+            return null;
+        }
         String gender = profileService.getByPatientId(userId.toString()).getGender();
 
         /* 慢跑禁忌症：
@@ -116,9 +116,9 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
 
     @Override
     public SportPlanDTO getRecommendedSportPlan(Integer userId, List<Answer2> answer){
-//        if (!insertQuestionnaire2(userId, answer)) {
-//            return null;
-//        }
+        if (!insertQuestionnaire2(userId, answer)) {
+            return null;
+        }
 
 //        boolean walking = true;
         boolean yoga = true;
