@@ -32,7 +32,7 @@ public class GlycemiaController {
         try {
             String token = request.getHeader("Authorization");
             System.out.println(token);
-            String user_id = (String) Jwt.parse(token).get("userId");
+            String user_id = Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
@@ -109,7 +109,7 @@ public class GlycemiaController {
         try {
             String token = request.getHeader("Authorization");
             System.out.println(token);
-            String user_id = (String) Jwt.parse(token).get("userId");
+            String user_id = Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
