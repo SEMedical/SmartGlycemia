@@ -66,10 +66,10 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         LocalDate endTime = LocalDate.now();
         List<Map<LocalDate, StatisticsCondensed>> Res = new ArrayList<>();
         //自动发现当前日期所在的周/月/日
-        if (span == "Week") {
+        if (span.equals("Week")) {
             endTime = startDate.with(DayOfWeek.SUNDAY);
             startDate = startDate.with(DayOfWeek.MONDAY);
-        } else if (span == "Month") {
+        } else if (span.equals("Month")) {
             endTime = startDate.withDayOfMonth(startDate.lengthOfMonth());
             startDate = startDate.withDayOfMonth(1);
         }else

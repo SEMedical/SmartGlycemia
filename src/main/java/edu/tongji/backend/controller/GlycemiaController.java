@@ -81,11 +81,11 @@ public class GlycemiaController {
         try {
             String token = request.getHeader("Authorization");
             System.out.println(token);
-            String user_id = (String) Jwt.parse(token).get("userId");
+            String user_id = Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
-            LocalDate formattedDate = this.checkDate(startDate, LocalDate.of(2023, 12, 1), LocalDate.now().minusDays(span == "Week" ? 7 : 30));
+            LocalDate formattedDate = this.checkDate(startDate, LocalDate.of(2023, 12, 1), LocalDate.now());
             //确认类型必须为history或realtime
             if (!span.equals("Week") && !span.equals("Month"))
                 throw new GlycemiaException("span must be week or month");
@@ -133,7 +133,7 @@ public class GlycemiaController {
         try {
             String token = request.getHeader("Authorization");
             System.out.println(token);
-            String user_id = (String) Jwt.parse(token).get("userId");
+            String user_id =Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             Double data=glycemiaService.getLatestGlycemia(user_id);
@@ -151,7 +151,7 @@ public class GlycemiaController {
         try {
             String token = request.getHeader("Authorization");
             System.out.println(token);
-            String user_id = (String) Jwt.parse(token).get("userId");
+            String user_id = Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             //根据年龄判断血糖阈值
