@@ -1,6 +1,7 @@
 package edu.tongji.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import edu.tongji.backend.dto.SportDetailedDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
 import edu.tongji.backend.entity.Exercise;
 import edu.tongji.backend.entity.Intervals;
@@ -12,4 +13,5 @@ public interface IExerciseService extends IService<Exercise> {
     Integer addExercise(String userId);
     Integer finishExercise(String userId);
 SportRecordDTO getSportRecord(String userId);
+SportDetailedDTO getDetailedSportRecord(String userId,int time_type,String category);
 }

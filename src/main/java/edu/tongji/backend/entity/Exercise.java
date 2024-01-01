@@ -25,4 +25,5 @@ public class Exercise {
 
     private int exerciseId;
     private int calorie;
+    private int distance;
 }

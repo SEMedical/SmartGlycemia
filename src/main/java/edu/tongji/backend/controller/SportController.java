@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.dto.SportDetailedDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
 import edu.tongji.backend.entity.Chart;
 import edu.tongji.backend.exception.GlycemiaException;
@@ -8,6 +9,7 @@ import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
+import edu.tongji.backend.util.TimeTypeChecker;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +34,7 @@ public class SportController {
     public Response<Null> startExercise(HttpServletRequest request)
     {
         String token = request.getHeader( "Authorization");
-        String user_id= (String) Jwt.parse(token).get("userId");
+        String user_id= Jwt.parse(token).get("userId").toString();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -58,7 +60,7 @@ public class SportController {
     public Response<Null> stopSport(HttpServletRequest request)//把请求中的内容映射到user
     {
         String token = request.getHeader( "Authorization");
-        String user_id= (String) Jwt.parse(token).get("userId");
+        String user_id=Jwt.parse(token).get("userId").toString();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -73,14 +75,36 @@ public class SportController {
     }
 
     @GetMapping("/sportRecord") //对应的api路径
-    public Response<SportRecordDTO> LookupChart(HttpServletRequest request)//把请求中的内容映射到user
+    public Response<SportRecordDTO> getTotalRecord(HttpServletRequest request)//把请求中的内容映射到user
     {
         String token = request.getHeader( "Authorization");
-        String user_id= (String) Jwt.parse(token).get("userId");
+        String user_id=Jwt.parse(token).get("userId").toString();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
             SportRecordDTO ans= exerciseService.getSportRecord(user_id);
+            if(ans !=null)
+                return Response.success(ans,"成功获取运动记录");
+            else
+                return Response.fail("运动记录不存在");
+        }catch (Exception e){
+            return Response.fail("user doesn't exist");
+        }
+    }
+    @GetMapping("/detailedSportRecord")
+    public Response<SportDetailedDTO> getDetailRecord
+            (HttpServletRequest request, @RequestParam String time_type,@RequestParam String category)
+    {
+        String token = request.getHeader("Authorization");
+        String user_id = Jwt.parse(token).get("userId").toString();
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            int check = TimeTypeChecker.check(time_type);
+            if (check == 0)
+                return Response.fail("time_type is invalid");
+
+            SportDetailedDTO ans= exerciseService.getDetailedSportRecord(user_id,check,category);
             if(ans !=null)
                 return Response.success(ans,"成功获取运动记录");
             else
