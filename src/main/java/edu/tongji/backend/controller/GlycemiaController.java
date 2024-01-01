@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/glycemia")//对应的api路径
+@RequestMapping("/api/glycemia")//对应的api路径
 public class GlycemiaController {
     @Autowired
     IGlycemiaService glycemiaService;
@@ -75,7 +75,7 @@ public class GlycemiaController {
             throw new GlycemiaException("date must smaller than "+end);
         return formattedDate;
     }
-    @GetMapping("/chart_record") //对应的api路径
+    @GetMapping("/weeklyOrMonthlyRecord") //对应的api路径
     public Response<CompositeChart> LookupChartRecord(HttpServletRequest request,@RequestParam String span,@RequestParam String startDate)//把请求中的内容映射到user
     {
         try {
@@ -104,7 +104,7 @@ public class GlycemiaController {
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
-    @GetMapping("/is_exercise")
+    @GetMapping("/isExercise")
     public Response<Intervals> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
         try {
             String token = request.getHeader("Authorization");
@@ -128,7 +128,7 @@ public class GlycemiaController {
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
-    @GetMapping("/realtime")
+    @GetMapping("/realTime")
     public Response<Double> GetRealtimeGlycemia(HttpServletRequest request){
         try {
             String token = request.getHeader("Authorization");
