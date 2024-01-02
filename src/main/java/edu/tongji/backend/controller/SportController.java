@@ -108,7 +108,8 @@ public class SportController {
             else
                 return Response.fail("运动记录不存在");
         }catch (Exception e){
-            return Response.fail("user doesn't exist");
+            System.out.println(e.getMessage());
+            return Response.fail(e.getMessage());
         }
     }
     @PostMapping("/detailedSportRecord")

@@ -110,6 +110,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 
     @Override
     public SportRecordDTO getSportRecord(String userId) {
+        SportRecordDTO ans= new SportRecordDTO();
+        System.out.println("数组长度为"+ans.getMinute_record().length);
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
@@ -118,14 +120,14 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         int total_minute = 0;
         int total_calorie = 0;
-        int[] minute_record = new int[7];
         HashMap<String, CategoryRecordDTO> sport_records = new HashMap<>();
         for (Exercise exercise : exercises) {
             total_minute += exercise.getDuration();
             total_calorie += exercise.getCalorie();
             //要知道这个运动是在第几天，然后在对应的位置加上运动时间
-            minute_record[LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()] += exercise.getDuration();
-//要知道这个运动是什么种类，然后在对应的位置加上运动时间
+            ans.getMinute_record()[LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()] += exercise.getDuration();
+System.out.println("在第"+LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()+"天运动了"+exercise.getDuration()+"分钟");
+            //要知道这个运动是什么种类，然后在对应的位置加上运动时间
             String category = exercise.getCategory();
             if (sport_records.containsKey(category)) {
                 CategoryRecordDTO categoryRecordDTO = sport_records.get(category);
@@ -137,8 +139,10 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 sport_records.put(category, categoryRecordDTO);
             }
         }
-        return new SportRecordDTO(total_minute, total_calorie, minute_record, sport_records);
-
+        ans.setTotal_minute(total_minute);
+        ans.setTotal_calorie(total_calorie);
+        ans.setSport_records(sport_records);
+        return ans;
     }
 
     @Override
