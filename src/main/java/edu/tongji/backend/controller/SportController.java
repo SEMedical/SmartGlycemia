@@ -47,13 +47,13 @@ public class SportController {
                 return Response.fail("数据库更新失败");
         }catch (Exception e){
             System.out.println(e.getMessage());
-           return Response.fail("user doesn't exist");
+           return Response.fail(e.getMessage());
         }
     }
     private void checkUser(String user_id)
     {
         if(userService.getById(user_id)==null)
-            throw new GlycemiaException("user doesn't exist");
+            throw new GlycemiaException("user isn't exist");
         else if(!userService.getById(user_id).getRole().equals("patient"))
             throw new GlycemiaException("user isn't a patient");
         else if(profileService.getByPatientId(user_id)==null)
@@ -73,7 +73,7 @@ public class SportController {
             else
                 return Response.fail("运动方案不存在");
         }catch (Exception e){
-            return Response.fail("user doesn't exist");
+            return Response.fail(e.getMessage());
         }
     }
     @GetMapping("/realTimeSportData")
@@ -90,7 +90,7 @@ public class SportController {
             else
                 return Response.fail("实时运动数据不存在");
         }catch (Exception e){
-            return Response.fail("user doesn't exist");
+            return Response.fail(e.getMessage());
         }
     }
 
@@ -149,7 +149,7 @@ public class SportController {
             else
                 return Response.fail("实时心率不存在");
         }catch (Exception e){
-            return Response.fail("user doesn't exist");
+            return Response.fail(e.getMessage());
         }
     }
     @GetMapping("/sportPlan")

@@ -16,10 +16,10 @@ public class CalorieCalculator {
     }
 
     private static void initMETMap() {
-        METMap.put("Jogging", 8.8);//慢跑
-        METMap.put("rope", 10.5);//跳绳
-        METMap.put("Yoga", 3.3);//瑜伽
-        METMap.put("Walking", 2.0);//散步
+        METMap.put("jogging", 8.8);//慢跑
+        METMap.put("ropeskipping", 10.5);//跳绳
+        METMap.put("yoga", 3.3);//瑜伽
+        METMap.put("walking", 2.0);//散步
 
     }
 }

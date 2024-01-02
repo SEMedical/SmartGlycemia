@@ -49,10 +49,12 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 
     @Override
     public Integer addExercise(String userId) {
+
         int user_id = Integer.parseInt(userId);
         Exercise exercise = new Exercise();
         exercise.setPatientId(user_id);
         exercise.setStartTime(LocalDateTime.now());
+        System.out.println("开始时间为"+exercise.getStartTime());
         //查找这个用户的运动方案
         QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
@@ -64,12 +66,20 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         System.out.println("找到的运动种类为"+exercise.getCategory());
         int insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
         if (insert_exercise == 0)
+        {
+            System.out.println("插入exercise表失败");
             return null;
+        }
+        QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
+        exerciseQueryWrapper.eq("patient_id", user_id);
+        int exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
+        insert_exercise=exercise_id;
+        System.out.println("插入exercise表成功，exercise_id为"+insert_exercise);
         int insert_running=1;
         //如果是跑步，还要往running表里插入一条记录
-        if (exercise.getCategory().equals("running")||exercise.getCategory().equals("jogging")) {
+        if (exercise.getCategory().equalsIgnoreCase("running")||exercise.getCategory().equalsIgnoreCase("jogging")) {
             Running running = new Running();
-            running.setExerciseId(exercise.getExerciseId());
+            running.setExerciseId(insert_exercise);
             //running表里有：distance,pace
             //他们是随着运动过程中不断变化的
             insert_running=runningMapper.insert(running);
@@ -267,11 +277,12 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         //获取用户体重数据
         double weight = 70;
         QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
+        //查找当前用户体重非空的体检记录
         examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
         List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
         if (examines.isEmpty())
             ;
-        else {
+        else {//找到最近一次的体检记录
             Examine last_examine = examines.get(examines.size() - 1);
             weight = last_examine.getWeight();
         }
@@ -281,12 +292,20 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
+        //将exercises按照时间由近到远排序
         if(exercises.isEmpty())
             return null;
-        Exercise last_exercise = exercises.get(exercises.size()-1);
+        exercises.sort(new Comparator<Exercise>() {
+            @Override
+            public int compare(Exercise o1, Exercise o2) {
+                return o2.getStartTime().compareTo(o1.getStartTime());
+            }
+        });
+        Exercise last_exercise = exercises.get(0);
         LocalDateTime start_time = last_exercise.getStartTime();
-        String category = last_exercise.getCategory();
+        String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
+        System.out.println("开始时间为"+start_time+"现在时间为"+now);
         int duration = (int)Duration.between(start_time,now).toMinutes();
         if(duration<60)
             ans.setTime(String.format("%d分",duration));

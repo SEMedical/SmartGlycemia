@@ -1,5 +1,6 @@
 package edu.tongji.backend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.entity.Running;
 import edu.tongji.backend.mapper.RunningMapper;
@@ -13,7 +14,7 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
     RunningMapper runningMapper;
     @Override
     public Running updateRunning(int exercise_id) {
-        Running running=runningMapper.selectById(exercise_id);
+        Running running=runningMapper.getByExerciseIdRunning(exercise_id);
         double origin_distance=running.getDistance();
         //随机生成pace和distance
         //pace: 3-15min/km 以秒为单位
@@ -23,7 +24,9 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
         //根据exercise_id更新
         running.setPace(pace);
         running.setDistance(distance);
-        runningMapper.updateById(running);
+        QueryWrapper<Running> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("exercise_id",exercise_id);
+        runningMapper.update(running,queryWrapper);
         return running;
     }
 }
