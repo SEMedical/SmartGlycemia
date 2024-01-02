@@ -2,9 +2,10 @@ server:
   port: 81
 spring:
   datasource:
-    username: wegs
-    password: GiCAcZ7ixsiCWr2p
-    url: jdbc:mysql://47.116.193.81:3306/wegs?useSSL=false&serverTimezone=UTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
     #type: com.alibaba.druid.pool.DruidDataSource
 mybatis-plus:
   mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml
