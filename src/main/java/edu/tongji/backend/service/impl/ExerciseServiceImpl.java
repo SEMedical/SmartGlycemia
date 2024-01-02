@@ -302,9 +302,10 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             }
         });
         Exercise last_exercise = exercises.get(0);
-
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        System.out.println("当前时区：" + currentZoneId);
         ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
-        LocalDateTime start_time = start_time0.withZoneSameInstant(ZoneId.of("Asia/Shanghai")).toLocalDateTime();
+        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
         System.out.println("开始时间为"+start_time+"现在时间为"+now);
