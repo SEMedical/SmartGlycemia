@@ -239,17 +239,15 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
-        List<Scenario> scenarios = scenarioMapper.selectList(queryWrapper);
-        if(scenarios.isEmpty())
-            return null;
-        Scenario last_scenario = scenarios.get(scenarios.size()-1);
+        //根据patient_id可以找到唯一的运动方案
+        Scenario last_scenario =scenarioMapper.selectOne(queryWrapper);
         String category = last_scenario.getCategory();
         int recommend_time = last_scenario.getDuration();
         int recommend_calorie = last_scenario.getCalories();
         //接下来要计算 当天这个用户这个运动类型的运动总时长和总卡路里
         QueryWrapper<Exercise> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.eq("patient_id", user_id).eq("category", category.toLowerCase());
-        queryWrapper1.ge("start_time", LocalDate.now().atStartOfDay()).isNotNull("end_time");
+        queryWrapper1.ge("start_time", LocalDate.now().atStartOfDay()).isNotNull("duration");
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper1);
         int total_time = 0;
         int total_calorie = 0;
