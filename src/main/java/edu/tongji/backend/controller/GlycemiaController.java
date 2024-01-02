@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/glycemia")//对应的api路径
@@ -33,6 +34,8 @@ public class GlycemiaController {
     public Response<Chart> LookupChart(HttpServletRequest request, @RequestParam String type, @RequestParam String date)//把请求中的内容映射到user
     {
         try {
+            if(type.equals("realtime"))
+                type="Realtime";
             String token = request.getHeader("Authorization");
             System.out.println(token);
             String user_id = Jwt.parse(token).get("userId").toString();

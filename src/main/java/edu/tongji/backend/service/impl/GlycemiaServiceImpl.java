@@ -26,6 +26,8 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     @Override
     public Chart showGlycemiaDiagram(String type, String user_id, LocalDate date) {
         Chart chart=new Chart();
+        if(type.equals("Realtime"))
+            date=LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //Just for initialization
         LocalDateTime endTime=LocalDateTime.now();
