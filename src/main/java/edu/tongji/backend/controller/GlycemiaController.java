@@ -38,14 +38,17 @@ public class GlycemiaController {
             String user_id = Jwt.parse(token).get("userId").toString();
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
-            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
-            LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
-            //确认类型必须为history或realtime
             if (!type.equals("History") && !type.equals("Realtime"))
                 throw new GlycemiaException("type must be history or realtime");
             //history必须有time
             if (type.equals("History") && date == null)
                 throw new GlycemiaException("history must have time");
+            LocalDate formattedDate=null;
+            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+            if (type.equals("History"))
+                formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
+            //确认类型必须为history或realtime
+
             Chart result = glycemiaService.showGlycemiaDiagram(type, user_id, formattedDate);
             //LOG
             System.out.println(result);
