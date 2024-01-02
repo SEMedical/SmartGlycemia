@@ -11,10 +11,7 @@ import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,7 +47,7 @@ public class QuestionnaireController {
         return Response.success(questionnaireService.getQuestionnaire1(), "success");
     }
 
-    @GetMapping("/2") //对应的api路径
+    @PostMapping("/2") //对应的api路径
     public Response<List<QuestionnaireDTO>> getQuestionnaire2(HttpServletRequest request, @RequestBody Answer1DTO answer)
     {
         if (request.getHeader("Authorization") == null) {
@@ -79,7 +76,7 @@ public class QuestionnaireController {
         return Response.success(result, "success");
     }
 
-    @GetMapping("/recommended-sport-plan") //对应的api路径
+    @PostMapping("/recommended-sport-plan") //对应的api路径
     public Response<SportPlanDTO> getRecommendedSportPlan(HttpServletRequest request, @RequestBody Answer2DTO answer)
     {
         if (request.getHeader("Authorization") == null) {
