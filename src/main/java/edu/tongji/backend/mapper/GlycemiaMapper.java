@@ -6,6 +6,8 @@ import edu.tongji.backend.dto.GlycemiaDTO;
 import edu.tongji.backend.dto.Statistics;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDate;
+
 @Mapper
 public interface GlycemiaMapper extends BaseMapper<Glycemia> {
     Double selectByIdAndTime(String id, String time);

@@ -6,13 +6,22 @@
         <result property="glycemia" column="glycemia"/>
         <result property="recordTime" column="record_time"/>
     </resultMap>
+    <resultMap id="statisticsResultMap" type="edu.tongji.backend.dto.Statistics">
+        <result property="time" column="record_date"/>
+        <result property="minValue" column="min_glycemia"/>
+        <result property="maxValue" column="max_glycemia"/>
+        <result property="averageValue" column="avg_glycemia"/>
+        <result property="hyperglycemiaPercentage" column="hyper_percent"/>
+        <result property="euGlycemiaPercentage" column="eu_percent"/>
+        <result property="hypoglycemiaPercentage" column="hypo_percent"/>
+    </resultMap>
     <select id="selectByIdAndTime" resultType="java.lang.Double">
         SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
     </select>
-    <select id="selectDailyArchive" resultType="edu.tongji.backend.dto.Statistics">
-        SELECT 'max_glycemia','min_glycemia','avg_glycemia','hypo_percent','eu_percent','hyper_percent'
+    <select id="selectDailyArchive" resultMap="statisticsResultMap">
+        SELECT max_glycemia,min_glycemia,avg_glycemia,hypo_percent,eu_percent,hyper_percent,record_date
         FROM daily_glycemia_summary WHERE patient_id = #{userId} and
-            record_date= #{Date} ;
+            record_date= CONVERT(#{Date},CHAR(10));
     </select>
     <select id="getRealtimeGlycemia" resultMap="glycemiaDTOResultMap">
         SELECT glycemia,record_time FROM glycemia WHERE patient_id= #{userId}

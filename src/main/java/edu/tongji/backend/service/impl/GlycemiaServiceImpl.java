@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,15 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         //chart.setError_code(200);
         return chart;
     }
+    private static boolean isInSameInterval(LocalDateTime time1, LocalDateTime time2) {
+        long minutesFromMidnight1 = ChronoUnit.MINUTES.between(LocalDateTime.of(time1.toLocalDate(), LocalTime.MIDNIGHT), time1);
+        long minutesFromMidnight2 = ChronoUnit.MINUTES.between(LocalDateTime.of(time2.toLocalDate(), LocalTime.MIDNIGHT), time2);
 
+        int interval1 = (int) (minutesFromMidnight1 / 15);
+        int interval2 = (int) (minutesFromMidnight2 / 15);
+
+        return interval1 == interval2;
+    }
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
         CompositeChart chart = new CompositeChart();
@@ -81,7 +90,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             System.out.println(startDate);
             startDate = startDate.plusDays(1);
             Statistics glycemiaValue=new Statistics();
-            glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter));
+            glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter) );
             //TODO:月度统计
             if (glycemiaValue == null) {
                 System.out.println("No data found at" + startDate.format(formatter));
@@ -90,7 +99,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
             // 计算总的血糖比例
             StatisticsCondensed glycemiaCondensed = new StatisticsCondensed();
-            glycemiaCondensed.setTime(glycemiaValue.getTime());
+            glycemiaCondensed.setTime(LocalDate.parse(glycemiaValue.getTime()));
             glycemiaCondensed.setMaxValue(glycemiaValue.getMaxValue());
             glycemiaCondensed.setMinValue(glycemiaValue.getMinValue());
             eutoll+=glycemiaValue.getEuGlycemiaPercentage();
@@ -99,6 +108,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             data.put(startDate,glycemiaCondensed);
             Res.add(data);
         }
+        eutoll/=Res.size();
+        hypotoll/=Res.size();
+        hypertoll/=Res.size();
         chart.setData(Res);
         chart.setEuGlycemiaPercentage(eutoll);
         chart.setHypoglycemiaPercentage(hypotoll);

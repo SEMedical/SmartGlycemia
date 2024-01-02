@@ -1,6 +1,9 @@
 package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.*;
+import edu.tongji.backend.entity.Exercise;
+import edu.tongji.backend.exception.AuthorityException;
+import edu.tongji.backend.exception.ExerciseException;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IGlycemiaService;
@@ -58,11 +61,11 @@ public class GlycemiaController {
     private void checkUser(String user_id)
     {
         if(userService.getById(user_id)==null)
-            throw new GlycemiaException("user doesn't exist");
+            throw new AuthorityException("user doesn't exist");
         else if(!userService.getById(user_id).getRole().equals("patient"))
-            throw new GlycemiaException("user isn't a patient");
+            throw new AuthorityException("user isn't a patient");
         else if(profileService.getByPatientId(user_id)==null)
-            throw new GlycemiaException("exception with registration of the user"+user_id);
+            throw new AuthorityException("exception with registration of the user"+user_id);
     }
     //Check if the format of date is valid and is in the range of (start,end)
     private LocalDate checkDate(String date,LocalDate start,LocalDate end){
@@ -116,11 +119,11 @@ public class GlycemiaController {
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
             //运动类型必须为慢跑或瑜伽...
             if (!type.equals("Jogging") && !type.equals("Yoga"))
-                throw new GlycemiaException("exercise category must be one of the followings:" +
+                throw new ExerciseException("exercise category must be one of the followings:" +
                         "Jogging,Yoga...");
             Intervals res = exerciseService.getExerciseIntervalsInOneDay(type, user_id, formattedDate.toString());
             return Response.success(res, "Successfully get all the intervals during a day!");
-        }catch (GlycemiaException e){
+        }catch (GlycemiaException|ExerciseException e){
             System.out.println(e.getMessage());
             return Response.fail("Expected internal business failure");
         }catch (Exception|Error e){
