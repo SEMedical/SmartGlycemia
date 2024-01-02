@@ -123,7 +123,7 @@ jobs:
             # 如果镜像不存在，则拉取最新的镜像
             if [ -z "$existing_image" ]; then
               echo "Pulling the latest Docker image..."
-              docker pull ${{ vars.DOCKERHUB_IMAGE01 }}:${{ vars.DOCKERHUB_TAG }}
+              docker pull ${{ vars.DOCKERHUB_IMAGE }}:${{ vars.DOCKERHUB_TAG }}
             else
               echo "Using the existing Docker image."
             fi  
