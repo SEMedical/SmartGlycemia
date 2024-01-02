@@ -114,7 +114,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         System.out.println("数组长度为"+ans.getMinute_record().length);
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id);
+        queryWrapper.eq("patient_id", user_id).isNotNull("duration");
         //查找最近7天的运动记录，从7天前的0点到今天的现在
         queryWrapper.ge("start_time", LocalDate.now().minusDays(7).atStartOfDay());
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
@@ -125,8 +125,9 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             total_minute += exercise.getDuration();
             total_calorie += exercise.getCalorie();
             //要知道这个运动是在第几天，然后在对应的位置加上运动时间
-            ans.getMinute_record()[LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()] += exercise.getDuration();
-System.out.println("在第"+LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()+"天运动了"+exercise.getDuration()+"分钟");
+            ans.getMinute_record()[LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()-1] += exercise.getDuration();
+System.out.println("在第"+(LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()-1)+"天运动了"+exercise.getDuration()+"分钟");
+System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate());
             //要知道这个运动是什么种类，然后在对应的位置加上运动时间
             String category = exercise.getCategory();
             if (sport_records.containsKey(category)) {

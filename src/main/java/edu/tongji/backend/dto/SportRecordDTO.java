@@ -12,6 +12,6 @@ import java.util.HashMap;
 public class SportRecordDTO {
     private int total_minute;
     private int total_calorie;
-    private int[] minute_record=new int[8];//最近七天，每天的运动时间
+    private int[] minute_record=new int[7];//最近七天，每天的运动时间
     private HashMap<String, CategoryRecordDTO> sport_records;
 }
