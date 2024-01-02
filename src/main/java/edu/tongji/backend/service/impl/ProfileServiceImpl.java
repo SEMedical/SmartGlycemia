@@ -9,6 +9,10 @@ import edu.tongji.backend.service.IProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +31,7 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
     }
 
     @Override
-    public ProfileDTO getCompleteProfile(Integer patient_id) {
+    public ProfileDTO getCompleteProfile(Integer patient_id) throws ParseException {
         ProfileDTO profileDTO = new ProfileDTO();
 
         Profile profile = profileMapper.getByPatientIdProfile(patient_id);
@@ -44,7 +48,17 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         } else {
             profileDTO.setDiabetesType("");
         }
-        profileDTO.setDiagnosisYear(profile.getDiagnosedYear() != null ? Integer.valueOf(profile.getDiagnosedYear()) : null);
+        String date = profile.getDiagnosedYear();
+        if (date != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = sdf.parse(date);
+            Calendar c = Calendar.getInstance();
+            c.setTime(d);
+            int year = c.get(Calendar.YEAR);
+            profileDTO.setDiagnosisYear(year);
+        } else {
+            profileDTO.setDiagnosisYear(null);
+        }
         profileDTO.setFamilyHistory(profile.getFamilyHistory());
 
         List<String> complications = complicationMapper.getByPatientId(patient_id);

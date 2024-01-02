@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
 import java.util.List;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -24,8 +25,7 @@ public class ProfileController {
     IProfileService profileService;
 
     @GetMapping("/health-record") //对应的api路径
-    public Response<ProfileDTO> getHealthRecord(HttpServletRequest request)
-    {
+    public Response<ProfileDTO> getHealthRecord(HttpServletRequest request) throws ParseException {
         if (request.getHeader("Authorization") == null) {
             return Response.fail("您尚未登录");
         }
