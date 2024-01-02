@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
-import java.util.List;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/health")//对应的api路径
