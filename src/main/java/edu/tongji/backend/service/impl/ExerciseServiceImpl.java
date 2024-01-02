@@ -62,7 +62,20 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             return null;
         Scenario last_scenario = scenarios.get(scenarios.size() - 1);
         exercise.setCategory(last_scenario.getCategory());
-        return exerciseMapper.insert(exercise);
+        System.out.println("找到的运动种类为"+exercise.getCategory());
+        int insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
+        if (insert_exercise == 0)
+            return null;
+        int insert_running=1;
+        //如果是跑步，还要往running表里插入一条记录
+        if (exercise.getCategory().equals("running")) {
+            Running running = new Running();
+            running.setExerciseId(exercise.getExerciseId());
+            //running表里有：distance,pace
+            //他们是随着运动过程中不断变化的
+            insert_running=runningMapper.insert(running);
+        }
+        return insert_exercise*insert_running;
     }
 
     @Override
@@ -74,6 +87,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         if (exercises.isEmpty())
             return null;
         Exercise last_exercise = exercises.get(exercises.size() - 1);
+
         int duration = (int) Duration.between(last_exercise.getStartTime(), LocalDateTime.now()).toMinutes();
         last_exercise.setDuration(duration);
 //获取用户体重数据

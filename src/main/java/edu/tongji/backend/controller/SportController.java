@@ -14,10 +14,7 @@ import edu.tongji.backend.util.TimeTypeChecker;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.LinkedList;
@@ -43,8 +40,9 @@ public class SportController {
             if(ans !=null&&ans!=0)
                 return Response.success(null,"开始运动");
             else
-                return Response.fail("运动方案不存在");
+                return Response.fail("数据库更新失败");
         }catch (Exception e){
+            System.out.println(e.getMessage());
            return Response.fail("user doesn't exist");
         }
     }
@@ -92,7 +90,7 @@ public class SportController {
             return Response.fail("user doesn't exist");
         }
     }
-    @GetMapping("/detailedSportRecord")
+    @PostMapping("/detailedSportRecord")
     public Response<SportDetailedDTO> getDetailRecord
             (HttpServletRequest request, @RequestParam String time_type,@RequestParam String category)
     {

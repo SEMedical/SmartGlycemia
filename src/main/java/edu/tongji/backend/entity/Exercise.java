@@ -19,11 +19,11 @@ public class Exercise {
 
     private int duration;//unit:minute
 
+    private int calorie;
+
     private String category;
 
-    private String frequency;
 
     private int exerciseId;
-    private int calorie;
-    private int distance;
+    private Integer distance;
 }
