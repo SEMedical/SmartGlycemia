@@ -37,8 +37,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         Profile profile = profileMapper.getByPatientIdProfile(patient_id);
         profileDTO.setGender(profile.getGender());
         profileDTO.setAge(profile.getAge());
-        profileDTO.setWeight(profile.getWeight());
-        profileDTO.setHeight(profile.getHeight());
+        profileDTO.setWeight(profile.getWeight() + "kg");
+        profileDTO.setHeight(profile.getHeight() + "cm");
         if (Objects.equals(profile.getType(), "I")) {
             profileDTO.setDiabetesType("I型糖尿病");
         } else if (Objects.equals(profile.getType(), "II")) {
@@ -59,7 +59,7 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         } else {
             profileDTO.setDiagnosisYear(null);
         }
-        profileDTO.setFamilyHistory(profile.getFamilyHistory());
+        profileDTO.setFamilyHistory(profile.getFamilyHistory() != null ? profile.getFamilyHistory() : "");
 
         List<String> complications = complicationMapper.getByPatientId(patient_id);
         StringBuilder complicationStr = getComplicationStr(complications);
