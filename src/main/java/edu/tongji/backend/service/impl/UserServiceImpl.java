@@ -26,7 +26,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        System.out.println(userMapper);
         LoginDTO loginDTO = new LoginDTO();
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id", "role")
+        wrapper.select("user_id", "role", "name")
                 .eq("contact", contact)
                 .eq("password", password);
         var result = userMapper.selectOne(wrapper);
@@ -43,8 +43,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         loginDTO.setToken(jwt);
         loginDTO.setRole(result.getRole());
+        loginDTO.setName(result.getName());
 
-        System.out.println("loginDTO: " + loginDTO);
+//        System.out.println("loginDTO: " + loginDTO);
 
         return loginDTO;
     }
