@@ -13,8 +13,8 @@ public class SportDetailedDTO {
     private int[] calorie_record;
     private String mean_speed;
     private String sum_duration;
-    private int sum_distance;
-public SportDetailedDTO(int[] minute_record, int[] calorie_record, String mean_speed, String sum_duration, int sum_distance) {
+    private double sum_distance;
+public SportDetailedDTO(int[] minute_record, int[] calorie_record, String mean_speed, String sum_duration, double sum_distance) {
     this.minute_record = new int[minute_record.length];
     for(int i=0;i<minute_record.length;i++)
         this.minute_record[i]=minute_record[i];

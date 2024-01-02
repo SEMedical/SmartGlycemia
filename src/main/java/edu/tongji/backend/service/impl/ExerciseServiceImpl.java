@@ -4,13 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.CategoryRecordDTO;
 import edu.tongji.backend.dto.SportDetailedDTO;
+import edu.tongji.backend.dto.SportPlanDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
-import edu.tongji.backend.entity.Examine;
-import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.entity.Intervals;
-import edu.tongji.backend.entity.Scenario;
+import edu.tongji.backend.entity.*;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
+import edu.tongji.backend.mapper.RunningMapper;
 import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.util.CalorieCalculator;
@@ -30,6 +29,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     ScenarioMapper scenarioMapper;
     @Autowired
     ExamineMapper examineMapper;
+    @Autowired
+    RunningMapper runningMapper;
 
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category, String userId, String date) {
@@ -134,6 +135,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         LocalDateTime startTime = LocalDate.now().atStartOfDay();
         int[] minute_record, calorie_record;
         //根据时间类型来确定查询的时间范围 1是一个月 2是一周 3是一天
+        //如果是一天，就不用有minute_record和calorie_record
         switch (time_type) {
             case 1:
                 startTime = LocalDate.now().minusDays(30).atStartOfDay();
@@ -146,42 +148,52 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 calorie_record = new int[7];
                 break;
             default:
-                minute_record = null;
-                calorie_record = null;
+                minute_record = new int[1];
+                calorie_record = new int[1];
                 break;
         }
         int i = 0;
-        int sum_duration = 0;
-        int sum_distance = 0;
+        int sum_duration = 0;//总时长，从exercise表获得
+        double sum_distance = 0;//总距离，从running表获得,以公里为单位
+        int mean_pace = 0;//平均配速，从running表获得 单位是秒
+        int running_times=0;//跑步次数，从running表获得
         //令startTime不断加一天，直到等于endTime
         while (startTime.isBefore(endTime)) {
+            startTime = startTime.plusDays(1);
+            i++;
             QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("patient_id", user_id).eq("category", category.toLowerCase());
             //查找这一天的运动记录
             queryWrapper.ge("start_time", startTime).lt("start_time", startTime.plusDays(1));
-            List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
+            List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);//获得这一条的所有运动记录
             for (Exercise exercise : exercises) {
-                if(minute_record!=null&& i<minute_record.length)
+                if(minute_record!=null&& i<minute_record.length)//防止i越界
                 { minute_record[i] += exercise.getDuration();
                 calorie_record[i] += exercise.getCalorie();}
                 sum_duration += exercise.getDuration();
-                sum_distance += exercise.getDistance();
+                int exercise_id = exercise.getExerciseId();
+                Running running=runningMapper.selectById(exercise_id);
+                if(running!=null)
+                {
+                    sum_distance+=running.getDistance();
+                    mean_pace+=running.getPace();
+                    running_times++;
+                }
             }
-            startTime = startTime.plusDays(1);
-            i++;
         }
-        sum_duration/=1000;//因为要以公里为单位
-        //distance以米为单位，duration以秒为单位
-        double mile_minute =sum_distance*1.0/ sum_duration;
-        double minute_mile=1000.0/mile_minute;//得到一公里要跑多少秒
-        //把minute_mile格式化为xx分xx秒这样的字符串
-        String mean_speed = String.format("%d分%d秒",(int)minute_mile/60,(int)minute_mile%60);
-        //类似地，处理sum_duration
-        String sum_duration_str;
-        if(sum_duration>60*60)
-            sum_duration_str = String.format("%d小时%d分",sum_duration/60/60,sum_duration%3600/60);
+        if(running_times!=0)
+            mean_pace/=running_times;
         else
-            sum_duration_str = String.format("%d分%d秒",sum_duration/60,sum_duration%60);
+            mean_pace=0;
+
+        //把minute_space格式化为xx分xx秒这样的字符串
+        String mean_speed = String.format("%d分%d秒",mean_pace/60,mean_pace%60);
+        //类似地，处理sum_duration，它的单位是分钟
+        String sum_duration_str;
+        if(sum_duration>60)
+            sum_duration_str = String.format("%d小时%d分",sum_duration/60,sum_duration%60);
+        else
+            sum_duration_str = String.format("%d分",sum_duration);
         return new SportDetailedDTO(minute_record, calorie_record, mean_speed, sum_duration_str, sum_distance);
     }
     @Override
@@ -190,4 +202,34 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         Random random = new Random();
         return random.nextInt(30)+70;
     }
+    @Override
+    public SportPlanDTO getSportPlan(String userId){
+        int user_id = Integer.parseInt(userId);
+        QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("patient_id", user_id);
+        List<Scenario> scenarios = scenarioMapper.selectList(queryWrapper);
+        if(scenarios.isEmpty())
+            return null;
+        Scenario last_scenario = scenarios.get(scenarios.size()-1);
+        String category = last_scenario.getCategory();
+        int recommend_time = last_scenario.getDuration();
+        int recommend_calorie = last_scenario.getCalories();
+        //接下来要计算 当天这个用户这个运动类型的运动总时长和总卡路里
+        QueryWrapper<Exercise> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("patient_id", user_id).eq("category", category.toLowerCase());
+        queryWrapper1.ge("start_time", LocalDate.now().atStartOfDay()).isNotNull("end_time");
+        List<Exercise> exercises = exerciseMapper.selectList(queryWrapper1);
+        int total_time = 0;
+        int total_calorie = 0;
+        for(Exercise exercise:exercises)
+        {
+            total_time+=exercise.getDuration();
+            total_calorie+=exercise.getCalorie();
+        }
+        Boolean is_finished = false;
+        if(total_time>=recommend_time)
+            is_finished=true;
+        return new SportPlanDTO(total_time,total_calorie,category,recommend_time,recommend_calorie,is_finished);
+    }
+
 }

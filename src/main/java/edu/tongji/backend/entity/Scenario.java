@@ -108,4 +108,5 @@ public class Scenario {
     public void setDuration(Integer duration) {
         this.duration = duration;
     }
+    private int calories;
 }
