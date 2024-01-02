@@ -14,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -303,7 +302,9 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             }
         });
         Exercise last_exercise = exercises.get(0);
-        LocalDateTime start_time = last_exercise.getStartTime();
+
+        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
+        LocalDateTime start_time = start_time0.withZoneSameInstant(ZoneId.of("Asia/Shanghai")).toLocalDateTime();
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
         System.out.println("开始时间为"+start_time+"现在时间为"+now);
