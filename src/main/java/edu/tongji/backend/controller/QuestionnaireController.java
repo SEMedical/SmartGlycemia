@@ -1,9 +1,6 @@
 package edu.tongji.backend.controller;
 
-import edu.tongji.backend.dto.Answer1DTO;
-import edu.tongji.backend.dto.Answer2DTO;
-import edu.tongji.backend.dto.QuestionnaireDTO;
-import edu.tongji.backend.dto.SportPlanDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IQuestionnaireService;
 import edu.tongji.backend.service.IUserService;
@@ -77,7 +74,7 @@ public class QuestionnaireController {
     }
 
     @PostMapping("/recommended-sport-plan") //对应的api路径
-    public Response<SportPlanDTO> getRecommendedSportPlan(HttpServletRequest request, @RequestBody Answer2DTO answer)
+    public Response<ScenarioDTO> getRecommendedSportPlan(HttpServletRequest request, @RequestBody Answer2DTO answer)
     {
         if (request.getHeader("Authorization") == null) {
             return Response.fail("您尚未登录");
@@ -95,7 +92,7 @@ public class QuestionnaireController {
 
         System.out.println(answer);
 
-        SportPlanDTO result = questionnaireService.getRecommendedSportPlan(userId, answer.getResult());
+        ScenarioDTO result = questionnaireService.getRecommendedSportPlan(userId, answer.getResult());
         if (result == null) {
             return Response.fail("问卷上传失败");
         }

@@ -1,10 +1,7 @@
 package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.dto.QuestionnaireDTO;
-import edu.tongji.backend.dto.Answer2;
-import edu.tongji.backend.dto.Sport;
-import edu.tongji.backend.dto.SportPlanDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.Questionnaire;
 import edu.tongji.backend.mapper.QuestionnaireMapper;
 import edu.tongji.backend.service.IProfileService;
@@ -115,7 +112,7 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
     }
 
     @Override
-    public SportPlanDTO getRecommendedSportPlan(Integer userId, List<Answer2> answer){
+    public ScenarioDTO getRecommendedSportPlan(Integer userId, List<Answer2> answer){
         if (!insertQuestionnaire2(userId, answer)) {
             return null;
         }
@@ -230,7 +227,7 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
         if (ropeSkipping) {
             sports.add(new Sport("跳绳", ropeSkippingDuration));
         }
-        return new SportPlanDTO(sports);
+        return new ScenarioDTO(sports);
     }
 
     private boolean insertQuestionnaire2(Integer userId, List<Answer2> answer){
