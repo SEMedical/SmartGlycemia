@@ -26,17 +26,17 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     @Override
     public Chart showGlycemiaDiagram(String type, String user_id, LocalDate date) {
         Chart chart=new Chart();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //Just for initialization
         LocalDateTime endTime=LocalDateTime.now();
         List<Map<LocalDateTime,Double>> res=new ArrayList<>();
 
         LocalDateTime startDateTime = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
-        if(type=="Realtime") {
+        if(type.equals("Realtime")) {
             endTime=LocalDateTime.now();
         }
-        else if(type=="History") {
-            endTime=startDateTime.plus(Duration.ofDays(1));
+        else if(type.equals("History")) {
+            endTime=startDateTime.plusDays(1);
         }
         // 设置时间间隔为15分钟
         Duration interval = Duration.ofMinutes(15);

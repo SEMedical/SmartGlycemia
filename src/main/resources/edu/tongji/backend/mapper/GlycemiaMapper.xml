@@ -16,7 +16,9 @@
         <result property="hypoglycemiaPercentage" column="hypo_percent"/>
     </resultMap>
     <select id="selectByIdAndTime" resultType="java.lang.Double">
-        SELECT glycemia FROM glycemia WHERE patient_id = #{id} and record_time = #{time};
+        SELECT glycemia FROM glycemia WHERE patient_id = #{id}
+        and MINUTE(record_time) DIV 15 = MINUTE( #{time} ) DIV 15 and HOUR(record_time) = HOUR( #{time} )
+        and DATE(record_time) = DATE( #{time} ) limit 1;
     </select>
     <select id="selectDailyArchive" resultMap="statisticsResultMap">
         SELECT max_glycemia,min_glycemia,avg_glycemia,hypo_percent,eu_percent,hyper_percent,record_date

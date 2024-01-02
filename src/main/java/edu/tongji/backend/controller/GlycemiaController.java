@@ -159,20 +159,20 @@ public class GlycemiaController {
             this.checkUser(user_id);
             //根据年龄判断血糖阈值
             Integer age=profileService.getById(user_id).getAge();
-            Integer HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
-            AFTERLUNCH_HYPER_THRESHOLD=150;
-            AFTERDINNER_HYPER_THRESHOLD=130;
-            if(age>60){
-                HYPER_THRESHOLD=162;
-                EU_THRESHOLD=126;
-                AFTERLUNCH_HYPER_THRESHOLD=228;
-                AFTERDINNER_HYPER_THRESHOLD=198;
-            }else if(age<18) {
-                HYPER_THRESHOLD =109 ;
-                EU_THRESHOLD = 80;
-            }else {
-                HYPER_THRESHOLD = 126;
-                EU_THRESHOLD = 110;
+            Double HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
+            AFTERLUNCH_HYPER_THRESHOLD = 8.325;
+            AFTERDINNER_HYPER_THRESHOLD = 7.215;
+            if (age > 60) {
+                HYPER_THRESHOLD = 8.991;
+                EU_THRESHOLD = 6.993;
+                AFTERLUNCH_HYPER_THRESHOLD = 12.654;
+                AFTERDINNER_HYPER_THRESHOLD = 10.989;
+            } else if (age < 18) {
+                HYPER_THRESHOLD = 6.049;
+                EU_THRESHOLD = 4.440;
+            } else {
+                HYPER_THRESHOLD =6.993;
+                EU_THRESHOLD = 6.105;
             }
             Double data=glycemiaService.getLatestGlycemia(user_id);
             Boolean AfterDinner=(LocalDateTime.now().getHour()>18&&LocalDateTime.now().getHour()<19);
