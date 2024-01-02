@@ -39,6 +39,7 @@ public class GlycemiaController {
             String token = request.getHeader("Authorization");
             System.out.println(token);
             String user_id = Jwt.parse(token).get("userId").toString();
+            System.out.println(user_id + "````");
             //确认用户是否存在，是否是病人
             this.checkUser(user_id);
             if (!type.equals("History") && !type.equals("Realtime"))
@@ -88,6 +89,10 @@ public class GlycemiaController {
     public Response<CompositeChart> LookupChartRecord(HttpServletRequest request,@RequestParam String span,@RequestParam String startDate)//把请求中的内容映射到user
     {
         try {
+            if(span.equals("week"))
+                span="Week";
+            if(span.equals("month"))
+                span="Month";
             String token = request.getHeader("Authorization");
             System.out.println(token);
             String user_id = Jwt.parse(token).get("userId").toString();
@@ -165,6 +170,7 @@ public class GlycemiaController {
             this.checkUser(user_id);
             //根据年龄判断血糖阈值
             Integer age=profileService.getById(user_id).getAge();
+
             Double HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
             AFTERLUNCH_HYPER_THRESHOLD = 8.325;
             AFTERDINNER_HYPER_THRESHOLD = 7.215;
