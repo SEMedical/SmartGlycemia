@@ -23,8 +23,7 @@ public class Jwt {
 
     // 解析token
     public static Claims parse(String jwt){
-        //去掉jwt的前7个字符
-       // jwt = jwt.substring(7);
+        jwt = jwt.substring(7);  // 去掉Bearer; Apifox测试时不会有Bearer，需要注释掉
         return Jwts.parser()
                 .setSigningKey(key)
                 .parseClaimsJws(jwt)
