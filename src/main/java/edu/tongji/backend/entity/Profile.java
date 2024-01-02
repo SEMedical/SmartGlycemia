@@ -17,9 +17,9 @@ public class Profile {
 
     private Integer age;
 
-    private String height;
+    private Integer height;
 
-    private String weight;
+    private Integer weight;
 
     private String familyHistory;
 

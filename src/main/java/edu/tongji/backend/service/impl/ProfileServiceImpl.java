@@ -37,8 +37,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         Profile profile = profileMapper.getByPatientIdProfile(patient_id);
         profileDTO.setGender(profile.getGender());
         profileDTO.setAge(profile.getAge());
-        profileDTO.setWeight(profile.getWeight() + "kg");
-        profileDTO.setHeight(profile.getHeight() + "cm");
+        profileDTO.setWeight(profile.getWeight().toString() + "kg");
+        profileDTO.setHeight(profile.getHeight().toString() + "cm");
         if (Objects.equals(profile.getType(), "I")) {
             profileDTO.setDiabetesType("I型糖尿病");
         } else if (Objects.equals(profile.getType(), "II")) {
