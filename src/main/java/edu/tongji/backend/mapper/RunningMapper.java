@@ -6,4 +6,5 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface RunningMapper extends BaseMapper<Running>{
+    Running getByExerciseIdRunning(Integer exercise_id);
 }

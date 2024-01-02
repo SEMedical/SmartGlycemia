@@ -158,12 +158,12 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         //如果是一天，就不用有minute_record和calorie_record
         switch (time_type) {
             case 1:
-                startTime = LocalDate.now().minusDays(30).atStartOfDay();
+                startTime = LocalDate.now().minusDays(29).atStartOfDay();
                 ans.setMinute_record(new int[30]);
                 ans.setCalorie_record(new int[30]);
                 break;
             case 2:
-                startTime = LocalDate.now().minusDays(7).atStartOfDay();
+                startTime = LocalDate.now().minusDays(6).atStartOfDay();
                 ans.setMinute_record(new int[7]);
                 ans.setCalorie_record(new int[7]);
                 break;
@@ -180,7 +180,6 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         int running_times=0;//跑步次数，从running表获得
         //令startTime不断加一天，直到等于endTime
         while (startTime.isBefore(endTime)) {
-            startTime = startTime.plusDays(1);
             QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("patient_id", user_id).eq("category", category.toLowerCase());
             //查找这一天指定种类的运动记录
@@ -192,17 +191,21 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
                 ans.getMinute_record()[i] += exercise.getDuration();
                 sum_duration += exercise.getDuration();
                 int exercise_id = exercise.getExerciseId();
+                System.out.println("exercise_id为"+exercise_id);
                 if (category.equalsIgnoreCase("running") || category.equalsIgnoreCase("jogging"))
                 {
-                    Running running = runningMapper.selectById(exercise_id);
+                    //根据exercise_id查找running表
+                    Running running=runningMapper.getByExerciseIdRunning(exercise_id);
                     if (running != null) {
+                        System.out.println("获得的distance为"+running.getDistance());
                         sum_distance += running.getDistance();
                         mean_pace += running.getPace();
                         running_times++;
                     }
                 }
-                i++;
             }
+            startTime = startTime.plusDays(1);
+            i++;
         }
         if(running_times!=0)
             mean_pace/=running_times;
@@ -210,7 +213,10 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             mean_pace=0;
 
         //把minute_space格式化为xx分xx秒这样的字符串
-        String mean_speed = String.format("%d分%d秒",mean_pace/60,mean_pace%60);
+        //如果不是跑步，就返回空字符串
+        String mean_speed="";
+        if (category.equalsIgnoreCase("running") || category.equalsIgnoreCase("jogging"))
+            mean_speed = String.format("%d分%d秒",mean_pace/60,mean_pace%60);
         //类似地，处理sum_duration，它的单位是分钟
         String sum_duration_str;
         if(sum_duration>60)
