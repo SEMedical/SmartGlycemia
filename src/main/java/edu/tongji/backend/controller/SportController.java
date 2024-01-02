@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.LinkedList;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/sports")//对应的api路径
+@RequestMapping("/api/sports")//对应的api路径
 public class SportController {
     @Autowired
     IExerciseService exerciseService;
@@ -109,6 +109,23 @@ public class SportController {
                 return Response.success(ans,"成功获取运动记录");
             else
                 return Response.fail("运动记录不存在");
+        }catch (Exception e){
+            return Response.fail("user doesn't exist");
+        }
+    }
+    @GetMapping("/realTimeHeartRate")
+    public Response<Integer> getRealTimeHeartRate(HttpServletRequest request)
+    {
+        String token = request.getHeader("Authorization");
+        String user_id = Jwt.parse(token).get("userId").toString();
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            Integer ans= exerciseService.getRealTimeHeartRate(user_id);
+            if(ans !=null)
+                return Response.success(ans,"成功获取实时心率");
+            else
+                return Response.fail("实时心率不存在");
         }catch (Exception e){
             return Response.fail("user doesn't exist");
         }

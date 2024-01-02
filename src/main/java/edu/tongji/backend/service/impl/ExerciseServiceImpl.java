@@ -57,7 +57,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
         List<Scenario> scenarios = scenarioMapper.selectList(queryWrapper);
-        if (scenarios.size() == 0)
+        if (scenarios.isEmpty())
             return null;
         Scenario last_scenario = scenarios.get(scenarios.size() - 1);
         exercise.setCategory(last_scenario.getCategory());
@@ -70,7 +70,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
-        if (exercises.size() == 0)
+        if (exercises.isEmpty())
             return null;
         Exercise last_exercise = exercises.get(exercises.size() - 1);
         int duration = (int) Duration.between(last_exercise.getStartTime(), LocalDateTime.now()).toMinutes();
@@ -80,7 +80,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
         examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
         List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
-        if (examines.size() == 0)
+        if (examines.isEmpty())
             ;
         else {
             Examine last_examine = examines.get(examines.size() - 1);
@@ -183,5 +183,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         else
             sum_duration_str = String.format("%d分%d秒",sum_duration/60,sum_duration%60);
         return new SportDetailedDTO(minute_record, calorie_record, mean_speed, sum_duration_str, sum_distance);
+    }
+    @Override
+    public Integer getRealTimeHeartRate(String userId) {
+        //获取一个在70到100之间的随机数
+        Random random = new Random();
+        return random.nextInt(30)+70;
     }
 }
