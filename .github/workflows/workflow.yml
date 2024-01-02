@@ -2,18 +2,8 @@ name: Glycemia SE Huangjie
 on:
   pull_request:
     branches: [ "*" ]
-    paths:
-      - 'src'
-      - '.github/workflows/*'
-      - 'Dockerfile'
-      - 'pom.xml'
   push:
     branches: [ "*" ]
-    paths:
-      - 'src'
-      - '.github/workflows/*'
-      - 'Dockerfile'
-      - 'pom.xml'
 jobs:
   project-build:
     runs-on: ubuntu-latest
@@ -108,12 +98,12 @@ jobs:
         uses: strumwolf/delete-deployment-environment@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: SERVER
+          environment: SERVER_WITH_PUBLIC_ID
           onlyRemoveDeployments: true
   deploy:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    environment: SERVER
+    environment: SERVER_WITH_PUBLIC_ID
     needs:
       - docker-build
       - cleanup
