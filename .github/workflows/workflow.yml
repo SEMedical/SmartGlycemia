@@ -101,7 +101,7 @@ jobs:
           environment: SERVER_WITH_PUBLIC_ID
           onlyRemoveDeployments: true
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/deploy' }}
     runs-on: ubuntu-latest
     environment: SERVER_WITH_PUBLIC_ID
     needs:
