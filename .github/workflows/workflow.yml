@@ -98,12 +98,12 @@ jobs:
         uses: strumwolf/delete-deployment-environment@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: SERVER_WITH_PUBLIC_ID
+          environment: SERVER_WITH_PUBLIC_IP
           onlyRemoveDeployments: true
   deploy:
     if: ${{ github.ref == 'refs/heads/deploy' }}
     runs-on: ubuntu-latest
-    environment: SERVER_WITH_PUBLIC_ID
+    environment: SERVER_WITH_PUBLIC_IP
     needs:
       - docker-build
       - cleanup
