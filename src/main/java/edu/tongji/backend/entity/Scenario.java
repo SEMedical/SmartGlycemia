@@ -12,6 +12,17 @@ import java.sql.Time;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Scenario {
+    public enum Category{
+        running,jogging,yoga,ropeskipping
+    }
+    public static String check(String category) {
+        for(int i = 0; i < Category.values().length; i++) {
+            if(Category.values()[i].toString().equals(category.toLowerCase())) {
+                return category;
+            }
+        }
+        return null;
+    }
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "patient_id", nullable = false)
