@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/login")  //对应的api路径
+@RequestMapping("/api/login")  //对应的api路径
 public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;

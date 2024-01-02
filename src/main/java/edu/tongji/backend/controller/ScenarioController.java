@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/sports")//对应的api路径
+@RequestMapping("/api/sports")//对应的api路径
 public class ScenarioController {
     @Autowired
     IScenarioService scenarioService;

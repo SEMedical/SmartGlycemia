@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.text.ParseException;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/health")//对应的api路径
+@RequestMapping("/api/health")//对应的api路径
 public class ProfileController {
     @Autowired
     IUserService userService;

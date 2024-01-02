@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/glycemia")//对应的api路径
+@RequestMapping("/api/glycemia")//对应的api路径
 public class GlycemiaController {
     @Autowired
     IGlycemiaService glycemiaService;
