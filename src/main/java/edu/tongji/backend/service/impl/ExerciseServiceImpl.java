@@ -2,10 +2,7 @@ package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.dto.CategoryRecordDTO;
-import edu.tongji.backend.dto.SportDetailedDTO;
-import edu.tongji.backend.dto.SportPlanDTO;
-import edu.tongji.backend.dto.SportRecordDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.*;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
@@ -31,6 +28,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     ExamineMapper examineMapper;
     @Autowired
     RunningMapper runningMapper;
+    @Autowired
+    RunningServiceImpl runningService;
 
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category, String userId, String date) {
@@ -244,6 +243,46 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         if(total_time>=recommend_time)
             is_finished=true;
         return new SportPlanDTO(total_time,total_calorie,category,recommend_time,recommend_calorie,is_finished);
+    }
+    @Override
+    public RealTimeSportDTO getRealTimeSport(String userId){
+        int user_id = Integer.parseInt(userId);
+        //获取用户体重数据
+        double weight = 70;
+        QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
+        examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
+        List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
+        if (examines.isEmpty())
+            ;
+        else {
+            Examine last_examine = examines.get(examines.size() - 1);
+            weight = last_examine.getWeight();
+        }
+        RealTimeSportDTO ans = new RealTimeSportDTO();
+        LocalDateTime now = LocalDateTime.now();
+        //获取最近一次运动记录
+        QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("patient_id", user_id);
+        List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
+        if(exercises.isEmpty())
+            return null;
+        Exercise last_exercise = exercises.get(exercises.size()-1);
+        LocalDateTime start_time = last_exercise.getStartTime();
+        String category = last_exercise.getCategory();
+        //获取两个时间的差值
+        int duration = (int)Duration.between(start_time,now).toMinutes();
+        if(duration<60)
+            ans.setTime(String.format("%d分",duration));
+        else
+            ans.setTime(String.format("%d小时%d分",duration/60,duration%60));
+        //获取运动数据
+        Running now_running= runningService.updateRunning(last_exercise.getExerciseId());
+        ans.setDistance(now_running.getDistance());
+        ans.setSpeed(now_running.getPace());
+        //计算卡路里
+        int calorie = CalorieCalculator.getCalorie(category, weight, duration);
+        ans.setCalorie(calorie);
+        return ans;
     }
 
 }

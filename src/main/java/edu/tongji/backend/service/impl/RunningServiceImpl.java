@@ -12,7 +12,7 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
     @Autowired
     RunningMapper runningMapper;
     @Override
-    public void updateRunning(int exercise_id) {
+    public Running updateRunning(int exercise_id) {
         Running running=runningMapper.selectById(exercise_id);
         double origin_distance=running.getDistance();
         //随机生成pace和distance
@@ -24,5 +24,6 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
         running.setPace(pace);
         running.setDistance(distance);
         runningMapper.updateById(running);
+        return running;
     }
 }

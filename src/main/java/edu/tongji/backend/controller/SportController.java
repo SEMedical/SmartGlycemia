@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.dto.RealTimeSportDTO;
 import edu.tongji.backend.dto.SportDetailedDTO;
 import edu.tongji.backend.dto.SportPlanDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
@@ -7,6 +8,7 @@ import edu.tongji.backend.entity.Chart;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;
+import edu.tongji.backend.service.IRunningService;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
@@ -28,6 +30,8 @@ public class SportController {
     IUserService userService;
     @Autowired
     IProfileService profileService;
+    @Autowired
+    IRunningService runningService;
     @GetMapping("/startDoingSport") //对应的api路径
     public Response<Null> startExercise(HttpServletRequest request)
     {
@@ -68,6 +72,23 @@ public class SportController {
                 return Response.success(null,"开始运动");
             else
                 return Response.fail("运动方案不存在");
+        }catch (Exception e){
+            return Response.fail("user doesn't exist");
+        }
+    }
+    @GetMapping("/realTimeSportData")
+    public Response<RealTimeSportDTO> getRealTimeSportData(HttpServletRequest request)
+    {
+        String token = request.getHeader("Authorization");
+        String user_id = Jwt.parse(token).get("userId").toString();
+        //确认用户是否存在，是否是病人
+        try {
+            this.checkUser(user_id);
+            RealTimeSportDTO ans= exerciseService.getRealTimeSport(user_id);
+            if(ans !=null)
+                return Response.success(ans,"成功获取实时运动数据");
+            else
+                return Response.fail("实时运动数据不存在");
         }catch (Exception e){
             return Response.fail("user doesn't exist");
         }
