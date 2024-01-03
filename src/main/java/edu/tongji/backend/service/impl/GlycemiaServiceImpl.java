@@ -90,12 +90,13 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         // 遍历时间点，每1天一次，直到当前时间
         while (startDate.isBefore(endTime)) {
             System.out.println(startDate);
-            startDate = startDate.plusDays(1);
+
             Statistics glycemiaValue=new Statistics();
             glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter) );
             //TODO:月度统计
             if (glycemiaValue == null) {
                 System.out.println("No data found at" + startDate.format(formatter));
+                startDate = startDate.plusDays(1);
                 continue;
             }
             Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
@@ -109,6 +110,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             hypertoll+=glycemiaValue.getHyperglycemiaPercentage();
             data.put(startDate,glycemiaCondensed);
             Res.add(data);
+            startDate = startDate.plusDays(1);
         }
         eutoll/=Res.size();
         hypotoll/=Res.size();
