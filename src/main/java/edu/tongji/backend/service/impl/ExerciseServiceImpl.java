@@ -96,8 +96,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         if (exercises.isEmpty())
             return null;
         Exercise last_exercise = exercises.get(exercises.size() - 1);
-
-        int duration = (int) Duration.between(last_exercise.getStartTime(), LocalDateTime.now()).toMinutes();
+//转换时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
+        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
+        int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
         last_exercise.setDuration(duration);
 //获取用户体重数据
         double weight = 70;
@@ -113,9 +116,12 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 //获取运动类型
         String category = last_exercise.getCategory();
         //更新卡路里
-        int calorie = CalorieCalculator.getCalorie(category, weight, duration);
+        int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
         last_exercise.setCalorie(calorie);
-        return exerciseMapper.updateById(last_exercise);
+        //创建这个exercise对应的mapper
+        QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
+        exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
+        return exerciseMapper.update(last_exercise, exerciseQueryWrapper);
     }
 
     @Override
@@ -302,6 +308,7 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             }
         });
         Exercise last_exercise = exercises.get(0);
+        //统一时区，把start_time转为当前时区
         ZoneId currentZoneId = ZoneId.systemDefault();
         System.out.println("当前时区：" + currentZoneId);
         ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));

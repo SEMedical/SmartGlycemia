@@ -69,7 +69,7 @@ public class SportController {
             this.checkUser(user_id);
             Integer ans= exerciseService.finishExercise(user_id);
             if(ans !=null&&ans!=0)
-                return Response.success(null,"开始运动");
+                return Response.success(null,"结束运动");
             else
                 return Response.fail("运动方案不存在");
         }catch (Exception e){
