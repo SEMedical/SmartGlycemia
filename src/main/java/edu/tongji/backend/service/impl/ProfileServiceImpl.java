@@ -106,7 +106,7 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
         List<String> complications = IComplicationService.parseComplicationStr(profileDTO.getComplications());
 
-        System.out.println(complications);
+//        System.out.println(complications);
 
         for (String complication : complications) {
             complicationMapper.insert(patientId, complication);
@@ -115,13 +115,13 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         Profile dummy = profileMapper.getByPatientIdProfile(patientId);
         if (dummy == null) {
 
-            System.out.println("insert");
+//            System.out.println("insert");
 
             return profileMapper.insert(profile) == 1;
         }
 
-        System.out.println("update");
-        System.out.println(profile);
+//        System.out.println("update");
+//        System.out.println(profile);
 
         return profileMapper.update(profile);
     }
