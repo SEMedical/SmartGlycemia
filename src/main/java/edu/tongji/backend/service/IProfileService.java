@@ -10,5 +10,7 @@ public interface IProfileService extends IService<Profile> {
     //Profile getCondensedProfile(String user_id);
     Profile getByPatientId(String patient_id);
 
-    ProfileDTO getCompleteProfile(Integer patient_id) throws ParseException;
+    ProfileDTO getCompleteProfile(Integer patientId) throws ParseException;
+
+    boolean updateProfile(Integer patientId, ProfileDTO profileDTO) throws ParseException;
 }

@@ -5,6 +5,7 @@ import edu.tongji.backend.dto.ProfileDTO;
 import edu.tongji.backend.entity.Profile;
 import edu.tongji.backend.mapper.ComplicationMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
+import edu.tongji.backend.service.IComplicationService;
 import edu.tongji.backend.service.IProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,11 +32,15 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
     }
 
     @Override
-    public ProfileDTO getCompleteProfile(Integer patient_id) throws ParseException {
+    public ProfileDTO getCompleteProfile(Integer patientId) throws ParseException {
         ProfileDTO profileDTO = new ProfileDTO();
 
-        Profile profile = profileMapper.getByPatientIdProfile(patient_id);
-        profileDTO.setGender(profile.getGender());
+        Profile profile = profileMapper.getByPatientIdProfile(patientId);
+        if (profile.getGender().equals("Male")) {
+            profileDTO.setGender("男");
+        } else if (profile.getGender().equals("Female")) {
+            profileDTO.setGender("女");
+        }
         profileDTO.setAge(profile.getAge());
         profileDTO.setWeight(profile.getWeight().toString() + "kg");
         profileDTO.setHeight(profile.getHeight().toString() + "cm");
@@ -61,8 +66,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         }
         profileDTO.setFamilyHistory(profile.getFamilyHistory() != null ? profile.getFamilyHistory() : "");
 
-        List<String> complications = complicationMapper.getByPatientId(patient_id);
-        StringBuilder complicationStr = getComplicationStr(complications);
+        List<String> complications = complicationMapper.getByPatientId(patientId);
+        StringBuilder complicationStr = IComplicationService.getComplicationStr(complications);
         if (!complicationStr.isEmpty()) {
             complicationStr.deleteCharAt(complicationStr.length() - 1);
         }
@@ -71,40 +76,53 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         return profileDTO;
     }
 
-    private static StringBuilder getComplicationStr(List<String> complications) {
-        StringBuilder complicationStr = new StringBuilder();
-        for (String complication : complications) {
-            switch (complication) {
-// 'diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others'
-                case "diabetic foot":
-                    complicationStr.append("糖尿病足、");
-                    break;
-                case "diabetic eye":
-                    complicationStr.append("糖尿病眼、");
-                    break;
-                case "diabetic kidney":
-                    complicationStr.append("糖尿病肾、");
-                    break;
-                case "diabetic cardiovascular disease":
-                    complicationStr.append("糖尿病心血管疾病、");
-                    break;
-                case "diabetic neuropathy":
-                    complicationStr.append("糖尿病神经病变、");
-                    break;
-                case "diabetic skin disease":
-                    complicationStr.append("糖尿病皮肤病、");
-                    break;
-                case "hypertension":
-                    complicationStr.append("高血压、");
-                    break;
-                case "hyperlipidemia":
-                    complicationStr.append("高血脂、");
-                    break;
-                case "others":
-                    complicationStr.append("其他、");
-                    break;
-            }
+    @Override
+    public boolean updateProfile(Integer patientId, ProfileDTO profileDTO) throws ParseException {
+        Profile profile = new Profile();
+        profile.setPatientId(patientId);
+        if (profileDTO.getGender().equals("男")) {
+            profile.setGender("Male");
+        } else if (profileDTO.getGender().equals("女")) {
+            profile.setGender("Female");
         }
-        return complicationStr;
+        profile.setAge(profileDTO.getAge());
+        profile.setWeight(Integer.valueOf(profileDTO.getWeight().substring(0, profileDTO.getWeight().length() - 2)));
+        profile.setHeight(Integer.valueOf(profileDTO.getHeight().substring(0, profileDTO.getHeight().length() - 2)));
+        if (Objects.equals(profileDTO.getDiabetesType(), "I型糖尿病")) {
+            profile.setType("I");
+        } else if (Objects.equals(profileDTO.getDiabetesType(), "II型糖尿病")) {
+            profile.setType("II");
+        } else if (Objects.equals(profileDTO.getDiabetesType(), "妊娠期糖尿病")) {
+            profile.setType("gestational");
+        } else {
+            profile.setType("");
+        }
+        if (profileDTO.getDiagnosisYear() != null) {
+            profile.setDiagnosedYear(profileDTO.getDiagnosisYear().toString());
+        } else {
+            profile.setDiagnosedYear(null);
+        }
+        profile.setFamilyHistory(profileDTO.getFamilyHistory());
+
+        List<String> complications = IComplicationService.parseComplicationStr(profileDTO.getComplications());
+
+        System.out.println(complications);
+
+        for (String complication : complications) {
+            complicationMapper.insert(patientId, complication);
+        }
+
+        Profile dummy = profileMapper.getByPatientIdProfile(patientId);
+        if (dummy == null) {
+
+            System.out.println("insert");
+
+            return profileMapper.insert(profile) == 1;
+        }
+
+        System.out.println("update");
+        System.out.println(profile);
+
+        return profileMapper.update(profile);
     }
 }
