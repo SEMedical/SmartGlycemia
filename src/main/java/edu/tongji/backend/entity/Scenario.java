@@ -12,6 +12,17 @@ import java.sql.Time;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Scenario {
+    public enum Category{
+        running,jogging,yoga,ropeskipping
+    }
+    public static String check(String category) {
+        for(int i = 0; i < Category.values().length; i++) {
+            if(Category.values()[i].toString().equals(category.toLowerCase())) {
+                return category;
+            }
+        }
+        return null;
+    }
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "patient_id", nullable = false)
@@ -25,41 +36,10 @@ public class Scenario {
         this.patientId = patientId;
     }
 
-    @Basic
-    @Column(name = "start_day", nullable = true)
-    private Date startDay;
 
-    public Date getStartDay() {
-        return startDay;
-    }
 
-    public void setStartDay(Date startDay) {
-        this.startDay = startDay;
-    }
 
-    @Basic
-    @Column(name = "end_day", nullable = true)
-    private Date endDay;
 
-    public Date getEndDay() {
-        return endDay;
-    }
-
-    public void setEndDay(Date endDay) {
-        this.endDay = endDay;
-    }
-
-    @Basic
-    @Column(name = "frequency", nullable = true)
-    private Integer frequency;
-
-    public Integer getFrequency() {
-        return frequency;
-    }
-
-    public void setFrequency(Integer frequency) {
-        this.frequency = frequency;
-    }
 
     @Basic
     @Column(name = "category", nullable = true, length = 30)
@@ -72,30 +52,11 @@ public class Scenario {
     public void setCategory(String category) {
         this.category = category;
     }
-
     @Basic
-    @Column(name = "intensity", nullable = true)
-    private Object intensity;
+    @Column(name = "calories", nullable = true)
+    private Integer calories;
 
-    public Object getIntensity() {
-        return intensity;
-    }
 
-    public void setIntensity(Object intensity) {
-        this.intensity = intensity;
-    }
-
-    @Basic
-    @Column(name = "timing", nullable = true)
-    private Time timing;
-
-    public Time getTiming() {
-        return timing;
-    }
-
-    public void setTiming(Time timing) {
-        this.timing = timing;
-    }
 
     @Basic
     @Column(name = "duration", nullable = true)
