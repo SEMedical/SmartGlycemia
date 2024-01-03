@@ -3,7 +3,11 @@ package edu.tongji.backend.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
-import edu.tongji.backend.entity.*;
+import edu.tongji.backend.entity.Examine;
+import edu.tongji.backend.entity.Exercise;
+import edu.tongji.backend.entity.Running;
+import edu.tongji.backend.entity.Scenario;
+import edu.tongji.backend.exception.ExerciseException;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.RunningMapper;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,16 +37,22 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     RunningServiceImpl runningService;
 
     @Override
-    public Intervals getExerciseIntervalsInOneDay(String category, String userId, String date) {
-        List<Map<String, String>> lists = exerciseMapper.getExerciseIntervalsInOneDay(category, userId, date);
-        List<Map<LocalDateTime, LocalDateTime>> formattedLists = new ArrayList<>();
-        Intervals intervals = new Intervals();
-        for (Map<String, String> list : lists) {
-            Map<String, String> datemap = new HashMap<>();
-            Map.Entry<String, String> entry = list.entrySet().iterator().next();
-            LocalDateTime date1 = LocalDateTime.parse(entry.getKey());
-            LocalDateTime date2 = LocalDateTime.parse(entry.getValue());
-            formattedLists.add(new HashMap<>(Map.of(date1, date2)));
+    public Intervals getExerciseIntervalsInOneDay(String category,String userId, String date) {
+        List<ExerciseDTO> lists=exerciseMapper.getExerciseIntervalsInOneDay(category,userId, date);
+        List<Map<LocalDateTime,LocalDateTime>> formattedLists=new ArrayList<>();
+        Intervals intervals=new Intervals();
+        for (ExerciseDTO list : lists) {
+            if(list.getStartTime()==null){
+                throw new ExerciseException("startTime is null ");
+            }else if(list.getDuration()==null){
+                throw new ExerciseException("duration is null ");
+            }
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime date1 = LocalDateTime.parse(list.getStartTime(), formatter);
+            LocalDateTime date2=date1.plusMinutes(list.getDuration());
+            System.out.println(date2);
+            formattedLists.add(new HashMap<>(Map.of(date1,date2)));
             intervals.setDatas(formattedLists);
         }
         return intervals;
@@ -88,21 +99,14 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     }
 
     @Override
-    public Integer finishExercise(String userId) {
+    public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id);
+        queryWrapper.eq("patient_id", user_id).eq("duration", 0);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         if (exercises.isEmpty())
             return null;
-        Exercise last_exercise = exercises.get(exercises.size() - 1);
-//转换时区
-        ZoneId currentZoneId = ZoneId.systemDefault();
-        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
-        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
-        int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
-        last_exercise.setDuration(duration);
-//获取用户体重数据
+        //获取用户体重数据
         double weight = 70;
         QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
         examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
@@ -113,15 +117,30 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             Examine last_examine = examines.get(examines.size() - 1);
             weight = last_examine.getWeight();
         }
+//转换时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        Integer res=1;
+        //遍历每一个exercise
+        for (Exercise last_exercise:exercises) {
+            ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
+            LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
+            int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
+            last_exercise.setDuration(duration);
 //获取运动类型
-        String category = last_exercise.getCategory();
-        //更新卡路里
-        int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
-        last_exercise.setCalorie(calorie);
-        //创建这个exercise对应的mapper
-        QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
-        exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
-        return exerciseMapper.update(last_exercise, exerciseQueryWrapper);
+            String category = last_exercise.getCategory();
+            //更新卡路里
+            int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
+            last_exercise.setCalorie(calorie);
+            //创建这个exercise对应的mapper
+            QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
+            exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
+            res*= exerciseMapper.update(last_exercise, exerciseQueryWrapper);
+            if (res > 0)
+                System.out.println("更新exercise表成功，exercise_id为" + last_exercise.getExerciseId());
+            else
+                break;
+        }
+        return res;
     }
 
     @Override
@@ -317,7 +336,7 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
         System.out.println("开始时间为"+start_time+"现在时间为"+now);
-        int duration = (int)Duration.between(start_time,now).toMinutes();
+        int duration = (int) Duration.between(start_time,now).toMinutes();
         if(duration<60)
             ans.setTime(String.format("%d分",duration));
         else

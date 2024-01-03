@@ -1,5 +1,6 @@
 package edu.tongji.backend.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Profile {
+    @TableId
     private int patientId;
 
     private String gender;

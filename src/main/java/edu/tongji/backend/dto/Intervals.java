@@ -1,4 +1,4 @@
-package edu.tongji.backend.entity;
+package edu.tongji.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -6,7 +6,7 @@ import edu.tongji.backend.dto.SportDetailedDTO;
 import edu.tongji.backend.dto.SportPlanDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
 import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.entity.Intervals;
+import edu.tongji.backend.dto.Intervals;
 
 import java.util.List;
 
