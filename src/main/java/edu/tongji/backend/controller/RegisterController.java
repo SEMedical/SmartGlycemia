@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
-@RequestMapping("/register")  //对应的api路径
+@RequestMapping("/api/register")  //对应的api路径
 public class RegisterController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
@@ -22,6 +22,14 @@ public class RegisterController {
         {
             return Response.fail("手机号或密码为空");  //返回错误信息
         }
+
+        System.out.println(info);
+        System.out.println(info.getName());
+        System.out.println(info.getPassword());
+        System.out.println(info.getContact());
+        System.out.println(info.getGender());
+        System.out.println(info.getAge());
+
         Integer result = userService.register(info.getName(), info.getPassword(), info.getContact(), info.getGender(), info.getAge());  //调用接口的register函数
         if (result == -1)  //如果返回的result为false
         {

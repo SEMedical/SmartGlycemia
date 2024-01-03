@@ -8,6 +8,7 @@ import edu.tongji.backend.entity.Exercise;
 import edu.tongji.backend.entity.Running;
 import edu.tongji.backend.entity.Scenario;
 import edu.tongji.backend.exception.ExerciseException;
+import edu.tongji.backend.entity.*;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.RunningMapper;
@@ -60,7 +61,6 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 
     @Override
     public Integer addExercise(String userId) {
-
         int user_id = Integer.parseInt(userId);
         Exercise exercise = new Exercise();
         exercise.setPatientId(user_id);
@@ -303,7 +303,6 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         //获取用户体重数据
         double weight = 70;
         QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
-        //查找当前用户体重非空的体检记录
         examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
         List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
         if (examines.isEmpty())

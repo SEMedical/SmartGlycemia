@@ -10,6 +10,8 @@ import edu.tongji.backend.dto.Intervals;
 
 import java.util.List;
 
+import java.util.List;
+
 public interface IExerciseService extends IService<Exercise> {
     Intervals getExerciseIntervalsInOneDay(String category,String userId, String date);
     Integer addExercise(String userId);

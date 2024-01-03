@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginDTO {
-    private String token;
-    private String role;
-    private String name;
+public class Sport {
+    private String category;
+    private Integer duration;
 }
+

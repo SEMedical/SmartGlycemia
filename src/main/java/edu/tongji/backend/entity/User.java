@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class User {
     @TableId
     private Integer userId;
-    private Integer height;
     private String address;
     private String name;
     private String contact;

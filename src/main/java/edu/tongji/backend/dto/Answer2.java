@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginDTO {
-    private String token;
-    private String role;
-    private String name;
+public class Answer2 {
+    private Integer question_no;
+    private Boolean question_ans;
 }

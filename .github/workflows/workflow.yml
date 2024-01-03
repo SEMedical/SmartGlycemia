@@ -2,10 +2,8 @@ name: Glycemia SE Huangjie
 on:
   pull_request:
     branches: [ "*" ]
-
   push:
     branches: [ "*" ]
-
 jobs:
   project-build:
     runs-on: ubuntu-latest
