@@ -66,4 +66,8 @@ class BackendApplicationTests {
 //        });
         System.out.println("End test");
     }
+    @Test
+    void testDailyDiagram(){
+        System.out.println(glycemiaService.showDailyGlycemiaDiagram("1", LocalDate.of(2024, 1, 2)));
+    }
 }

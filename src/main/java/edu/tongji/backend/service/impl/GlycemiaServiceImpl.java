@@ -5,9 +5,9 @@ import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.*;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
+import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.service.IGlycemiaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -22,7 +22,8 @@ import java.util.Map;
 public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> implements IGlycemiaService {
     @Autowired
     GlycemiaMapper glycemiaMapper;
-
+    @Autowired
+    ProfileMapper userMapper;
     @Override
     public Chart showGlycemiaDiagram(String type, String user_id, LocalDate date) {
         Chart chart=new Chart();
@@ -58,6 +59,43 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         }
         chart.setData(res);
         //chart.setError_code(200);
+        return chart;
+    }
+    @Override
+    public DailyChart showDailyGlycemiaDiagram(String user_id, LocalDate date) {
+        DailyChart chart=new DailyChart();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        //Just for initialization
+        LocalDateTime startDateTime =LocalDateTime.of(date, LocalTime.MIN);
+        LocalDateTime endTime=LocalDateTime.of(date, LocalTime.MAX);
+        List<Map<LocalDateTime,Double>> res=new ArrayList<>();
+        // 设置时间间隔为15分钟
+        Duration interval = Duration.ofMinutes(15);
+        Integer eu_count=0,hypo_count=0,hyper_count=0;
+        // 遍历时间点，每15分钟一次，直到当前时间
+        while (startDateTime.isBefore(endTime)) {
+            System.out.println(startDateTime);
+            startDateTime = startDateTime.plus(interval);
+            Double glycemiaValue=glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
+            if(glycemiaValue==null) {
+                System.out.println("No data found around" + startDateTime.format(formatter));
+                continue;
+            }
+            Map<LocalDateTime,Double> data = new HashMap<>();
+            data.put(startDateTime,glycemiaValue);
+            GlycemiaLevel level=GetGlycemiaLevel(Double.valueOf(userMapper.selectById(user_id).getAge()),startDateTime,glycemiaValue);
+            if(level==GlycemiaLevel.HYPOGLYCEMIA)
+                hypo_count++;
+            else if(level==GlycemiaLevel.EUGLYCEMIA)
+                eu_count++;
+            else
+                hyper_count++;
+            res.add(data);
+        }
+        chart.setLowSta(eu_count*1.0/res.size());
+        chart.setNormalSta(hypo_count*1.0/res.size());
+        chart.setHighSta(hyper_count*1.0/res.size());
+        chart.setEntry(res);
         return chart;
     }
     private static boolean isInSameInterval(LocalDateTime time1, LocalDateTime time2) {
@@ -121,6 +159,41 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         chart.setHyperglycemiaPercentage(hypertoll);
 
         return chart;
+    }
+    @Override
+    public GlycemiaLevel GetGlycemiaLevel(Double age,LocalDateTime date,Double data){
+        Double HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
+        AFTERLUNCH_HYPER_THRESHOLD = 8.325;
+        AFTERDINNER_HYPER_THRESHOLD = 7.215;
+        if (age > 60) {
+            HYPER_THRESHOLD = 8.991;
+            EU_THRESHOLD = 6.993;
+            AFTERLUNCH_HYPER_THRESHOLD = 12.654;
+            AFTERDINNER_HYPER_THRESHOLD = 10.989;
+        } else if (age < 18) {
+            HYPER_THRESHOLD = 6.049;
+            EU_THRESHOLD = 4.440;
+        } else {
+            HYPER_THRESHOLD =6.993;
+            EU_THRESHOLD = 6.105;
+        }
+        Boolean AfterDinner=(date.getHour()>18&&date.getHour()<19);
+        Boolean AfterLunch=(date.getHour()>12&&date.getHour()<14);
+        if(data<EU_THRESHOLD)//RGBA for Red
+            return GlycemiaLevel.HYPOGLYCEMIA;
+        else if(data<HYPER_THRESHOLD){
+            return GlycemiaLevel.EUGLYCEMIA;
+        }else if(AfterLunch&&data>AFTERLUNCH_HYPER_THRESHOLD){
+            return GlycemiaLevel.HYPERGLYCEMIA;
+        }else if(AfterDinner&&data>AFTERDINNER_HYPER_THRESHOLD)
+            return GlycemiaLevel.HYPERGLYCEMIA;
+        else if(AfterDinner ||AfterLunch){
+            return GlycemiaLevel.EUGLYCEMIA;
+        }else{
+            if(data>HYPER_THRESHOLD)
+                return GlycemiaLevel.HYPERGLYCEMIA;
+        }
+        return GlycemiaLevel.UNKNOWN;
     }
     //实时的标准是15分钟以内
     @Override

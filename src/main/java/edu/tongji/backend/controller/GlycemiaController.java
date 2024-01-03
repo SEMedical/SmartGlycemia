@@ -13,6 +13,7 @@ import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -160,6 +161,29 @@ public class GlycemiaController {
             return Response.fail("Unexpected external failure");
         }
     }
+    @GetMapping("dailyHistory")
+    public Response<DailyChart> GetDailyChart(HttpServletRequest request,@RequestParam String date){
+        try {
+            String token = request.getHeader("Authorization");
+            System.out.println(token);
+            String user_id = Jwt.parse(token).get("userId").toString();
+            System.out.println(user_id + "````");
+            //确认用户是否存在，是否是病人
+            this.checkUser(user_id);
+            //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
+            LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
+
+            DailyChart result = glycemiaService.showDailyGlycemiaDiagram(user_id, formattedDate);
+            System.out.println(result);
+            return Response.success(result,"dailychart API has passed!");
+        }catch (GlycemiaException e){
+            System.out.println(e.getMessage());
+            return Response.fail("Expected internal business exception");
+        }catch (RuntimeException|Error e){
+            System.err.println(e.getMessage());
+            return Response.fail("Unexpected external business exception or system error!");
+        }
+    }
     @GetMapping("/realTimePrompt")
     public Response<Tip> GetRealtimeTips(HttpServletRequest request){
         try {
@@ -170,38 +194,23 @@ public class GlycemiaController {
             this.checkUser(user_id);
             //根据年龄判断血糖阈值
             Integer age=profileService.getById(user_id).getAge();
-
-            Double HYPER_THRESHOLD,EU_THRESHOLD,AFTERLUNCH_HYPER_THRESHOLD,AFTERDINNER_HYPER_THRESHOLD;
-            AFTERLUNCH_HYPER_THRESHOLD = 8.325;
-            AFTERDINNER_HYPER_THRESHOLD = 7.215;
-            if (age > 60) {
-                HYPER_THRESHOLD = 8.991;
-                EU_THRESHOLD = 6.993;
-                AFTERLUNCH_HYPER_THRESHOLD = 12.654;
-                AFTERDINNER_HYPER_THRESHOLD = 10.989;
-            } else if (age < 18) {
-                HYPER_THRESHOLD = 6.049;
-                EU_THRESHOLD = 4.440;
-            } else {
-                HYPER_THRESHOLD =6.993;
-                EU_THRESHOLD = 6.105;
-            }
             Double data=glycemiaService.getLatestGlycemia(user_id);
-            Boolean AfterDinner=(LocalDateTime.now().getHour()>18&&LocalDateTime.now().getHour()<19);
-            Boolean AfterLunch=(LocalDateTime.now().getHour()>12&&LocalDateTime.now().getHour()<14);
-            if(data<EU_THRESHOLD)//RGBA for Red
-                return Response.success(new Tip("哎呀！血糖怎么有点低了呢？请吃点东西吧！", MyColor.RED),"Tips generated successfully");
-            else if(data<HYPER_THRESHOLD){
-                return Response.success(new Tip("当前血糖处于正常水平，真是令人高兴呐！",MyColor.GREEN),"Tips generated successfully");
-            }else if(AfterLunch&&data>AFTERLUNCH_HYPER_THRESHOLD){
-                return Response.success(new Tip("当前血糖水平已经高于正常值了哦，注意饮食，然后请去做一点运动吧！",MyColor.RED),"Tips generated successfully");
-            }else if(AfterDinner&&data>AFTERDINNER_HYPER_THRESHOLD)
-                return Response.success(new Tip("当前血糖水平已经高于正常值了哦，之后要注意不要吃太多含糖含碳水量高的食物",MyColor.RED),"Tips generated successfully");
-            else if(AfterDinner ||AfterLunch){
-                return Response.success(new Tip("饭后血糖上升，不必要过度担心，要时刻注重饮食哦",MyColor.YELLOW),"Tips generated successfully");
-            }else{
-                if(data>HYPER_THRESHOLD)
+            GlycemiaLevel level=glycemiaService.GetGlycemiaLevel(Double.valueOf(age),LocalDateTime.now(),data);
+            switch (level){
+                case HYPOGLYCEMIA:
+                    return Response.success(new Tip("哎呀！血糖怎么有点低了呢？请吃点东西吧！", MyColor.RED),"Tips generated successfully");
+                case EUGLYCEMIA:
+                    return Response.success(new Tip("当前血糖处于正常水平，真是令人高兴呐！",MyColor.GREEN),"Tips generated successfully");
+                case AFTER_LUNCH_HYPER:
+                    return Response.success(new Tip("当前血糖水平已经高于正常值了哦，注意饮食，然后请去做一点运动吧！",MyColor.RED),"Tips generated successfully");
+                case AFTER_DINNER_HYPER:
+                    return Response.success(new Tip("当前血糖水平已经高于正常值了哦，之后要注意不要吃太多含糖含碳水量高的食物",MyColor.RED),"Tips generated successfully");
+                case AFTER_MEAL_A_BIT_HYPER:
+                    return Response.success(new Tip("饭后血糖上升，不必要过度担心，要时刻注重饮食哦",MyColor.YELLOW),"Tips generated successfully");
+                case HYPERGLYCEMIA:
                     return Response.success(new Tip("当前血糖水平已经高于正常值了哦，然后请去做一点运动吧！",MyColor.RED),"Tips generated successfully");
+                default:
+                    return Response.fail("Fatal error");
             }
         }catch (GlycemiaException e){
             System.out.println(e.getMessage());
@@ -210,6 +219,6 @@ public class GlycemiaController {
             System.err.println(e.getMessage());
             return Response.fail("Unexpected external failure");
         }
-        return Response.fail("Fatal error");
+
     }
 }
