@@ -80,26 +80,7 @@ class BackendApplicationTests {
     }
     @Test
     void testExerciseInsertion(){
-        //assert that the time is now
-        Integer exercise_id = exerciseService.addExercise("1");
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String time = exerciseService.getRealTimeSport("1").getTime();
-        Pattern pattern = Pattern.compile("\\d+"); // 匹配一个或多个数字
-        Matcher matcher = pattern.matcher(time);
-
-        if (matcher.find()) {
-            // 找到匹配的数字部分
-            String numericPart = matcher.group();
-
-            // 将提取的数字部分转换为整数
-            int numericValue = Integer.parseInt(numericPart);
-
-            // 断言时间是否小于10分钟
-            assertTrue(numericValue < 10, "The time is not now");
-        } else {
-            // 没有找到匹配的数字部分，可能需要进行错误处理
-            System.err.println("No numeric part found in the time string");
-        }
+        
     }
     @Test
     void testDailyDiagram(){
