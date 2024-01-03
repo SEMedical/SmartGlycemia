@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.entity.User;
@@ -14,6 +15,8 @@ import java.util.Map;
 public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
+    @Autowired
+    IExerciseService exerciseService;
 
     @PostMapping//对应的api路径
     public Response<LoginDTO> login(@RequestBody User user)  //把请求中的内容映射到user
@@ -28,7 +31,8 @@ public class LoginController {
         {
             return Response.fail("账号或密码不正确");  //返回错误信息
         }
-
+        System.out.println("登录成功");
+        exerciseService.finishExercise(userService.getUserId(user.getContact()).toString());
         return Response.success(loginDTO,"登录成功");  //返回成功信息
     }
 }

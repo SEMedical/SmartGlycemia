@@ -98,4 +98,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         return userNum == 1 ? 1 : 0;
     }
+    @Override
+    public Integer getUserId(String contact)
+    {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("contact", contact);
+        User user = userMapper.selectOne(wrapper);
+        return user.getUserId();
+    }
 }

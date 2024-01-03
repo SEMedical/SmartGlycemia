@@ -4,7 +4,7 @@ import edu.tongji.backend.dto.RealTimeSportDTO;
 import edu.tongji.backend.dto.SportDetailedDTO;
 import edu.tongji.backend.dto.SportPlanDTO;
 import edu.tongji.backend.dto.SportRecordDTO;
-import edu.tongji.backend.entity.Chart;
+import edu.tongji.backend.dto.Chart;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;

@@ -27,14 +27,33 @@ public class Scenario {
     @Column(name = "patient_id", nullable = false)
     private int patientId;
 
+    public int getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
+    }
 
     @Basic
     @Column(name = "category", length = 30)
     private String category;
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    @Basic
+    @Column(name = "calories", nullable = true)
+    private Integer calories;
+
+
 
     @Basic
-    @Column(name = "duration")
+    @Column(name = "duration", nullable = true)
     private Integer duration;
 
 

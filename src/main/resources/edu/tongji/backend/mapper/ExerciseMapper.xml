@@ -4,14 +4,14 @@
 <mapper namespace="edu.tongji.backend.mapper.ExerciseMapper">
 
 
-    <select id="getExerciseIntervalsInOneDay" resultType="java.util.Map">
+    <select id="getExerciseIntervalsInOneDay" resultType="edu.tongji.backend.dto.ExerciseDTO">
         SELECT
         start_time,
         duration
         FROM
         exercise
         WHERE
-        start_time = DATE(#{date})
+        DATE(start_time) = #{date}
         AND patient_id = #{userId}
         AND category = #{category}
     </select>
