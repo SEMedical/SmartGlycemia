@@ -7,6 +7,7 @@ import edu.tongji.backend.entity.Scenario;
 import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IScenarioService;
+import edu.tongji.backend.util.CalorieCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +32,9 @@ public class ScenarioServiceImpl extends ServiceImpl<ScenarioMapper, Scenario> i
         }
         Integer weight = profile.getWeight();
 
-        // TODO: calculate calories
+        Integer calories = CalorieCalculator.getCalorie(sport.getCategory(), sport.getDuration(), weight);
 
-        scenario.setCalories(0);
+        scenario.setCalories(calories);
 
         if (scenarioMapper.getByPatientId(patientId) != null) {
             return scenarioMapper.update(scenario);

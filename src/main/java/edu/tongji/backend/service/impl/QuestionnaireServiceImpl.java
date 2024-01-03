@@ -127,10 +127,10 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
         int joggingDuration = 20;
         int ropeSkippingDuration = 10;
 
-        System.out.println(yoga);
-        System.out.println(jogging);
-        System.out.println(ropeSkipping);
-        System.out.println("**********");
+//        System.out.println(yoga);
+//        System.out.println(jogging);
+//        System.out.println(ropeSkipping);
+//        System.out.println("**********");
 
         String questionnaire1Answer = questionnaireMapper.selectByPatientIdAndTemplate(userId, 1);
         if (questionnaire1Answer.charAt(4) == '1') {
@@ -145,20 +145,20 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
             ropeSkipping = false;
         }
 
-        System.out.println(yoga);
-        System.out.println(jogging);
-        System.out.println(ropeSkipping);
-        System.out.println("**********");
+//        System.out.println(yoga);
+//        System.out.println(jogging);
+//        System.out.println(ropeSkipping);
+//        System.out.println("**********");
 
         Integer age = profileService.getByPatientId(userId.toString()).getAge();
         if (age >= 60) {
             ropeSkipping = false;
         }
 
-        System.out.println(yoga);
-        System.out.println(jogging);
-        System.out.println(ropeSkipping);
-        System.out.println("**********");
+//        System.out.println(yoga);
+//        System.out.println(jogging);
+//        System.out.println(ropeSkipping);
+//        System.out.println("**********");
 
         for (Answer2 answer2 : answer) {
             if (answer2.getQuestion_no() == 1) {
