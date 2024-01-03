@@ -40,6 +40,7 @@ class BackendApplicationTests {
     ExerciseServiceImpl exerciseService;
     @Autowired
     ExerciseMapper exerciseMapper;
+    @Autowired
     GlycemiaServiceImpl glycemiaService;
     @Test
     void contextLoads() {
