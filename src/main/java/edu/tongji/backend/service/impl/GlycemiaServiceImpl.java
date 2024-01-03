@@ -92,9 +92,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 hyper_count++;
             res.add(data);
         }
-        chart.setLowSta(eu_count*1.0/res.size());
-        chart.setNormalSta(hypo_count*1.0/res.size());
-        chart.setHighSta(hyper_count*1.0/res.size());
+        chart.setLowSta(eu_count*100.0/res.size());
+        chart.setNormalSta(hypo_count*100.0/res.size());
+        chart.setHighSta(hyper_count*100.0/res.size());
         chart.setEntry(res);
         return chart;
     }

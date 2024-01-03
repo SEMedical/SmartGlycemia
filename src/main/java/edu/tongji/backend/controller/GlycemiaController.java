@@ -198,7 +198,7 @@ public class GlycemiaController {
             GlycemiaLevel level=glycemiaService.GetGlycemiaLevel(Double.valueOf(age),LocalDateTime.now(),data);
             switch (level){
                 case HYPOGLYCEMIA:
-                    return Response.success(new Tip("哎呀！血糖怎么有点低了呢？请吃点东西吧！", MyColor.RED),"Tips generated successfully");
+                    return Response.success(new Tip("哎呀！血糖怎么有点低了呢？请吃点东西吧！", MyColor.ORANGE),"Tips generated successfully");
                 case EUGLYCEMIA:
                     return Response.success(new Tip("当前血糖处于正常水平，真是令人高兴呐！",MyColor.GREEN),"Tips generated successfully");
                 case AFTER_LUNCH_HYPER:
