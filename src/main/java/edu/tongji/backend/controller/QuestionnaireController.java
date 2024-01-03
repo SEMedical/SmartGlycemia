@@ -31,7 +31,7 @@ public class QuestionnaireController {
         String token = request.getHeader( "Authorization");
 //        System.out.println(token);
         Integer userId = (Integer) Jwt.parse(token).get("userId");
-        String role = (String) Jwt.parse(token).get("userPermission");
+        String role = Jwt.parse(token).get("userPermission").toString();
         if (userService.getById(userId) == null) {
             return Response.fail("用户不存在");
         }
@@ -53,7 +53,7 @@ public class QuestionnaireController {
         String token = request.getHeader( "Authorization");
 //        System.out.println(token);
         Integer userId = (Integer) Jwt.parse(token).get("userId");
-        String role = (String) Jwt.parse(token).get("userPermission");
+        String role =Jwt.parse(token).get("userPermission").toString();
         if (userService.getById(userId) == null) {
             return Response.fail("用户不存在");
         }
@@ -82,7 +82,7 @@ public class QuestionnaireController {
         String token = request.getHeader( "Authorization");
 //        System.out.println(token);
         Integer userId = (Integer) Jwt.parse(token).get("userId");
-        String role = (String) Jwt.parse(token).get("userPermission");
+        String role = Jwt.parse(token).get("userPermission").toString();
         if (userService.getById(userId) == null) {
             return Response.fail("用户不存在");
         }
