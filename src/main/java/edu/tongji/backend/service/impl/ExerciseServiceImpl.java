@@ -132,7 +132,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id).isNotNull("duration");
         //查找最近7天的运动记录，从7天前的0点到今天的现在
-        queryWrapper.ge("start_time", LocalDate.now().minusDays(7).atStartOfDay());
+        queryWrapper.ge("start_time", LocalDate.now().minusDays(6).atStartOfDay());
+        System.out.println("起始日期为"+LocalDate.now().minusDays(6).atStartOfDay());
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         int total_minute = 0;
         int total_calorie = 0;
