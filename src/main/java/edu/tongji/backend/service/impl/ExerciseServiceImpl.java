@@ -88,21 +88,14 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     }
 
     @Override
-    public Integer finishExercise(String userId) {
+    public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id);
+        queryWrapper.eq("patient_id", user_id).eq("duration", 0);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         if (exercises.isEmpty())
             return null;
-        Exercise last_exercise = exercises.get(exercises.size() - 1);
-//转换时区
-        ZoneId currentZoneId = ZoneId.systemDefault();
-        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
-        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
-        int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
-        last_exercise.setDuration(duration);
-//获取用户体重数据
+        //获取用户体重数据
         double weight = 70;
         QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
         examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
@@ -113,15 +106,30 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             Examine last_examine = examines.get(examines.size() - 1);
             weight = last_examine.getWeight();
         }
+//转换时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        Integer res=1;
+        //遍历每一个exercise
+        for (Exercise last_exercise:exercises) {
+            ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
+            LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
+            int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
+            last_exercise.setDuration(duration);
 //获取运动类型
-        String category = last_exercise.getCategory();
-        //更新卡路里
-        int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
-        last_exercise.setCalorie(calorie);
-        //创建这个exercise对应的mapper
-        QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
-        exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
-        return exerciseMapper.update(last_exercise, exerciseQueryWrapper);
+            String category = last_exercise.getCategory();
+            //更新卡路里
+            int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
+            last_exercise.setCalorie(calorie);
+            //创建这个exercise对应的mapper
+            QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
+            exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
+            res*= exerciseMapper.update(last_exercise, exerciseQueryWrapper);
+            if (res > 0)
+                System.out.println("更新exercise表成功，exercise_id为" + last_exercise.getExerciseId());
+            else
+                break;
+        }
+        return res;
     }
 
     @Override
