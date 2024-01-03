@@ -2,10 +2,13 @@ package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.dto.ExerciseDTO;
+import edu.tongji.backend.dto.*;
+import edu.tongji.backend.entity.Examine;
 import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.dto.Intervals;
+import edu.tongji.backend.entity.Running;
+import edu.tongji.backend.entity.Scenario;
 import edu.tongji.backend.exception.ExerciseException;
+import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.RunningMapper;
 import edu.tongji.backend.mapper.ScenarioMapper;
@@ -16,7 +19,7 @@ import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -332,7 +335,7 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
         System.out.println("开始时间为"+start_time+"现在时间为"+now);
-        int duration = (int)Duration.between(start_time,now).toMinutes();
+        int duration = (int) Duration.between(start_time,now).toMinutes();
         if(duration<60)
             ans.setTime(String.format("%d分",duration));
         else
