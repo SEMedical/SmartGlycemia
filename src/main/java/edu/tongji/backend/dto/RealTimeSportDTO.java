@@ -12,4 +12,5 @@ public class RealTimeSportDTO {
     private double distance;//以公里为单位
     private String speed;
     private String time;
+    private String category;
 }

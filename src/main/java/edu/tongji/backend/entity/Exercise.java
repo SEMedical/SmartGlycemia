@@ -24,5 +24,5 @@ public class Exercise {
     private String category;
 
     private int exerciseId;
-    private Integer distance;
+    private double distance;
 }

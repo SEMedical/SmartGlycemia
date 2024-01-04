@@ -131,6 +131,15 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //更新卡路里
             int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
             last_exercise.setCalorie(calorie);
+            //更新distance
+            if(category.equalsIgnoreCase("running")||category.equalsIgnoreCase("jogging"))
+            {
+                Running running=runningService.updateRunning(last_exercise.getExerciseId());
+                if(running!=null)
+                {
+                    last_exercise.setDistance(running.getDistance());
+                }
+            }
             //创建这个exercise对应的mapper
             QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
             exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
@@ -345,6 +354,7 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             ans.setTime(String.format("%d分%d秒",duration/60,duration%60));
         else
             ans.setTime(String.format("%d小时%d分%d秒",duration/3600,duration%3600/60,duration%60));
+        ans.setCategory(last_exercise.getCategory().toLowerCase());
         //获取运动数据
         Running now_running= runningService.updateRunning(last_exercise.getExerciseId());
         ans.setDistance(now_running.getDistance());
