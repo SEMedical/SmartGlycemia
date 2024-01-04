@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class RealTimeSportDTO {
     private int calorie;
     private double distance;//以公里为单位
-    private double speed;
+    private String speed;
     private String time;
 }

@@ -327,23 +327,32 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
             }
         });
         Exercise last_exercise = exercises.get(0);
+        System.out.println("最近一次运动的id为"+last_exercise.getExerciseId());
         //统一时区，把start_time转为当前时区
         ZoneId currentZoneId = ZoneId.systemDefault();
         System.out.println("当前时区：" + currentZoneId);
-        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
-        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
+        ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC") );//默认是用UTC
+        System.out.println("转换前的时间：" + start_time0);
+        LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();//转为SystemDefault
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
         System.out.println("开始时间为"+start_time+"现在时间为"+now);
-        int duration = (int) Duration.between(start_time,now).toMinutes();
+        int duration = (int) Duration.between(start_time,now).toSeconds();
+        //duration是以秒为单位的，需要转为相应的字符串返回给前端
         if(duration<60)
-            ans.setTime(String.format("%d分",duration));
+            ans.setTime(String.format("%d秒",duration));
+        else if(duration<3600)
+            ans.setTime(String.format("%d分%d秒",duration/60,duration%60));
         else
-            ans.setTime(String.format("%d小时%d分",duration/60,duration%60));
+            ans.setTime(String.format("%d小时%d分%d秒",duration/3600,duration%3600/60,duration%60));
         //获取运动数据
         Running now_running= runningService.updateRunning(last_exercise.getExerciseId());
         ans.setDistance(now_running.getDistance());
-        ans.setSpeed(now_running.getPace());
+        int pace=now_running.getPace();//得到的是以秒为单位的
+        if(pace<60)
+            ans.setSpeed(String.format("%d秒",pace));
+        else
+            ans.setSpeed(String.format("%d分%d秒",pace/60,pace%60));
         //计算卡路里
         int calorie = CalorieCalculator.getCalorie(category, weight, duration);
         ans.setCalorie(calorie);
