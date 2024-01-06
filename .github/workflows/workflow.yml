@@ -58,6 +58,10 @@ jobs:
       - name: Deploy the application
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: appleboy/ssh-action@v1.0.0
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_URL: ${{ secrets.DB_URL }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
