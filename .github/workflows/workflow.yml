@@ -51,6 +51,21 @@ jobs:
           port: ${{ secrets.PORT }}
           source: target/backend-0.0.1-SNAPSHOT.jar
           target: $JAR_HOME
+      - name: Deploy the application
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: | 
+            mv $JAR_HOME/target/backend-0.0.1-SNAPSHOT.jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar
+            echo "Kill existing tomcat process"
+            killtomcat.sh
+            echo "Run tomcat(background)"
+            nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
+            echo "Show tomcat logs"
+            cat tomcat.log
       - name: Upload JAR as Artifact
         uses: actions/upload-artifact@v2
         with:
