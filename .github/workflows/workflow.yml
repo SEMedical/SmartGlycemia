@@ -43,6 +43,7 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
       
       - name: copy file via ssh password
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: appleboy/scp-action@v0.1.7
         env:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
