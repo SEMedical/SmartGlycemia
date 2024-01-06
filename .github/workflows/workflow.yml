@@ -56,6 +56,7 @@ jobs:
           source: target/backend-0.0.1-SNAPSHOT.jar
           target: $JAR_HOME
       - name: Deploy the application
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: appleboy/ssh-action@v1.0.0
         env:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
