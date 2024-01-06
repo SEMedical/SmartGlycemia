@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           source: target/${{ env.JAR_NAME }}
-          target: ${{ env.JAR_HOME }}/${{ env.JAR_NAME }}
+          target: $JAR_HOME
       - name: Upload JAR as Artifact
         uses: actions/upload-artifact@v2
         with:
