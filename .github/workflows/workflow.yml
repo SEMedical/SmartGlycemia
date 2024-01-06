@@ -18,7 +18,7 @@ jobs:
           onlyRemoveDeployments: true
    project-build:
     runs-on: ubuntu-latest
-    environment: SERVER
+    environment: SERVER_WITH_PUBLIC_IP
     steps:
       - uses: actions/checkout@v4
 
