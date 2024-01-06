@@ -23,6 +23,8 @@ public class Jwt {
 
     // 解析token
     public static Claims parse(String jwt){
+        //去掉jwt的前7个字符
+       jwt = jwt.substring(7);
         return Jwts.parser()
                 .setSigningKey(key)
                 .parseClaimsJws(jwt)

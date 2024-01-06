@@ -1,5 +1,6 @@
 package edu.tongji.backend.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,9 +13,10 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Glycemia {
+    @TableId
     private int patientId;
 
-    private BigDecimal glycemia;
+    private Double glycemia;
 
     private Timestamp recordTime;
 }

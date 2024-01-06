@@ -8,4 +8,5 @@ public interface IUserService extends IService<User> {
     LoginDTO login(String contact, String password);
     Integer register(String name, String password, String contact, String gender, Integer age);
     Integer register(String name, String password, String contact);
+    Integer getUserId(String contact);
 }

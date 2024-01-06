@@ -2,19 +2,29 @@ package edu.tongji.backend;
 
 import edu.tongji.backend.controller.GlycemiaController;
 import edu.tongji.backend.exception.GlycemiaException;
+import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
+import edu.tongji.backend.service.impl.ExerciseServiceImpl;
+import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
 import edu.tongji.backend.util.Jwt;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class BackendApplicationTests {
@@ -26,9 +36,21 @@ class BackendApplicationTests {
     GlycemiaMapper glycemiaMapper;
     @Autowired
     GlycemiaController glycemiaController;
+    @Autowired
+    ExerciseServiceImpl exerciseService;
+    @Autowired
+    ExerciseMapper exerciseMapper;
+    @Autowired
+    GlycemiaServiceImpl glycemiaService;
     @Test
     void contextLoads() {
-        Jwt.generate(Map.of("userId", "1", "userPermission", "patient"));
+        glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
+    }
+    @Test
+    void getLatestGlycemia(){
+        //assertThrows(GlycemiaException.class, () -> {
+        //    glycemiaService.getLatestGlycemia("1");
+        //});
     }
     @Test
     void testSelect(){
@@ -44,7 +66,7 @@ class BackendApplicationTests {
 
         System.out.println("End test");
 //        assertThrows(GlycemiaException.class, () -> {
-//            //glycemiaController.LookupChart("key","History", "2", "2023-12-27");
+//            glycemiaController.LookupChart("key","History", "2", "2023-12-27");
 //
 //        });
     }
@@ -55,5 +77,33 @@ class BackendApplicationTests {
 //            //glycemiaController.LookupChartRecord("Week", "2", "2023-12-27");
 //        });
         System.out.println("End test");
+
+    }
+    @Test
+    void testExerciseInsertion(){
+        //assert that the time is now
+        Integer exercise_id = exerciseService.addExercise("1");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String time = exerciseService.getRealTimeSport("1").getTime();
+        Pattern pattern = Pattern.compile("\\d+"); // 匹配一个或多个数字
+        Matcher matcher = pattern.matcher(time);
+
+        if (matcher.find()) {
+            // 找到匹配的数字部分
+            String numericPart = matcher.group();
+
+            // 将提取的数字部分转换为整数
+            int numericValue = Integer.parseInt(numericPart);
+
+            // 断言时间是否小于10分钟
+            assertTrue(numericValue < 10, "The time is not now");
+        } else {
+            // 没有找到匹配的数字部分，可能需要进行错误处理
+            System.err.println("No numeric part found in the time string");
+        }
+    }
+    @Test
+    void testDailyDiagram(){
+        System.out.println(glycemiaService.showDailyGlycemiaDiagram("1", LocalDate.of(2024, 1, 2)));
     }
 }
