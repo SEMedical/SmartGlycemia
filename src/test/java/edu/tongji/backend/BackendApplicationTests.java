@@ -1,6 +1,9 @@
 package edu.tongji.backend;
 
 import edu.tongji.backend.controller.GlycemiaController;
+import edu.tongji.backend.controller.LoginController;
+import edu.tongji.backend.controller.RegisterController;
+import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.GlycemiaMapper;
@@ -10,6 +13,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.impl.ExerciseServiceImpl;
 import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
+import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.util.Jwt;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +43,24 @@ class BackendApplicationTests {
     @Autowired
     ExerciseServiceImpl exerciseService;
     @Autowired
+    UserServiceImpl userService;
+    @Autowired
     ExerciseMapper exerciseMapper;
     @Autowired
     GlycemiaServiceImpl glycemiaService;
+    @Autowired
+    RegisterController register;
     @Test
     void contextLoads() {
         glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
+    }
+    @Test
+    void testTx1(){
+        userService.register("Alice","femmves","12345678912","Female",21);
+    }
+    @Test
+    void register(){
+        register.registerPatient(new RegisterDTO("Bob","123456Aa,","16055555554","Male",21));
     }
     @Test
     void getLatestGlycemia(){
