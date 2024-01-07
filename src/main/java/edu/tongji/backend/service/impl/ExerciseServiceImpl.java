@@ -8,21 +8,26 @@ import edu.tongji.backend.entity.Exercise;
 import edu.tongji.backend.entity.Running;
 import edu.tongji.backend.entity.Scenario;
 import edu.tongji.backend.exception.ExerciseException;
-import edu.tongji.backend.entity.*;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.RunningMapper;
 import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.util.CalorieCalculator;
+import edu.tongji.backend.util.GlobalEventChecker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Thread.sleep;
 
 @Service
 public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> implements IExerciseService {
@@ -60,6 +65,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     }
 
     @Override
+    @Transactional
     public Integer addExercise(String userId) {
         int user_id = Integer.parseInt(userId);
         Exercise exercise = new Exercise();
@@ -95,11 +101,24 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //他们是随着运动过程中不断变化的
             insert_running=runningMapper.insert(running);
         }
+        GlobalEventChecker.getScheduler().schedule(() -> checkStopExercise(exercise_id), 1, TimeUnit.HOURS);
         return insert_exercise*insert_running;
     }
+    private void checkStopExercise(int id)  {
+        // 在这里添加逻辑，检查是否在60分钟内完成了CompletableFuture
+        System.out.println("Checking if Function finishExercise is called within 60 minutes.");
 
+        if (GlobalEventChecker.getBCalledFuture().isDone()) {
+            System.out.println("Function finishExercise is called within 60 minutes.");
+        } else {
+            System.out.println("Remove the record of"+id+"in exercise table and running table");
+            runningMapper.deleteById(id);
+            exerciseMapper.deleteById(id);
+        }
+    }
     @Override
     public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
+        GlobalEventChecker.getBCalledFuture().complete(null);
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id).eq("duration", 0);

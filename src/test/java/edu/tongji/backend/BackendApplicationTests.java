@@ -96,6 +96,19 @@ class BackendApplicationTests {
 
     }
     @Test
+    void testExerciseTx() throws InterruptedException {
+        System.out.println("Start test");
+        exerciseService.addExercise("1");
+        //Sleep
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        exerciseService.finishExercise("1");
+        System.out.println("End test");
+    }
+    @Test
     void testExerciseInsertion(){
         //assert that the time is now
         Integer exercise_id = exerciseService.addExercise("1");
