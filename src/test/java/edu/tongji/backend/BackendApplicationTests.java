@@ -50,6 +50,18 @@ class BackendApplicationTests {
     GlycemiaServiceImpl glycemiaService;
     @Autowired
     RegisterController register;
+    //一个用于测试实时获取运动数据的测试用例
+    @Test
+    void testExercise2() throws InterruptedException {
+        System.out.println("Start test");
+        exerciseService.addExercise("1");
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(1000);
+            exerciseService.getRealTimeSport("1");
+        }
+        exerciseService.finishExercise("1");
+        System.out.println("End test");
+    }
     @Test
     void contextLoads() {
         glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
