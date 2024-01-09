@@ -3,16 +3,14 @@ package edu.tongji.backend.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
-import edu.tongji.backend.entity.Examine;
-import edu.tongji.backend.entity.Exercise;
-import edu.tongji.backend.entity.Running;
-import edu.tongji.backend.entity.Scenario;
+import edu.tongji.backend.entity.*;
 import edu.tongji.backend.exception.ExerciseException;
 import edu.tongji.backend.mapper.ExamineMapper;
 import edu.tongji.backend.mapper.ExerciseMapper;
 import edu.tongji.backend.mapper.RunningMapper;
 import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IExerciseService;
+import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.util.CalorieCalculator;
 import edu.tongji.backend.util.GlobalEventChecker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +39,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     RunningMapper runningMapper;
     @Autowired
     RunningServiceImpl runningService;
+    @Autowired
+    IProfileService profileService;
 
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category,String userId, String date) {
@@ -126,15 +126,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         if (exercises.isEmpty())
             return null;
         //获取用户体重数据
-        double weight = 70;
-        QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
-        examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
-        List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
-        if (examines.isEmpty())
-            ;
-        else {
-            Examine last_examine = examines.get(examines.size() - 1);
-            weight = last_examine.getWeight();
+        int weight=70;
+        Profile profile = profileService.getByPatientId(userId);
+        if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
+            weight = profile.getWeight();
+            System.out.println("weight: " + weight);
         }
 //转换时区
         ZoneId currentZoneId = ZoneId.systemDefault();
@@ -329,15 +325,12 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
     public RealTimeSportDTO getRealTimeSport(String userId){
         int user_id = Integer.parseInt(userId);
         //获取用户体重数据
-        double weight = 70;
-        QueryWrapper<Examine> examineQueryWrapper = new QueryWrapper<>();
-        examineQueryWrapper.eq("patient_id", user_id).gt("weight", 0);
-        List<Examine> examines = examineMapper.selectList(examineQueryWrapper);
-        if (examines.isEmpty())
-            ;
-        else {//找到最近一次的体检记录
-            Examine last_examine = examines.get(examines.size() - 1);
-            weight = last_examine.getWeight();
+        int weight=70;
+
+        Profile profile = profileService.getByPatientId(userId);
+        if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
+            weight = profile.getWeight();
+            System.out.println("weight: " + weight);
         }
         RealTimeSportDTO ans = new RealTimeSportDTO();
         LocalDateTime now = LocalDateTime.now();
