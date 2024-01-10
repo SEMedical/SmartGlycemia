@@ -21,6 +21,7 @@ public class ScenarioServiceImpl extends ServiceImpl<ScenarioMapper, Scenario> i
 
     @Override
     public boolean setScenario(Integer patientId, Sport sport) {
+        System.out.println("种类为"+ sport.getCategory() );
         Scenario scenario = new Scenario();
         scenario.setPatientId(patientId);
         scenario.setCategory(sport.getCategory());

@@ -29,7 +29,8 @@ public class ScenarioController {
         if (!role.equals("patient")) {
             return Response.fail("用户不是病人");
         }
-
+//去掉category的多余空格
+        category = category.replaceAll(" ", "");
         if (scenarioService.setScenario(userId, new Sport(category.toLowerCase(), minute))) {
             return Response.success("设置成功", "success");
         } else {
