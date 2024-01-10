@@ -49,7 +49,7 @@ public class ProfileController {
         if (request.getHeader("Authorization") == null) {
             return Response.fail("您尚未登录");
         }
-        String token = request.getHeader( "Authorization");
+        String token = request.getHeader("Authorization");
 //        System.out.println(token);
         Integer userId = (Integer) Jwt.parse(token).get("userId");
         String role = (String) Jwt.parse(token).get("userPermission");
@@ -68,4 +68,26 @@ public class ProfileController {
             return Response.fail("更新健康档案失败");
         }
     }
+
+    @GetMapping("/getUserName")
+    public Response<String> test(HttpServletRequest request){
+            if (request.getHeader("Authorization") == null) {
+                return Response.fail("您尚未登录");
+            }
+        String token = request.getHeader( "Authorization");
+        Integer userId = (Integer) Jwt.parse(token).get("userId");
+        String role = (String) Jwt.parse(token).get("userPermission");
+        if (userService.getById(userId) == null) {
+            return Response.fail("用户不存在");
+        }
+        if (!role.equals("patient")) {
+            return Response.fail("用户不是病人");
+        }
+String name=profileService.getUserName(userId);
+        if(name==null){
+            return Response.fail("获取用户名失败");
+        }
+        return Response.success(name,"获取用户名成功");
+    }
 }
+
