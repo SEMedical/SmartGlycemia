@@ -7,6 +7,7 @@ import edu.tongji.backend.entity.Complication;
 import edu.tongji.backend.entity.Profile;
 import edu.tongji.backend.mapper.ComplicationMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
+import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.IComplicationService;
 import edu.tongji.backend.service.IProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
     @Autowired
     ProfileMapper profileMapper;
     //TODO: shorten the profile
+    @Autowired
+    UserMapper userMapper;
 
     @Autowired
     ComplicationMapper complicationMapper;
@@ -131,5 +134,9 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 //        System.out.println(profile);
 
         return profileMapper.update(profile);
+    }
+    @Override
+    public String getUserName(Integer patientId){
+        return userMapper.getUserName(patientId);
     }
 }
