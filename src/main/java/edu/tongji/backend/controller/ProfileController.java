@@ -74,7 +74,7 @@ public class ProfileController {
             if (request.getHeader("Authorization") == null) {
                 return Response.fail("您尚未登录");
             }
-            String token = request.getHeader( "Authorization");
+        String token = request.getHeader( "Authorization");
         Integer userId = (Integer) Jwt.parse(token).get("userId");
         String role = (String) Jwt.parse(token).get("userPermission");
         if (userService.getById(userId) == null) {
