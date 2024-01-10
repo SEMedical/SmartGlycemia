@@ -150,9 +150,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //更新distance
             if(category.equalsIgnoreCase("walking")||category.equalsIgnoreCase("jogging"))
             {
-                Running running=runningService.updateRunning(last_exercise.getExerciseId());
+                Running running=runningMapper.getByExerciseIdRunning(last_exercise.getExerciseId());
+
                 if(running!=null)
                 {
+                    runningService.updateRunning(last_exercise.getExerciseId());
                     last_exercise.setDistance(running.getDistance());
                 }
             }
