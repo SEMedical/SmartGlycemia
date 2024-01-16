@@ -236,6 +236,12 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
                 break;
         }
         System.out.println("起始日期为"+startTime+"终止日期为"+endTime+"运动种类为"+category+"时间类型为"+time_type);
+        //需要把start_time和end_time转换为UTC时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        ZonedDateTime start_time0 = startTime.atZone(currentZoneId);
+        ZonedDateTime end_time0 = endTime.atZone(currentZoneId);
+        startTime = start_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+        endTime = end_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
         int i = 0;
         int sum_duration = 0;//总时长，从exercise表获得
         double sum_distance = 0;//总距离，从running表获得,以公里为单位
@@ -307,10 +313,15 @@ System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate()
         String category = last_scenario.getCategory();
         int recommend_time = last_scenario.getDuration();
         int recommend_calorie = last_scenario.getCalories();
+        //需要定义start_time，它表示今天的零点。并且因为数据库里的数据是UTC时区的，所以要转换时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        ZonedDateTime start_time0=LocalDate.now().atStartOfDay().atZone(currentZoneId);
+        LocalDateTime start_time = start_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+       // System.out.println("开始时间为"+start_time);
         //接下来要计算 当天这个用户这个运动类型的运动总时长和总卡路里
         QueryWrapper<Exercise> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.eq("patient_id", user_id).eq("category", category.toLowerCase());
-        queryWrapper1.ge("start_time", LocalDate.now().atStartOfDay()).isNotNull("duration");
+        queryWrapper1.ge("start_time", start_time).isNotNull("duration");
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper1);
         int total_time = 0;
         int total_calorie = 0;
