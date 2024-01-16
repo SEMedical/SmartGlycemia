@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
@@ -172,28 +173,43 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 
     @Override
     public SportRecordDTO getSportRecord(String userId) {
+        LocalDateTime startTime_sh = LocalDate.now().minusDays(6).atStartOfDay();//要改成UTC时区
+        ZoneId currentZoneId = ZoneId.systemDefault();
+        ZonedDateTime start_time0 = startTime_sh.atZone(currentZoneId);
+        LocalDateTime startTime = start_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+
         SportRecordDTO ans= new SportRecordDTO();
-        System.out.println("数组长度为"+ans.getMinute_record().length);
+        //System.out.println("数组长度为"+ans.getMinute_record().length);
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id).isNotNull("duration");
         //查找最近7天的运动记录，从7天前的0点到今天的现在
-        queryWrapper.ge("start_time", LocalDate.now().minusDays(6).atStartOfDay());
-        System.out.println("起始日期为"+LocalDate.now().minusDays(6).atStartOfDay());
+        queryWrapper.ge("start_time", startTime);
+        System.out.println("起始日期为" + startTime_sh+"UTC时区的起始日期为"+startTime);
+
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         int total_minute = 0;
         int total_calorie = 0;
         HashMap<String, CategoryRecordDTO> sport_records = new HashMap<>();
         for (Exercise exercise : exercises) {
+            //再次检查一遍start_time是否晚于startTime_sh
+            if (exercise.getStartTime().isBefore(startTime_sh))
+                continue;
             total_minute += exercise.getDuration();
             total_calorie += exercise.getCalorie();
+            //获取这个运动的开始时间，转为default时区
+            LocalDateTime start_time1 = exercise.getStartTime().atZone(ZoneId.of("UTC")).withZoneSameInstant(currentZoneId).toLocalDateTime();
+            //计算start_time1和startTime_sh的差值，得到这个运动是在第几天
+            int day = (int) startTime_sh.until(start_time1.withHour(0).withMinute(0).withSecond(0), ChronoUnit.DAYS);
+            System.out.println("day为" + day + "start_time1为" + start_time1 + "startTime_sh为" + startTime_sh);
             //要知道这个运动是在第几天，然后在对应的位置加上运动时间
-            ans.getMinute_record()[LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()-1] += exercise.getDuration();
-System.out.println("在第"+(LocalDate.now().minusDays(7).until(exercise.getStartTime().toLocalDate()).getDays()-1)+"天运动了"+exercise.getDuration()+"分钟");
-System.out.println("这一天的日期是"+exercise.getStartTime().toLocalDate());
+
+            ans.getMinute_record()[day] += exercise.getDuration();
+            //System.out.println("在第" + day + "天运动了" + exercise.getDuration() + "分钟");
+            //System.out.println("这一天的日期是" + exercise.getStartTime().toLocalDate());
             //要知道这个运动是什么种类，然后在对应的位置加上运动时间
             String category = Scenario.check(exercise.getCategory());
-            if(category==null)
+            if (category == null)
                 continue;
             if (sport_records.containsKey(category)) {
                 CategoryRecordDTO categoryRecordDTO = sport_records.get(category);
