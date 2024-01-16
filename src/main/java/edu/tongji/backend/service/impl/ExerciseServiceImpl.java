@@ -201,7 +201,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             LocalDateTime start_time1 = exercise.getStartTime().atZone(ZoneId.of("UTC")).withZoneSameInstant(currentZoneId).toLocalDateTime();
             //计算start_time1和startTime_sh的差值，得到这个运动是在第几天
             int day = (int) startTime_sh.until(start_time1.withHour(0).withMinute(0).withSecond(0), ChronoUnit.DAYS);
-            System.out.println("day为" + day + "start_time1为" + start_time1 + "startTime_sh为" + startTime_sh);
+            //System.out.println("day为" + day + "start_time1为" + start_time1 + "startTime_sh为" + startTime_sh);
             //要知道这个运动是在第几天，然后在对应的位置加上运动时间
 
             ans.getMinute_record()[day] += exercise.getDuration();
