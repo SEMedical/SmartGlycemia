@@ -29,7 +29,24 @@ public class ScenarioController {
         if (!role.equals("patient")) {
             return Response.fail("用户不是病人");
         }
-
+//switch category
+        category = category.trim();
+        switch (category) {
+            case "散步":
+                category = "walking";
+                break;
+            case "瑜伽":
+                category = "yoga";
+                break;
+            case "跳绳":
+                category = "ropeskipping";
+                break;
+            case "慢跑":
+                category = "jogging";
+                break;
+            default:
+                return Response.fail("运动类型错误");
+        }
         if (scenarioService.setScenario(userId, new Sport(category, minute))) {
             return Response.success("设置成功", "success");
         } else {

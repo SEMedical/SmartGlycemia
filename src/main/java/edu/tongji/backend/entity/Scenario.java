@@ -12,11 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Scenario {
     public enum Category{
-        running,jogging,yoga,ropeskipping
+        walking,jogging,yoga,ropeskipping
     }
     public static String check(String category) {
         for(int i = 0; i < Category.values().length; i++) {
-            if(Category.values()[i].toString().equals(category.toLowerCase())) {
+            if(Category.values()[i].toString().equalsIgnoreCase(category)) {
                 return category;
             }
         }
