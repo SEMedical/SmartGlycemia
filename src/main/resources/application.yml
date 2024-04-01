@@ -1,11 +1,25 @@
 server:
   port: 81
 spring:
+  data:
+    redis:
+      host: 192.168.23.131
+      port: 6379
+      password: 167530TXZ
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 1
+          time-between-eviction-runs: 10s
   datasource:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     url: ${DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jackson:
+    default-property-inclusion: non-null
     #type: com.alibaba.druid.pool.DruidDataSource
 mybatis-plus:
   mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml
@@ -16,3 +30,4 @@ mybatis-plus:
       logic-not-delete-value: 0
     table-prefix: tbl_
     id-type: auto
+

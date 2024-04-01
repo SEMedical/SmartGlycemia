@@ -1,10 +1,16 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.dto.LoginFormDTO;
+import edu.tongji.backend.dto.Result;
+import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.service.IExerciseService;
+import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.IUserService;
+import edu.tongji.backend.util.UserHolder;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +23,20 @@ public class LoginController {
     IUserService userService;
     @Autowired
     IExerciseService exerciseService;
-
-    @PostMapping//对应的api路径
+    @PostMapping("/phone")
+    public Result loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+        return userService.loginByPhone(loginForm,session);
+    }
+    @PostMapping("/captcha")
+    public Result sendCaptcha(@RequestBody String contact, HttpSession session){
+        return userService.sendCode(contact,session);
+    }
+    @GetMapping("/me")
+    public Result me(){
+        UserDTO user= UserHolder.getUser();
+        return Result.ok();
+    }
+    @PostMapping("/pass")//对应的api路径
     public Response<LoginDTO> login(@RequestBody User user)  //把请求中的内容映射到user
     {
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
