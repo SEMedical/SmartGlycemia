@@ -1,5 +1,8 @@
 package edu.tongji.backend.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.*;
@@ -7,7 +10,9 @@ import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.service.IGlycemiaService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -17,6 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static edu.tongji.backend.util.BloomFilterUtil.*;
+import static edu.tongji.backend.util.RedisConstants.*;
 
 @Service
 public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> implements IGlycemiaService {
@@ -24,6 +33,8 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     GlycemiaMapper glycemiaMapper;
     @Autowired
     ProfileMapper userMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     @Override
     public Chart showGlycemiaDiagram(String type, String user_id, LocalDate date) {
         Chart chart=new Chart();
@@ -48,10 +59,24 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         while (startDateTime.isBefore(endTime)) {
             System.out.println(startDateTime);
             startDateTime = startDateTime.plus(interval);
-            Double glycemiaValue=glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
-            if(glycemiaValue==null) {
+            if(!glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))){
                 System.out.println("No data found at" + startDateTime.format(formatter));
                 continue;
+            }
+            String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
+            Double glycemiaValue;
+            if(StrUtil.isNotBlank(glycemiaJson)){//Cache hit
+                glycemiaValue=Double.valueOf(glycemiaJson);
+            }else {
+                glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
+                if (glycemiaValue == null) {
+                    System.out.println("(Penetration!)No data found at" + startDateTime.format(formatter));
+                    continue;
+                }
+                glycemia_bf.put(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
+                stringRedisTemplate.opsForValue().set(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),glycemiaValue.toString());
+                stringRedisTemplate.expire(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
+                        CACHE_GLYCEMIA_TTL,TimeUnit.DAYS);
             }
             Map<LocalDateTime,Double> data = new HashMap<>();
             data.put(startDateTime,glycemiaValue);
@@ -76,10 +101,27 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         while (startDateTime.isBefore(endTime)) {
             System.out.println(startDateTime);
             startDateTime = startDateTime.plus(interval);
-            Double glycemiaValue=glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
-            if(glycemiaValue==null) {
+            if(!daily_glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))) {
                 System.out.println("No data found around" + startDateTime.format(formatter));
                 continue;
+            }
+            String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
+            Double glycemiaValue;
+            if(StrUtil.isNotBlank(glycemiaJson))
+                glycemiaValue=Double.valueOf(glycemiaJson);
+            else {
+                //System.out.println(startDateTime.format(formatter));
+
+                glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
+                if (glycemiaValue == null) {
+                    System.out.println("(Penetration)No data found around" + startDateTime.format(formatter));
+                    continue;
+                }
+                daily_glycemia_bf.put(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
+                stringRedisTemplate.opsForValue().set(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
+                        glycemiaValue.toString());
+                stringRedisTemplate.expire(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
+                        CACHE_DAILY_GLYCEMIA_TTL, TimeUnit.DAYS);
             }
             Map<LocalDateTime,Double> data = new HashMap<>();
             data.put(startDateTime,glycemiaValue);
@@ -107,6 +149,43 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
         return interval1 == interval2;
     }
+    public void Init_GlycemiaHistoryDiagram(){
+        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        List<Glycemia> exercises = glycemiaMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        exercises.forEach(element->history_glycemia_bf.put(
+                CACHE_HISTORY_GLYCEMIA_KEY+element.getPatientId()+":"+
+                        element.getRecordTime().toLocalDateTime().format(formatter)));
+    }
+    public void Init_GlycemiaDiagram(){
+        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        glycemias.forEach(element->glycemia_bf.put(
+                CACHE_GLYCEMIA_KEY+element.getPatientId()+":"+
+                        element.getRecordTime().toLocalDateTime().format(formatter)));
+    }
+    public void Init_DailyGlycemiaDiagram(){
+        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        glycemias.forEach(element-> {
+            LocalDateTime dateTime = element.getRecordTime().toLocalDateTime().minusHours(8);
+            int minute = dateTime.getMinute();
+            int nearestMultipleOf15 = (int) Math.floor(minute / 15.0) * 15;
+            dateTime=dateTime.withMinute(nearestMultipleOf15).withSecond(0);
+            daily_glycemia_bf.put(
+                    CACHE_DAILY_GLYCEMIA_KEY + element.getPatientId() + ":" +
+                            dateTime.format(formatter));
+        });
+    }
+    public void Init_LatestGlycemiaDiagram(){
+        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        List<Glycemia> exercises = glycemiaMapper.selectList(queryWrapper);
+        exercises.forEach(element->latest_glycemia_bf.put(
+                CACHE_LATEST_GLYCEMIA_KEY+element.getPatientId()));
+    }
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
         CompositeChart chart = new CompositeChart();
@@ -128,14 +207,27 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         // 遍历时间点，每1天一次，直到当前时间
         while (startDate.isBefore(endTime)) {
             System.out.println(startDate);
-
-            Statistics glycemiaValue=new Statistics();
-            glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter) );
-            //TODO:月度统计
-            if (glycemiaValue == null) {
+            if(!history_glycemia_bf.mightContain(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter))){
                 System.out.println("No data found at" + startDate.format(formatter));
                 startDate = startDate.plusDays(1);
                 continue;
+            }
+            String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
+            Statistics glycemiaValue=new Statistics();
+            if(StrUtil.isNotBlank(glycemiaJson))
+                glycemiaValue= JSON.parseObject(glycemiaJson,Statistics.class);
+            else{
+                glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter));
+                //TODO:月度统计
+                if (glycemiaValue == null) {
+                    System.out.println("(Penetration)No data found at" + startDate.format(formatter));
+                    startDate = startDate.plusDays(1);
+                    continue;
+                }
+                history_glycemia_bf.put(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
+                stringRedisTemplate.opsForValue().set(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),JSON.toJSONString(glycemiaValue));
+                stringRedisTemplate.expire(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),
+                        CACHE_HISTORY_GLYCEMIA_TTL,TimeUnit.DAYS);
             }
             Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
             // 计算总的血糖比例
@@ -198,9 +290,22 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     //实时的标准是15分钟以内
     @Override
     public Double getLatestGlycemia(String user_id) {
-        GlycemiaDTO val=glycemiaMapper.getRealtimeGlycemia(user_id);
-        if(val==null)
+        if(!latest_glycemia_bf.mightContain(CACHE_LATEST_GLYCEMIA_KEY +user_id))
             throw new GlycemiaException("All the glycemia data is not accessible!");
+        String valjson=stringRedisTemplate.opsForValue().get(CACHE_LATEST_GLYCEMIA_KEY +user_id);
+        GlycemiaDTO val;
+        if(StrUtil.isNotBlank(valjson)) {
+            val=JSON.parseObject(valjson, GlycemiaDTO.class);
+        }else {
+            val = glycemiaMapper.getRealtimeGlycemia(user_id);
+            if (val == null) {
+                //TODO:CACHE PENETRATION!
+                throw new GlycemiaException("All the glycemia data is not accessible(Cache Penetration)!");
+            }
+            latest_glycemia_bf.put(CACHE_LATEST_GLYCEMIA_KEY +user_id);
+            stringRedisTemplate.opsForValue().set(CACHE_LATEST_GLYCEMIA_KEY +user_id,JSON.toJSONString(val));
+            stringRedisTemplate.expire(CACHE_LATEST_GLYCEMIA_KEY +user_id,LATEST_GLYCEMIA_TTL,TimeUnit.MINUTES);
+        }
         String latestDate=val.getRecordTime();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime parsed = LocalDateTime.parse(latestDate,formatter);

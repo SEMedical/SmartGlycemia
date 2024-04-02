@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.dto.LoginFormDTO;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @SpringBootTest
+@Slf4j
 public class PhoneLoginTest {
     @Autowired
     LoginController loginController;
@@ -41,6 +43,7 @@ public class PhoneLoginTest {
     }
     @Test
     void SendCaptchaBatch() throws Exception {
+        log.debug("[1] send captcha (Batch)");
         sendCaptcha("15555555555",false);
         sendCaptcha("13655321254",false);
     }
@@ -60,35 +63,48 @@ public class PhoneLoginTest {
     }
     @Test
     void testWithoutCaptcha() throws Exception {
+        log.debug("[2] test without captcha ");
+        boolean verbose=false;
         LoginFormDTO user=new LoginFormDTO("15555555555",null,null);
         String jsonResult= JSONObject.toJSONString(user);
-        MvcResult result= mockMvc.perform(MockMvcRequestBuilders
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/phone")
-                .param("loginForm",jsonResult)
+                .param("loginForm", jsonResult)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
         )./*andExpect(status().is4xxClientError()).*/
-                andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}")).andDo(print()).andReturn();
+                andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
+        if(verbose)
+            result.andDo( print()).andReturn();
+        else
+            result.andReturn();
     }
     //TODO:sendCode+testCaptcha
     @Test
     void testWithCaptchaBatch() throws Exception{
-        testWithCaptcha(true);
-        testWithCaptcha(false);
+        log.debug("[3] test with captcha (Batch 2/2)");
+        log.debug("[3.1] test with expired captcha");
+        //testWithCaptcha(true,false);
+        log.debug("[3.2] test with effective captcha");
+        testWithCaptcha(false,false);
     }
-    void testWithCaptcha(boolean expire) throws Exception {
+    void testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
-        MvcResult result= mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/login/captcha")
-                        .param("contact",contact)
-                        .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                        .content(contact)
-                        .contentType("application/text;charset=UTF-8")
-                ).andExpect(status().isOk())
-                .andDo(print()).andReturn();
-        Integer captcha = Integer.parseInt(result.getRequest().getSession().getAttribute("Captcha").toString());
-        System.out.println(captcha);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/login/captcha")
+                .param("contact", contact)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .content(contact)
+                .contentType("application/text;charset=UTF-8")
+        ).andExpect(status().isOk());
+        MvcResult fresult;
+        if(verbose)
+            fresult=result.andDo( print()).andReturn();
+        else
+            fresult=result.andReturn();
+        Integer captcha = Integer.parseInt(fresult.getRequest().getSession().getAttribute("Captcha").toString());
+
         if(expire){
             Thread.sleep(LOGIN_CODE_TIMEOUT*60*1000);
         }
@@ -102,8 +118,12 @@ public class PhoneLoginTest {
                 .contentType("application/json;charset=UTF-8")
         );
         if(!expire)
-            raw.andExpect(content().json("{\"success\":true}")).andDo(print()).andReturn();
+            raw=raw.andExpect(content().json("{\"success\":true}"));
         else
-            raw.andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}")).andDo(print()).andReturn();
+            raw=raw.andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
+        if(verbose)
+            raw.andDo( print()).andReturn();
+        else
+            raw.andReturn();
     }
 }

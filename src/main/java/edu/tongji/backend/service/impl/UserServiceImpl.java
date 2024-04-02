@@ -110,7 +110,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         // TODO save userinfo to Redis
         // TODO generate token,as login pass
-        String token = UUID.randomUUID().toString();
+        Map<String,Object> jwtInfo = new HashMap<>();
+        jwtInfo.put("userId", userinfo.getUserId());
+        jwtInfo.put("userPermission", userinfo.getRole());
+        String token = Jwt.generate(jwtInfo);
         UserDTO userDTO= BeanUtil.copyProperties(userinfo,UserDTO.class);
         Map<String,Object> userMap=BeanUtil.beanToMap(userDTO,new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor(

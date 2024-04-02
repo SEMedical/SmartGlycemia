@@ -63,8 +63,22 @@ class BackendApplicationTests {
         System.out.println("End test");
     }
     @Test
-    void contextLoads() {
-        glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
+    void showGlycemiaHistoryDiagramBatch() {//Only w/ Redis:11s891(66.8%)  w/Redis&Bloom 4s103(65.5%,88.5%) None:35s844
+        glycemiaService.Init_GlycemiaHistoryDiagram();
+        for(int i=0;i<100;i++)
+            glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
+    }
+    @Test
+    void showGlycemiaDiagram() {//Only w/ Redis:8s964(-115.7%?)  w/Redis&Bloom 1s367(84.8%,67.1%) None:4s155
+        glycemiaService.Init_GlycemiaDiagram();
+        for(int i=0;i<5;i++)
+            glycemiaService.showGlycemiaDiagram("History", "2", LocalDate.of(2023, 12, 28));
+    }
+    @Test
+    void showDailyGlycemiaDiagram() {//Only w/ Redis:9s842(-115.7%?)  w/Redis&Bloom 2s338(84.8%,67.1%) None:5s425
+        glycemiaService.Init_DailyGlycemiaDiagram();
+        for(int i=0;i<5;i++)
+            glycemiaService.showDailyGlycemiaDiagram( "1", LocalDate.of(2023, 12, 27));
     }
     @Test
     void testTx1(){
