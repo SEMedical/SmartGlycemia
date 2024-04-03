@@ -11,4 +11,5 @@ public class UserDTO {
     String icon;
     String name;
     String userId;
+    String role;
 }

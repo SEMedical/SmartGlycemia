@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
+import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,4 +16,6 @@ public interface IUserService extends IService<User> {
     Integer register(String name, String password, String contact, String gender, Integer age);
     Integer register(String name, String password, String contact);
     Integer getUserId(String contact);
+
+    Result sign(UserDTO user);
 }

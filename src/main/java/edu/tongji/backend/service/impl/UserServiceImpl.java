@@ -16,6 +16,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.RegexUtils;
+import edu.tongji.backend.util.UserHolder;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,12 +24,15 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -110,10 +114,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         // TODO save userinfo to Redis
         // TODO generate token,as login pass
-        Map<String,Object> jwtInfo = new HashMap<>();
-        jwtInfo.put("userId", userinfo.getUserId());
-        jwtInfo.put("userPermission", userinfo.getRole());
-        String token = Jwt.generate(jwtInfo);
+        String token = UUID.randomUUID().toString();
         UserDTO userDTO= BeanUtil.copyProperties(userinfo,UserDTO.class);
         Map<String,Object> userMap=BeanUtil.beanToMap(userDTO,new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor(
@@ -123,6 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.expire(LOGIN_TOKEN_KEY+token,LOGIN_TOKEN_TTL,TimeUnit.MINUTES);
         //6. save userinfo to sessions
         session.setAttribute("user", BeanUtil.copyProperties(userinfo,UserDTO.class));
+        session.setAttribute("authorization",token);
         //No need to return JWT,because it's carried by session
         return Result.ok();
     }
@@ -233,5 +235,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         wrapper.eq("contact", contact);
         User user = userMapper.selectOne(wrapper);
         return user.getUserId();
+    }
+
+    @Override
+    public Result sign(UserDTO user) {
+        String userId = user.getUserId();
+        //get date
+        LocalDateTime now= LocalDateTime.now();
+        //concat key
+        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
+        String key=USER_SIGN_KEY+userId+keySuffix;
+        //get the day of month
+        int dayOfMonth=now.getDayOfMonth();
+        //write to the Redis
+        stringRedisTemplate.opsForValue().
+                setBit(key,dayOfMonth-1,true);
+        return Result.ok();
     }
 }

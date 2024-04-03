@@ -1,9 +1,6 @@
 package edu.tongji.backend.controller;
 
-import edu.tongji.backend.dto.RealTimeSportDTO;
-import edu.tongji.backend.dto.SportDetailedDTO;
-import edu.tongji.backend.dto.SportPlanDTO;
-import edu.tongji.backend.dto.SportRecordDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;
@@ -13,6 +10,7 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.TimeTypeChecker;
+import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +31,8 @@ public class SportController {
     @GetMapping("/startDoingSport") //对应的api路径
     public Response<Null> startExercise(HttpServletRequest request)
     {
-        String token = request.getHeader( "Authorization");
-        String user_id= Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -61,8 +59,8 @@ public class SportController {
     @GetMapping("/stopDoingSport") //对应的api路径
     public Response<Null> stopSport(HttpServletRequest request)//把请求中的内容映射到user
     {
-        String token = request.getHeader( "Authorization");
-        String user_id=Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -78,8 +76,8 @@ public class SportController {
     @GetMapping("/realTimeSportData")
     public Response<RealTimeSportDTO> getRealTimeSportData(HttpServletRequest request)
     {
-        String token = request.getHeader("Authorization");
-        String user_id = Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -96,8 +94,8 @@ public class SportController {
     @GetMapping("/sportRecord") //对应的api路径
     public Response<SportRecordDTO> getTotalRecord(HttpServletRequest request)//把请求中的内容映射到user
     {
-        String token = request.getHeader( "Authorization");
-        String user_id=Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -115,8 +113,8 @@ public class SportController {
     public Response<SportDetailedDTO> getDetailRecord
             (HttpServletRequest request, @RequestParam String time_type,@RequestParam String category)
     {
-        String token = request.getHeader("Authorization");
-        String user_id = Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -137,8 +135,8 @@ public class SportController {
     @GetMapping("/realTimeHeartRate")
     public Response<Integer> getRealTimeHeartRate(HttpServletRequest request)
     {
-        String token = request.getHeader("Authorization");
-        String user_id = Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);
@@ -154,8 +152,8 @@ public class SportController {
     @GetMapping("/sportPlan")
     public Response<SportPlanDTO> getSportPlan(HttpServletRequest request)
     {
-        String token = request.getHeader("Authorization");
-        String user_id = Jwt.parse(token).get("userId").toString();
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
             this.checkUser(user_id);

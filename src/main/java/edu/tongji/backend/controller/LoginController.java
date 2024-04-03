@@ -53,4 +53,9 @@ public class LoginController {
         exerciseService.finishExercise(userService.getUserId(user.getContact()).toString());
         return Response.success(loginDTO,"登录成功");  //返回成功信息
     }
+    @PostMapping("/sign")
+    public Result sign(){
+        UserDTO user= UserHolder.getUser();
+        return userService.sign(user);
+    }
 }

@@ -12,6 +12,7 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHelper;
+import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
@@ -39,7 +40,8 @@ public class GlycemiaController {
             if(type.equals("realtime"))
                 type="Realtime";
             //确认用户是否存在，是否是病人
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             if (!type.equals("History") && !type.equals("Realtime"))
                 throw new GlycemiaException("type must be history or realtime");
             //history必须有time
@@ -84,7 +86,8 @@ public class GlycemiaController {
             if(span.equals("month"))
                 span="Month";
             //确认用户是否存在，是否是病人
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(startDate, LocalDate.of(2023, 12, 1), LocalDate.now());
             //确认类型必须为history或realtime
@@ -108,7 +111,8 @@ public class GlycemiaController {
     @GetMapping("/isExercise")
     public Response<Intervals> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
         try {
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
             //运动类型必须为慢跑或瑜伽...
@@ -128,7 +132,8 @@ public class GlycemiaController {
     @GetMapping("/realTime")
     public Response<Double> GetRealtimeGlycemia(HttpServletRequest request){
         try {
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             Double data=glycemiaService.getLatestGlycemia(user_id);
             return Response.success(data,"You've get the latest glycemia data!");
         }catch (GlycemiaException e){
@@ -142,7 +147,8 @@ public class GlycemiaController {
     @GetMapping("dailyHistory")
     public Response<DailyChart> GetDailyChart(HttpServletRequest request,@RequestParam String date){
         try {
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
 
@@ -160,7 +166,8 @@ public class GlycemiaController {
     @GetMapping("/realTimePrompt")
     public Response<Tip> GetRealtimeTips(HttpServletRequest request){
         try {
-            String user_id = UserHelper.checkUser(userService,profileService,request);
+            UserDTO user= UserHolder.getUser();
+            String user_id= user.getUserId();
             //根据年龄判断血糖阈值
             Integer age=profileService.getById(user_id).getAge();
             Double data=glycemiaService.getLatestGlycemia(user_id);

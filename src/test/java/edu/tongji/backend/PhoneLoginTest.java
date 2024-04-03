@@ -3,6 +3,7 @@ package edu.tongji.backend;
 import com.alibaba.fastjson.JSONObject;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.dto.LoginFormDTO;
+import edu.tongji.backend.service.impl.UserServiceImpl;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,8 @@ public class PhoneLoginTest {
     LoginController loginController;
     @Autowired
     private WebApplicationContext webApplicationContext;
+    @Autowired
+    private UserServiceImpl userService;
     private MockMvc mockMvc;
     private MockHttpSession session;
 
@@ -80,6 +83,23 @@ public class PhoneLoginTest {
         else
             result.andReturn();
     }
+    @Test
+    void DirectSign() throws Exception {
+        //String token = testWithCaptcha(false, false);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/login/sign")
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().is4xxClientError());
+    }
+    @Test
+    void LoginThenSign() throws Exception {
+        String token = testWithCaptcha(false, false);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/login/sign")
+                        .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+    }
     //TODO:sendCode+testCaptcha
     @Test
     void testWithCaptchaBatch() throws Exception{
@@ -89,7 +109,8 @@ public class PhoneLoginTest {
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
     }
-    void testWithCaptcha(boolean expire,boolean verbose) throws Exception {
+    //Return authorization
+    String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")
@@ -117,13 +138,17 @@ public class PhoneLoginTest {
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
         );
+        MvcResult fresult2;
         if(!expire)
             raw=raw.andExpect(content().json("{\"success\":true}"));
         else
             raw=raw.andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
         if(verbose)
-            raw.andDo( print()).andReturn();
+            fresult2=raw.andDo( print()).andReturn();
         else
-            raw.andReturn();
+            fresult2=raw.andReturn();
+        String token = fresult2.getRequest().getSession().getAttribute("authorization").toString();
+        System.out.println(token);
+        return token;
     }
 }

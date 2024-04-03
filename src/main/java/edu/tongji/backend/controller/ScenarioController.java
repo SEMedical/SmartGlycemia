@@ -1,9 +1,11 @@
 package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.Sport;
+import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.service.IScenarioService;
 import edu.tongji.backend.util.Response;
+import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,16 +21,8 @@ public class ScenarioController {
 
     @PostMapping("/set-scenario") //对应的api路径
     public Response<String> setScenario(HttpServletRequest request, @RequestParam String category, @RequestParam Integer minute) {
-        if (request.getHeader("Authorization") == null) {
-            return Response.fail("您尚未登录");
-        }
-        String token = request.getHeader( "Authorization");
-//        System.out.println(token);
-        Integer userId = (Integer) Jwt.parse(token).get("userId");
-        String role = (String) Jwt.parse(token).get("userPermission");
-        if (!role.equals("patient")) {
-            return Response.fail("用户不是病人");
-        }
+        UserDTO user= UserHolder.getUser();
+        Integer userId= Integer.valueOf(user.getUserId());
 //switch category
         category = category.trim();
         switch (category) {
