@@ -16,4 +16,5 @@ public class RedisConstants {
     public static final Long CACHE_DAILY_GLYCEMIA_TTL= 1L;
     public static final String CACHE_HISTORY_GLYCEMIA_KEY="cache:history:glycemia:";
     public static final Long CACHE_HISTORY_GLYCEMIA_TTL=7L;
+    public static final String HOSPITAL_GEO_KEY="geo:hospital:";
 }
