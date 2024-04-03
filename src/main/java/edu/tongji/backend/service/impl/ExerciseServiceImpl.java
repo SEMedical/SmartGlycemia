@@ -1,5 +1,6 @@
 package edu.tongji.backend.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
@@ -13,7 +14,9 @@ import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.util.CalorieCalculator;
 import edu.tongji.backend.util.GlobalEventChecker;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static edu.tongji.backend.util.BloomFilterUtil.exercise_running_bf;
+import static edu.tongji.backend.util.BloomFilterUtil.glycemia_bf;
+import static edu.tongji.backend.util.RedisConstants.CACHE_GLYCEMIA_KEY;
+import static edu.tongji.backend.util.RedisConstants.EXERCISE_RUNNING_KEY;
 import static java.lang.Thread.sleep;
 
 @Service
@@ -42,6 +49,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     RunningServiceImpl runningService;
     @Autowired
     IProfileService profileService;
+    @Resource
+    RedisTemplate redisTemplate;
 
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category,String userId, String date) {
@@ -69,6 +78,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     @Transactional
     public Integer addExercise(String userId) {
         finishExercise(userId);
+
         int user_id = Integer.parseInt(userId);
         Exercise exercise = new Exercise();
         exercise.setPatientId(user_id);
@@ -102,6 +112,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //running表里有：distance,pace
             //他们是随着运动过程中不断变化的
             insert_running=runningMapper.insert(running);
+            exercise_running_bf.put(EXERCISE_RUNNING_KEY+insert_exercise);
         }
         GlobalEventChecker.getScheduler().schedule(() -> checkStopExercise(exercise_id), 1, TimeUnit.HOURS);
         return insert_exercise*insert_running;
@@ -117,6 +128,13 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             runningMapper.deleteById(id);
             exerciseMapper.deleteById(id);
         }
+    }
+    public void Init_exerciseRunning(){
+        QueryWrapper<Running> queryWrapper = new QueryWrapper<>();
+        List<Running> glycemias = runningMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        glycemias.forEach(element->glycemia_bf.put(
+                CACHE_GLYCEMIA_KEY+element.getExerciseId()));
     }
     @Override
     public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
@@ -151,12 +169,26 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //更新distance
             if(category.equalsIgnoreCase("walking")||category.equalsIgnoreCase("jogging"))
             {
-                Running running=runningMapper.getByExerciseIdRunning(last_exercise.getExerciseId());
-
-                if(running!=null)
-                {
-                    runningService.updateRunning(last_exercise.getExerciseId());
-                    last_exercise.setDistance(running.getDistance());
+                Integer exerciseId = last_exercise.getExerciseId();
+                //Bloom Filter Hit
+                if(exercise_running_bf.mightContain(EXERCISE_RUNNING_KEY+exerciseId)) {
+                    Object pace = redisTemplate.opsForHash().get(EXERCISE_RUNNING_KEY + exerciseId.toString(), "pace");
+                    Object distance = redisTemplate.opsForHash().get(EXERCISE_RUNNING_KEY + exerciseId.toString(), "distance");
+                    Running running = null;
+                    if (pace != null && distance != null) {
+                        running.setPace(Integer.parseInt(pace.toString()));
+                        running.setDistance(Double.parseDouble(distance.toString()));
+                        running.setExerciseId(exerciseId);
+                        System.out.println("test" + running);
+                    } else {
+                        running = runningMapper.getByExerciseIdRunning(last_exercise.getExerciseId());
+                        if (running != null) {
+                            runningService.updateRunning(last_exercise.getExerciseId());
+                            last_exercise.setDistance(running.getDistance());
+                        } else {
+                            System.out.println("Cache Penetration! (running data not found)");
+                        }
+                    }
                 }
             }
             //创建这个exercise对应的mapper

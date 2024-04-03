@@ -53,6 +53,7 @@ class BackendApplicationTests {
     //一个用于测试实时获取运动数据的测试用例
     @Test
     void testExercise2() throws InterruptedException {
+        exerciseService.Init_exerciseRunning();
         System.out.println("Start test");
         exerciseService.addExercise("1");
         for (int i = 0; i < 5; i++) {
@@ -136,6 +137,7 @@ class BackendApplicationTests {
     }
     @Test
     void testExerciseInsertion(){
+        exerciseService.Init_exerciseRunning();
         //assert that the time is now
         Integer exercise_id = exerciseService.addExercise("1");
         //if(exerciseMapper.selectById(exercise_id).getCategory().equalsIgnoreCase("walking"))

@@ -76,7 +76,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 glycemia_bf.put(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
                 stringRedisTemplate.opsForValue().set(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),glycemiaValue.toString());
                 stringRedisTemplate.expire(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
-                        CACHE_GLYCEMIA_TTL,TimeUnit.DAYS);
+                        (long)(CACHE_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);
             }
             Map<LocalDateTime,Double> data = new HashMap<>();
             data.put(startDateTime,glycemiaValue);
@@ -121,7 +121,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 stringRedisTemplate.opsForValue().set(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
                         glycemiaValue.toString());
                 stringRedisTemplate.expire(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
-                        CACHE_DAILY_GLYCEMIA_TTL, TimeUnit.DAYS);
+                        (long)(CACHE_DAILY_GLYCEMIA_TTL*86400+1000*Math.random()), TimeUnit.SECONDS);
             }
             Map<LocalDateTime,Double> data = new HashMap<>();
             data.put(startDateTime,glycemiaValue);
@@ -227,7 +227,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 history_glycemia_bf.put(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
                 stringRedisTemplate.opsForValue().set(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),JSON.toJSONString(glycemiaValue));
                 stringRedisTemplate.expire(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),
-                        CACHE_HISTORY_GLYCEMIA_TTL,TimeUnit.DAYS);
+                        (long)(CACHE_HISTORY_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);
             }
             Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
             // 计算总的血糖比例
@@ -304,7 +304,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             }
             latest_glycemia_bf.put(CACHE_LATEST_GLYCEMIA_KEY +user_id);
             stringRedisTemplate.opsForValue().set(CACHE_LATEST_GLYCEMIA_KEY +user_id,JSON.toJSONString(val));
-            stringRedisTemplate.expire(CACHE_LATEST_GLYCEMIA_KEY +user_id,LATEST_GLYCEMIA_TTL,TimeUnit.MINUTES);
+            stringRedisTemplate.expire(CACHE_LATEST_GLYCEMIA_KEY +user_id, (long) (LATEST_GLYCEMIA_TTL*60+Math.random()*30),TimeUnit.SECONDS);
         }
         String latestDate=val.getRecordTime();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

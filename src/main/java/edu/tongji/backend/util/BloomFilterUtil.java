@@ -9,6 +9,9 @@ public class BloomFilterUtil {
     public static final Long glycemia_bf_total= 1000000L;
     public static final Long daily_glycemia_bf_total= 1000000L;
     public static final Long history_glycemia_bf_total= 1000000L;
+    public static final Long exercise_running_bf_total= 1000000L;
+    public static final BloomFilter<CharSequence> exercise_running_bf =
+            BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8),exercise_running_bf_total);
     public static final BloomFilter<CharSequence> daily_glycemia_bf =
             BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), daily_glycemia_bf_total);
     public static final BloomFilter<CharSequence> glycemia_bf =

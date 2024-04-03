@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
 
+import static edu.tongji.backend.util.BloomFilterUtil.exercise_running_bf;
 import static edu.tongji.backend.util.RedisConstants.EXERCISE_RUNNING_KEY;
 import static edu.tongji.backend.util.RedisConstants.EXERCISE_RUNNING_TTL;
 
@@ -37,6 +38,7 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
         //根据exercise_id更新
         running.setPace(pace);
         running.setDistance(distance);
+
         stringRedisTemplate.opsForHash().put(EXERCISE_RUNNING_KEY+exercise_id
                 ,"pace",pace.toString());
         stringRedisTemplate.opsForHash().put(EXERCISE_RUNNING_KEY+exercise_id
