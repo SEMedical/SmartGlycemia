@@ -14,9 +14,11 @@ import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.util.CalorieCalculator;
 import edu.tongji.backend.util.GlobalEventChecker;
+import edu.tongji.backend.util.SimpleRedisLock;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     IProfileService profileService;
     @Resource
     RedisTemplate redisTemplate;
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category,String userId, String date) {
@@ -77,57 +81,55 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     @Override
     @Transactional
     public Integer addExercise(String userId) {
-        finishExercise(userId);
-
-        int user_id = Integer.parseInt(userId);
-        Exercise exercise = new Exercise();
-        exercise.setPatientId(user_id);
-        exercise.setStartTime(LocalDateTime.now());
-        System.out.println("开始时间为"+exercise.getStartTime());
-        //查找这个用户的运动方案
-        QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id);
-        List<Scenario> scenarios = scenarioMapper.selectList(queryWrapper);
-        if (scenarios.isEmpty())
-            return null;
-        Scenario last_scenario = scenarios.get(scenarios.size() - 1);
-        exercise.setCategory(last_scenario.getCategory());
-        System.out.println("找到的运动种类为"+exercise.getCategory());
-        int insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
-        if (insert_exercise == 0)
-        {
-            System.out.println("插入exercise表失败");
-            return null;
-        }
-        QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
-        exerciseQueryWrapper.eq("patient_id", user_id);
-        int exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
-        insert_exercise=exercise_id;
-        System.out.println("插入exercise表成功，exercise_id为"+insert_exercise);
-        int insert_running=1;
-        //如果是跑步，还要往running表里插入一条记录
-        if (exercise.getCategory().equalsIgnoreCase("walking")||exercise.getCategory().equalsIgnoreCase("jogging")) {
-            Running running = new Running();
-            running.setExerciseId(insert_exercise);
-            //running表里有：distance,pace
-            //他们是随着运动过程中不断变化的
-            insert_running=runningMapper.insert(running);
-            exercise_running_bf.put(EXERCISE_RUNNING_KEY+insert_exercise);
-        }
-        GlobalEventChecker.getScheduler().schedule(() -> checkStopExercise(exercise_id), 1, TimeUnit.HOURS);
-        return insert_exercise*insert_running;
-    }
-    private void checkStopExercise(int id)  {
-        // 在这里添加逻辑，检查是否在60分钟内完成了CompletableFuture
-        System.out.println("Checking if Function finishExercise is called within 60 minutes.");
-
-        if (GlobalEventChecker.getBCalledFuture().isDone()) {
-            System.out.println("Function finishExercise is called within 60 minutes.");
-        } else {
-            System.out.println("Remove the record of"+id+"in exercise table and running table");
-            runningMapper.deleteById(id);
-            exerciseMapper.deleteById(id);
-        }
+        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, redisTemplate);
+        boolean isLock = lock.tryLock(3600L);
+        if(isLock) {
+            int insert_exercise = 0;
+            int insert_running =  0;
+            try{
+                int user_id = Integer.parseInt(userId);
+                Exercise exercise = new Exercise();
+                exercise.setPatientId(user_id);
+                exercise.setStartTime(LocalDateTime.now());
+                System.out.println("开始时间为" + exercise.getStartTime());
+                //查找这个用户的运动方案
+                QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("patient_id", user_id);
+                List<Scenario> scenarios = scenarioMapper.selectList(queryWrapper);
+                if (scenarios.isEmpty())
+                    return null;
+                Scenario last_scenario = scenarios.get(scenarios.size() - 1);
+                exercise.setCategory(last_scenario.getCategory());
+                System.out.println("找到的运动种类为" + exercise.getCategory());
+                insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
+                if (insert_exercise == 0) {
+                    System.out.println("插入exercise表失败");
+                    return null;
+                }
+                QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
+                exerciseQueryWrapper.eq("patient_id", user_id);
+                int exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
+                insert_exercise = exercise_id;
+                System.out.println("插入exercise表成功，exercise_id为" + insert_exercise);
+                insert_running = 1;
+                //如果是跑步，还要往running表里插入一条记录
+                if (exercise.getCategory().equalsIgnoreCase("walking") || exercise.getCategory().equalsIgnoreCase("jogging")) {
+                    Running running = new Running();
+                    running.setExerciseId(insert_exercise);
+                    //running表里有：distance,pace
+                    //他们是随着运动过程中不断变化的
+                    insert_running = runningMapper.insert(running);
+                    System.out.println("插入running表成功");
+                    exercise_running_bf.put(EXERCISE_RUNNING_KEY + insert_exercise);
+                }else
+                    System.out.println("Opps!");
+                return insert_exercise * insert_running;
+            }catch(Exception e) {
+                lock.unlock();
+                return -1;
+            }
+        }else
+            return -1;
     }
     public void Init_exerciseRunning(){
         QueryWrapper<Running> queryWrapper = new QueryWrapper<>();
@@ -138,7 +140,8 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     }
     @Override
     public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
-        GlobalEventChecker.getBCalledFuture().complete(null);
+        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, redisTemplate);
+        lock.unlock();
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id).eq("duration", 0);

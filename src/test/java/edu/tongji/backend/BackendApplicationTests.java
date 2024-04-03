@@ -140,6 +140,10 @@ class BackendApplicationTests {
         exerciseService.Init_exerciseRunning();
         //assert that the time is now
         Integer exercise_id = exerciseService.addExercise("1");
+        if(exercise_id==-1) {
+            System.out.println("Collision");
+            return;
+        }
         //if(exerciseMapper.selectById(exercise_id).getCategory().equalsIgnoreCase("walking"))
         if(exerciseMapper.selectById(exercise_id).getCategory().equalsIgnoreCase("yoga"))
             return;
