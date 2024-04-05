@@ -29,14 +29,13 @@ public class SportController {
     @Autowired
     IRunningService runningService;
     @GetMapping("/startDoingSport") //对应的api路径
-    public Response<Null> startExercise(HttpServletRequest request)
+    public Response<Null> startExercise(Double longitude,Double latitude,HttpServletRequest request)
     {
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
-            Integer ans= exerciseService.addExercise(user_id);
+            Integer ans= exerciseService.addExercise(user_id,longitude,latitude);
             if(ans !=null&&ans!=0)
                 return Response.success(null,"开始运动");
             else
@@ -46,15 +45,6 @@ public class SportController {
            return Response.fail(e.getMessage());
         }
     }
-    private void checkUser(String user_id)
-    {
-        if(userService.getById(user_id)==null)
-            throw new GlycemiaException("user isn't exist");
-        else if(!userService.getById(user_id).getRole().equals("patient"))
-            throw new GlycemiaException("user isn't a patient");
-        else if(profileService.getByPatientId(user_id)==null)
-            throw new GlycemiaException("exception with registration of the user"+user_id);
-    }
 
     @GetMapping("/stopDoingSport") //对应的api路径
     public Response<Null> stopSport(HttpServletRequest request)//把请求中的内容映射到user
@@ -63,7 +53,6 @@ public class SportController {
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
             Integer ans= exerciseService.finishExercise(user_id);
             if(ans !=null&&ans!=0)
                 return Response.success(null,"结束运动");
@@ -74,14 +63,13 @@ public class SportController {
         }
     }
     @GetMapping("/realTimeSportData")
-    public Response<RealTimeSportDTO> getRealTimeSportData(HttpServletRequest request)
+    public Response<RealTimeSportDTO> getRealTimeSportData(Double x,Double y,HttpServletRequest request)
     {
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
-            RealTimeSportDTO ans= exerciseService.getRealTimeSport(user_id);
+            RealTimeSportDTO ans= exerciseService.getRealTimeSport(user_id,x,y);
             if(ans !=null)
                 return Response.success(ans,"成功获取实时运动数据");
             else
@@ -98,7 +86,6 @@ public class SportController {
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
             SportRecordDTO ans= exerciseService.getSportRecord(user_id);
             if(ans !=null)
                 return Response.success(ans,"成功获取运动记录");
@@ -117,7 +104,6 @@ public class SportController {
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
             int check = TimeTypeChecker.check(time_type);
             if (check == 0)
                 return Response.fail("time_type is invalid");
@@ -139,7 +125,7 @@ public class SportController {
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
+
             Integer ans= exerciseService.getRealTimeHeartRate(user_id);
             if(ans !=null)
                 return Response.success(ans,"成功获取实时心率");
@@ -156,7 +142,6 @@ public class SportController {
         String user_id= user.getUserId();
         //确认用户是否存在，是否是病人
         try {
-            this.checkUser(user_id);
             SportPlanDTO ans= exerciseService.getSportPlan(user_id);
             if(ans !=null)
                 return Response.success(ans,"成功获取运动方案");

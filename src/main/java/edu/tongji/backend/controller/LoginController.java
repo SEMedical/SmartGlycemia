@@ -12,8 +12,10 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -50,12 +52,16 @@ public class LoginController {
             return Response.fail("账号或密码不正确");  //返回错误信息
         }
         System.out.println("登录成功");
-        exerciseService.finishExercise(userService.getUserId(user.getContact()).toString());
         return Response.success(loginDTO,"登录成功");  //返回成功信息
     }
     @PostMapping("/sign")
     public Result sign(){
         UserDTO user= UserHolder.getUser();
         return userService.sign(user);
+    }
+    @PostMapping("sign/count")
+    public Result signCount(){
+        UserDTO user= UserHolder.getUser();
+       return userService.signCount(user);
     }
 }

@@ -1,6 +1,5 @@
 package edu.tongji.backend.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
@@ -13,28 +12,26 @@ import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.util.CalorieCalculator;
-import edu.tongji.backend.util.GlobalEventChecker;
 import edu.tongji.backend.util.SimpleRedisLock;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.BloomFilterUtil.exercise_running_bf;
 import static edu.tongji.backend.util.BloomFilterUtil.glycemia_bf;
-import static edu.tongji.backend.util.RedisConstants.CACHE_GLYCEMIA_KEY;
-import static edu.tongji.backend.util.RedisConstants.EXERCISE_RUNNING_KEY;
+import static edu.tongji.backend.util.RedisConstants.*;
 import static java.lang.Thread.sleep;
 
 @Service
@@ -52,10 +49,9 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
     @Autowired
     IProfileService profileService;
     @Resource
-    RedisTemplate redisTemplate;
-    @Resource
     StringRedisTemplate stringRedisTemplate;
-
+    @Resource
+    RedisTemplate redisTemplate;
     @Override
     public Intervals getExerciseIntervalsInOneDay(String category,String userId, String date) {
         List<ExerciseDTO> lists=exerciseMapper.getExerciseIntervalsInOneDay(category,userId, date);
@@ -80,11 +76,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
 
     @Override
     @Transactional
-    public Integer addExercise(String userId) {
-        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, redisTemplate);
+    public Integer addExercise(String userId,Double longitude,Double latitude) {
+        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, stringRedisTemplate);
         boolean isLock = lock.tryLock(3600L);
         if(isLock) {
-            int insert_exercise = 0;
+            Integer insert_exercise = 0;
             int insert_running =  0;
             try{
                 int user_id = Integer.parseInt(userId);
@@ -92,6 +88,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 exercise.setPatientId(user_id);
                 exercise.setStartTime(LocalDateTime.now());
                 System.out.println("开始时间为" + exercise.getStartTime());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 //查找这个用户的运动方案
                 QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("patient_id", user_id);
@@ -108,17 +105,37 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 }
                 QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
                 exerciseQueryWrapper.eq("patient_id", user_id);
-                int exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
+                //TODO
+                Integer exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).
+                        get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
                 insert_exercise = exercise_id;
+                stringRedisTemplate.opsForValue().set(CACHE_USER_LAST_EXERCISE_KEY + user_id,
+                        exercise_id.toString());
+                Map<String,String> maps=new HashMap<>();
+                maps.put("startTime",LocalDateTime.now().format(formatter));
+                maps.put("duration","0");
+                maps.put("category",exercise.getCategory());
+                stringRedisTemplate.opsForHash().putAll(CACHE_EXERCISE_KEY+exercise_id, maps);
+                stringRedisTemplate.expire(CACHE_EXERCISE_KEY+exercise_id,
+                        CACHE_RUNNING_TTL, TimeUnit.MINUTES);
+                stringRedisTemplate.expire(CACHE_RUNNING_KEY+exercise_id,
+                        CACHE_RUNNING_TTL, TimeUnit.MINUTES);
                 System.out.println("插入exercise表成功，exercise_id为" + insert_exercise);
+
                 insert_running = 1;
                 //如果是跑步，还要往running表里插入一条记录
                 if (exercise.getCategory().equalsIgnoreCase("walking") || exercise.getCategory().equalsIgnoreCase("jogging")) {
                     Running running = new Running();
-                    running.setExerciseId(insert_exercise);
+                    running.setExerciseId(exercise_id);
+                    stringRedisTemplate.opsForGeo().add(RUNNING_GEO_KEY,new Point(longitude,latitude),
+                            exercise_id.toString());
+                    Map<String,String> map2=new HashMap<>();
+                    map2.put("distance","0.0");
+                    map2.put("pace","0");
+                    stringRedisTemplate.opsForHash().putAll(CACHE_RUNNING_KEY+exercise_id,map2);
                     //running表里有：distance,pace
                     //他们是随着运动过程中不断变化的
-                    insert_running = runningMapper.insert(running);
+                    //insert_running = runningMapper.insert(running);
                     System.out.println("插入running表成功");
                     exercise_running_bf.put(EXERCISE_RUNNING_KEY + insert_exercise);
                 }else
@@ -138,13 +155,14 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         glycemias.forEach(element->glycemia_bf.put(
                 CACHE_GLYCEMIA_KEY+element.getExerciseId()));
     }
+    //TODO
     @Override
     public Integer finishExercise(String userId) {//它应该要结束当前用户的所有运动记录
-        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, redisTemplate);
+        SimpleRedisLock lock = new SimpleRedisLock("user:"+userId, stringRedisTemplate);
         lock.unlock();
-        int user_id = Integer.parseInt(userId);
+        int exercise_id=Integer.parseInt(stringRedisTemplate.opsForValue().get(CACHE_USER_LAST_EXERCISE_KEY+userId).toString());
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id).eq("duration", 0);
+        queryWrapper.eq("exercise_id",exercise_id);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         if (exercises.isEmpty())
             return null;
@@ -155,54 +173,45 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             weight = profile.getWeight();
             System.out.println("weight: " + weight);
         }
-//转换时区
+        //转换时区
         ZoneId currentZoneId = ZoneId.systemDefault();
         Integer res=1;
+        Exercise last_exercise=exercises.get(0);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //遍历每一个exercise
-        for (Exercise last_exercise:exercises) {
-            ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC"));
-            LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
-            int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
-            last_exercise.setDuration(duration);
-//获取运动类型
-            String category = last_exercise.getCategory();
-            //更新卡路里
-            int calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
-            last_exercise.setCalorie(calorie);
-            //更新distance
-            if(category.equalsIgnoreCase("walking")||category.equalsIgnoreCase("jogging"))
-            {
-                Integer exerciseId = last_exercise.getExerciseId();
-                //Bloom Filter Hit
-                if(exercise_running_bf.mightContain(EXERCISE_RUNNING_KEY+exerciseId)) {
-                    Object pace = redisTemplate.opsForHash().get(EXERCISE_RUNNING_KEY + exerciseId.toString(), "pace");
-                    Object distance = redisTemplate.opsForHash().get(EXERCISE_RUNNING_KEY + exerciseId.toString(), "distance");
-                    Running running = null;
-                    if (pace != null && distance != null) {
-                        running.setPace(Integer.parseInt(pace.toString()));
-                        running.setDistance(Double.parseDouble(distance.toString()));
-                        running.setExerciseId(exerciseId);
-                        System.out.println("test" + running);
-                    } else {
-                        running = runningMapper.getByExerciseIdRunning(last_exercise.getExerciseId());
-                        if (running != null) {
-                            runningService.updateRunning(last_exercise.getExerciseId());
-                            last_exercise.setDistance(running.getDistance());
-                        } else {
-                            System.out.println("Cache Penetration! (running data not found)");
-                        }
-                    }
+        LocalDateTime start_time = LocalDateTime.parse(stringRedisTemplate.opsForHash().get(CACHE_EXERCISE_KEY+exercise_id,"startTime").toString()
+        ,formatter);
+        //LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();
+        int duration = (int) Duration.between(start_time, LocalDateTime.now()).toMinutes();
+        last_exercise.setDuration(duration);
+        //获取运动类型
+        String category = last_exercise.getCategory();
+        //更新卡路里
+        Integer calorie = CalorieCalculator.getCalorie(category.toLowerCase(), weight, duration);
+        last_exercise.setCalorie(calorie);
+        stringRedisTemplate.opsForHash().put(CACHE_EXERCISE_KEY+exercise_id,"calorie",calorie.toString());
+        //更新distance
+        if(category.equalsIgnoreCase("walking")||category.equalsIgnoreCase("jogging"))
+        {
+            Integer exerciseId = last_exercise.getExerciseId();
+            //Bloom Filter Hit
+            if(exercise_running_bf.mightContain(EXERCISE_RUNNING_KEY+exerciseId)) {
+                Object pace = stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY + exerciseId, "pace");
+                Object distance =stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY + exerciseId, "distance");
+                Running running =new Running();
+                if (pace != null && distance != null) {
+                    running.setPace(Integer.parseInt(pace.toString()));
+                    running.setDistance(Double.parseDouble(distance.toString())/1000);
+                    running.setExerciseId(exerciseId);
+                    System.out.println("test" + running);
+                    runningMapper.insert(running);
                 }
             }
-            //创建这个exercise对应的mapper
-            QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
-            exerciseQueryWrapper.eq("exercise_id", last_exercise.getExerciseId());
-            res*= exerciseMapper.update(last_exercise, exerciseQueryWrapper);
-            if (res > 0)
-                System.out.println("结束exercise成功，exercise_id为" + last_exercise.getExerciseId());
-            else
-                break;
         }
+            //创建这个exercise对应的mapper
+        res*= exerciseMapper.updateById(last_exercise);
+        if (res > 0)
+            System.out.println("结束exercise成功，exercise_id为" + last_exercise.getExerciseId());
         return res;
     }
 
@@ -387,7 +396,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         return new SportPlanDTO(total_time,total_calorie,category,recommend_time,recommend_calorie,is_finished);
     }
     @Override
-    public RealTimeSportDTO getRealTimeSport(String userId){
+    public RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude){
         int user_id = Integer.parseInt(userId);
         //获取用户体重数据
         int weight=70;
@@ -400,18 +409,10 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         RealTimeSportDTO ans = new RealTimeSportDTO();
         LocalDateTime now = LocalDateTime.now();
         //获取最近一次运动记录
+        String exerciseId = stringRedisTemplate.opsForValue().get(CACHE_USER_LAST_EXERCISE_KEY + user_id);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("patient_id", user_id);
+        queryWrapper.eq("exercise_id", exerciseId);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
-        //将exercises按照时间由近到远排序
-        if(exercises.isEmpty())
-            return null;
-        exercises.sort(new Comparator<Exercise>() {
-            @Override
-            public int compare(Exercise o1, Exercise o2) {
-                return (o2.getExerciseId()>o1.getExerciseId())? 1:-1;
-            }
-        });
         Exercise last_exercise = exercises.get(0);
         System.out.println("最近一次运动的id为"+last_exercise.getExerciseId());
         //统一时区，把start_time转为当前时区
@@ -432,9 +433,11 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         ans.setCategory(last_exercise.getCategory().toLowerCase());
         //获取运动数据
         if(category.equalsIgnoreCase("walking")||category.equalsIgnoreCase("jogging")) {
-            Running now_running = runningService.updateRunning(last_exercise.getExerciseId());
-            ans.setDistance(now_running.getDistance());
-            int pace = now_running.getPace();//得到的是以秒为单位的
+            runningService.updateRunning(last_exercise.getExerciseId(),longitude,latitude);
+            String pace1 = stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY + exerciseId, "pace").toString();
+            String distance = stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY + exerciseId, "distance").toString();
+            ans.setDistance(Double.valueOf(distance));
+            Integer pace = Double.valueOf(pace1).intValue();
             if (pace < 60)
                 ans.setSpeed(String.format("%d秒", pace));
             else

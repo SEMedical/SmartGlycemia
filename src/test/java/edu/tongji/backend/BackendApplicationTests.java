@@ -13,6 +13,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.impl.ExerciseServiceImpl;
 import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
+import edu.tongji.backend.service.impl.RunningServiceImpl;
 import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.util.Jwt;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,10 +59,28 @@ class BackendApplicationTests {
     void testExercise2() throws InterruptedException {
         exerciseService.Init_exerciseRunning();
         System.out.println("Start test");
-        exerciseService.addExercise("1");
+        Integer i1 = exerciseService.addExercise("1", 121.20947, 31.282196);
+        if(i1==-1)return;
+        List<Double> longis=new ArrayList<>();
+        List<Double> latis=new ArrayList<>();
+        //From Cao'an Highway No.4800 to the Lookup to the Sky
+        longis.add(121.2094711);
+        latis.add(31.282196);
+
+        longis.add(121.212404);
+        latis.add(31.282595);
+        //31.2827989,121.2076651
+        longis.add(121.2076651);
+        latis.add(31.2827989);
+        //31.283511, 121.212851
+        longis.add(121.212851);
+        latis.add(31.283511);
+        //31.284311, 121.213488
+        longis.add(121.213488);
+        latis.add(31.284311);
         for (int i = 0; i < 5; i++) {
             Thread.sleep(1000);
-            exerciseService.getRealTimeSport("1");
+            exerciseService.getRealTimeSport("1",longis.get(i),latis.get(i));
         }
         exerciseService.finishExercise("1");
         System.out.println("End test");
@@ -125,7 +147,7 @@ class BackendApplicationTests {
     @Test
     void testExerciseTx() throws InterruptedException {
         System.out.println("Start test");
-        exerciseService.addExercise("1");
+        exerciseService.addExercise("1",1.0,1.0);
         //Sleep
         try {
             Thread.sleep(7000);
@@ -139,7 +161,7 @@ class BackendApplicationTests {
     void testExerciseInsertion(){
         exerciseService.Init_exerciseRunning();
         //assert that the time is now
-        Integer exercise_id = exerciseService.addExercise("1");
+        Integer exercise_id = exerciseService.addExercise("1",1.0,1.0);
         if(exercise_id==-1) {
             System.out.println("Collision");
             return;
@@ -148,7 +170,7 @@ class BackendApplicationTests {
         if(exerciseMapper.selectById(exercise_id).getCategory().equalsIgnoreCase("yoga"))
             return;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String time = exerciseService.getRealTimeSport("1").getTime();
+        String time = exerciseService.getRealTimeSport("1",1.0,1.0).getTime();
         Pattern pattern = Pattern.compile("\\d+"); // 匹配一个或多个数字
         Matcher matcher = pattern.matcher(time);
 

@@ -25,5 +25,4 @@ public class Exercise {
     private String category;
     @TableId
     private int exerciseId;
-    private double distance;
 }

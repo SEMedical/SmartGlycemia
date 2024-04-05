@@ -14,11 +14,11 @@ import java.util.List;
 
 public interface IExerciseService extends IService<Exercise> {
     Intervals getExerciseIntervalsInOneDay(String category,String userId, String date);
-    Integer addExercise(String userId);
+    Integer addExercise(String userId,Double longitude,Double latitude);
     Integer finishExercise(String userId);
     SportRecordDTO getSportRecord(String userId);
     SportDetailedDTO getDetailedSportRecord(String userId,int time_type,String category);
     Integer getRealTimeHeartRate(String userId);
     SportPlanDTO getSportPlan(String userId);
-    RealTimeSportDTO getRealTimeSport(String userId);
+    RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude);
 }

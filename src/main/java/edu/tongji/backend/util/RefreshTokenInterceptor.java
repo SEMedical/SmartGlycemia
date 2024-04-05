@@ -37,7 +37,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         }
         //TODO convert Hash to UserDTO
         UserDTO userDTO= BeanUtil.fillBeanWithMap(userMap,new UserDTO(),false);
-        if(userDTO.getRole().equals("patient")) {
+        if(!userDTO.getRole().equals("patient")) {
             log.debug("user"+userDTO.getUserId()+" attempts to log in but he isn't a patient");
             return false;
         }

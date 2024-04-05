@@ -1,6 +1,15 @@
 server:
   port: 81
 spring:
+  rabbitmq:
+    host: ${ RABBITMQ_HOST }
+    port: ${ RABBITMQ_PORT }
+    virtual-host: ${ RABBITMQ_VIRTUAL_HOST }
+    username: ${ RABBITMQ_USERNAME }
+    password: ${ RABBITMQ_PASSWORD }
+    listener:
+      simple:
+        prefetch: 1
   data:
     redis:
       host: ${REDIS_HOST}

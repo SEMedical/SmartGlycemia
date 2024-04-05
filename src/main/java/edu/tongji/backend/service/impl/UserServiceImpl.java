@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -243,13 +244,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //get date
         LocalDateTime now= LocalDateTime.now();
         //concat key
-        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM:dd"));
-        String key=USER_SIGN_KEY+userId+keySuffix;
+        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM"));
+        System.out.println(keySuffix);
+        String key=USER_SIGN_KEY+userId+":"+keySuffix;
         //get the day of month
         int dayOfMonth=now.getDayOfMonth();
         //write to the Redis
         stringRedisTemplate.opsForValue().
                 setBit(key,dayOfMonth-1,true);
         return Result.ok();
+    }
+
+    @Override
+    public Result signCount(UserDTO user) {
+        String userId = user.getUserId();
+        //get date
+        LocalDateTime now= LocalDateTime.now();
+        //concat key
+        String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM"));
+        String key=USER_SIGN_KEY+userId+keySuffix;
+        int dayOfMonth=now.getDayOfMonth();
+        //5. get all the sign records
+        List<Long> result = stringRedisTemplate.opsForValue().bitField(
+                key, BitFieldSubCommands.create().get(
+                        BitFieldSubCommands.BitFieldType.unsigned(
+                                dayOfMonth
+                        )
+                ).valueAt(0)
+        );//Because there might be many subcommands ,so the return type is list
+        if(result==null||result.isEmpty())
+            return  Result.ok(0);
+        Long num=result.get(0);
+        if(num==null||num==0)
+            return Result.ok(0);
+        int count=0;
+        //6. Iterate
+        while (true){
+            //7. bitwise op with 1
+            if((num&1)==0){
+                break;
+            }else{
+                count++;
+            }
+            num>>=1;//TODO:>>>???(unsigned right shift)
+        }
+        return Result.ok(count);
     }
 }

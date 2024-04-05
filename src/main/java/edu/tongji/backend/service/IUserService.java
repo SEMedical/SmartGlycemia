@@ -18,4 +18,6 @@ public interface IUserService extends IService<User> {
     Integer getUserId(String contact);
 
     Result sign(UserDTO user);
+    //Consecutive sign
+    Result signCount(UserDTO user);
 }

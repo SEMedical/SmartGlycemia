@@ -18,4 +18,9 @@ public class RedisConstants {
     public static final Long CACHE_HISTORY_GLYCEMIA_TTL=7L;
     public static final String HOSPITAL_GEO_KEY="geo:hospital:";
     public static final String USER_SIGN_KEY="sign:";
+    public static final String RUNNING_GEO_KEY="geo:running:";
+    public static final String CACHE_USER_LAST_EXERCISE_KEY="cache:user:last:exercise:";
+    public static final String CACHE_EXERCISE_KEY="cache:exercise:";
+    public static final String CACHE_RUNNING_KEY="cache:running:";
+    public static final Long CACHE_RUNNING_TTL=30L;
 }
