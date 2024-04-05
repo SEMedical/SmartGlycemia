@@ -44,11 +44,11 @@ jobs:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          RABBITMQ_HOST: ${ secrets.RABBITMQ_HOST }
-          RABBITMQ_PORT: ${ secrets.RABBITMQ_PORT }
-          RABBITMQ_VIRTUAL_HOST: ${ secrets.RABBITMQ_VIRTUAL_HOST }
-          RABBITMQ_USERNAME: ${ secrets.RABBITMQ_USERNAME }
-          RABBITMQ_PASSWORD: ${ secrets.RABBITMQ_PASSWORD }
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_VIRTUAL_HOST: ${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
       
       - name: copy file via ssh password
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -60,11 +60,11 @@ jobs:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          RABBITMQ_HOST: ${ secrets.RABBITMQ_HOST }
-          RABBITMQ_PORT: ${ secrets.RABBITMQ_PORT }
-          RABBITMQ_VIRTUAL_HOST: ${ secrets.RABBITMQ_VIRTUAL_HOST }
-          RABBITMQ_USERNAME: ${ secrets.RABBITMQ_USERNAME }
-          RABBITMQ_PASSWORD: ${ secrets.RABBITMQ_PASSWORD }
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_VIRTUAL_HOST: ${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -82,11 +82,11 @@ jobs:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          RABBITMQ_HOST: ${ secrets.RABBITMQ_HOST }
-          RABBITMQ_PORT: ${ secrets.RABBITMQ_PORT }
-          RABBITMQ_VIRTUAL_HOST: ${ secrets.RABBITMQ_VIRTUAL_HOST }
-          RABBITMQ_USERNAME: ${ secrets.RABBITMQ_USERNAME }
-          RABBITMQ_PASSWORD: ${ secrets.RABBITMQ_PASSWORD }
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_VIRTUAL_HOST: ${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -114,9 +114,9 @@ jobs:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
           REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          RABBITMQ_HOST: ${ secrets.RABBITMQ_HOST }
-          RABBITMQ_PORT: ${ secrets.RABBITMQ_PORT }
-          RABBITMQ_VIRTUAL_HOST: ${ secrets.RABBITMQ_VIRTUAL_HOST }
-          RABBITMQ_USERNAME: ${ secrets.RABBITMQ_USERNAME }
-          RABBITMQ_PASSWORD: ${ secrets.RABBITMQ_PASSWORD }
+          RABBITMQ_HOST: ${{ secrets.RABBITMQ_HOST }}
+          RABBITMQ_PORT: ${{ secrets.RABBITMQ_PORT }}
+          RABBITMQ_VIRTUAL_HOST: ${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+          RABBITMQ_USERNAME: ${{ secrets.RABBITMQ_USERNAME }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
  

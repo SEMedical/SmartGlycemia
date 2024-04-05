@@ -79,7 +79,7 @@ class BackendApplicationTests {
         longis.add(121.213488);
         latis.add(31.284311);
         for (int i = 0; i < 5; i++) {
-            Thread.sleep(1000);
+            Thread.sleep(1000);//1s<10s
             exerciseService.getRealTimeSport("1",longis.get(i),latis.get(i));
         }
         exerciseService.finishExercise("1");

@@ -127,8 +127,10 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 if (exercise.getCategory().equalsIgnoreCase("walking") || exercise.getCategory().equalsIgnoreCase("jogging")) {
                     Running running = new Running();
                     running.setExerciseId(exercise_id);
-                    stringRedisTemplate.opsForGeo().add(RUNNING_GEO_KEY,new Point(longitude,latitude),
+                    stringRedisTemplate.opsForGeo().add(RUNNING_GEO_KEY+exercise_id,new Point(longitude,latitude),
                             exercise_id.toString());
+                    stringRedisTemplate.expire(RUNNING_GEO_KEY+exercise_id,
+                            RUNNING_GEO_TTL,TimeUnit.SECONDS);
                     Map<String,String> map2=new HashMap<>();
                     map2.put("distance","0.0");
                     map2.put("pace","0");
