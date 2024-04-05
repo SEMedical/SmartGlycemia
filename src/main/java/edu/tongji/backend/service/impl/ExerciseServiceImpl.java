@@ -99,11 +99,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 Scenario last_scenario = scenarios.get(scenarios.size() - 1);
                 exercise.setCategory(last_scenario.getCategory());
                 System.out.println("找到的运动种类为" + exercise.getCategory());
-                insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
-                if (insert_exercise == 0) {
-                    System.out.println("插入exercise表失败");
-                    return null;
-                }
+
                 Integer weight=70;
 
                 Profile profile = profileService.getByPatientId(userId);
@@ -116,13 +112,21 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
                 exerciseQueryWrapper.eq("patient_id", user_id);
                 //TODO
+
                 Object lastid = stringRedisTemplate.opsForValue().get(CACHE_USER_LAST_EXERCISE_KEY + user_id);
                 Integer exercise_id=0;
                 if(lastid!=null&&StrUtil.isNotBlank(lastid.toString()))
-                    exercise_id=Integer.valueOf(lastid.toString());
+                    exercise_id=Integer.valueOf(lastid.toString())+1;
                 else
                     exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).
                             get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
+                stringRedisTemplate.opsForValue().set(CACHE_USER_LAST_EXERCISE_KEY + user_id,String.valueOf(exercise_id));
+                exercise.setExerciseId(exercise_id);
+                insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
+                if (insert_exercise == 0) {
+                    System.out.println("插入exercise表失败");
+                    return null;
+                }
                 insert_exercise = exercise_id;
                 stringRedisTemplate.opsForValue().set(CACHE_USER_LAST_EXERCISE_KEY + user_id,
                         exercise_id.toString());
