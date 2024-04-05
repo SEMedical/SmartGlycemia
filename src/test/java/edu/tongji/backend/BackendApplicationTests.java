@@ -56,7 +56,7 @@ class BackendApplicationTests {
     RegisterController register;
     //一个用于测试实时获取运动数据的测试用例
     @Test
-    void testExercise2() throws InterruptedException {
+    void testExercise2() throws Exception {
         exerciseService.Init_exerciseRunning();
         System.out.println("Start test");
         Integer i1 = exerciseService.addExercise("1", 121.20947, 31.282196);
@@ -158,7 +158,7 @@ class BackendApplicationTests {
         System.out.println("End test");
     }
     @Test
-    void testExerciseInsertion(){
+    void testExerciseInsertion() throws Exception {
         exerciseService.Init_exerciseRunning();
         //assert that the time is now
         Integer exercise_id = exerciseService.addExercise("1",1.0,1.0);

@@ -130,7 +130,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                     stringRedisTemplate.opsForGeo().add(RUNNING_GEO_KEY+exercise_id,new Point(longitude,latitude),
                             exercise_id.toString());
                     stringRedisTemplate.expire(RUNNING_GEO_KEY+exercise_id,
-                            RUNNING_GEO_TTL,TimeUnit.SECONDS);
+                            RUNNING_GEO_TTL,TimeUnit.MINUTES);
                     Map<String,String> map2=new HashMap<>();
                     map2.put("distance","0.0");
                     map2.put("pace","0");
@@ -398,7 +398,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         return new SportPlanDTO(total_time,total_calorie,category,recommend_time,recommend_calorie,is_finished);
     }
     @Override
-    public RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude){
+    public RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude) throws Exception {
         int user_id = Integer.parseInt(userId);
         //获取用户体重数据
         int weight=70;

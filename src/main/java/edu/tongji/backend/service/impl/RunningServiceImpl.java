@@ -51,8 +51,11 @@ public class RunningServiceImpl extends ServiceImpl<RunningMapper, Running> impl
         return s;
     }
     @Override
-    public void updateRunning(Integer exercise_id, Double Longitude, Double Latitude) {
+    public void updateRunning(Integer exercise_id, Double Longitude, Double Latitude) throws Exception {
         List<Point> position = stringRedisTemplate.opsForGeo().position(RUNNING_GEO_KEY+exercise_id, exercise_id.toString());
+        if(position.isEmpty()) {
+            throw new Exception("time expired!");
+        }
         Object odist = stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY+exercise_id,"distance");
         //Object opace = stringRedisTemplate.opsForHash().get(CACHE_RUNNING_KEY+exercise_id.toString(),"pace");
         Double origin_distance=Double.valueOf(odist.toString());

@@ -20,5 +20,5 @@ public interface IExerciseService extends IService<Exercise> {
     SportDetailedDTO getDetailedSportRecord(String userId,int time_type,String category);
     Integer getRealTimeHeartRate(String userId);
     SportPlanDTO getSportPlan(String userId);
-    RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude);
+    RealTimeSportDTO getRealTimeSport(String userId,Double longitude,Double latitude) throws Exception;
 }

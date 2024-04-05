@@ -23,5 +23,5 @@ public class RedisConstants {
     public static final String CACHE_EXERCISE_KEY="cache:exercise:";
     public static final String CACHE_RUNNING_KEY="cache:running:";
     public static final Long CACHE_RUNNING_TTL=30L;
-    public static final Long RUNNING_GEO_TTL=10L;
+    public static final Long RUNNING_GEO_TTL=30L;
 }
