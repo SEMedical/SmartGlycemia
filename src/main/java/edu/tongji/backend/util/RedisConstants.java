@@ -9,7 +9,6 @@ public class RedisConstants {
     public static final String CACHE_GLYCEMIA_KEY="cache:glycemia:";
     public static final String CACHE_LATEST_GLYCEMIA_KEY ="latest:glycemia_id:";
     public static final Long LATEST_GLYCEMIA_TTL=2L;
-    public static final Long EXERCISE_RUNNING_TTL=1L;
     public static final String EXERCISE_RUNNING_KEY="exercise:running";
     public static final Long CACHE_GLYCEMIA_TTL=7L;
     public static final String CACHE_DAILY_GLYCEMIA_KEY="cache:daily:glycemia:";
@@ -24,4 +23,6 @@ public class RedisConstants {
     public static final String CACHE_RUNNING_KEY="cache:running:";
     public static final Long CACHE_RUNNING_TTL=30L;
     public static final Long RUNNING_GEO_TTL=30L;
+    public static final String USER_PROFILE_KEY="user:profile:";
+    public static final Long USER_PROFILE_TTL=30L;
 }

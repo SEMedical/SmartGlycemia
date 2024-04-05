@@ -1,5 +1,6 @@
 package edu.tongji.backend.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.*;
@@ -103,11 +104,25 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                     System.out.println("插入exercise表失败");
                     return null;
                 }
+                Integer weight=70;
+
+                Profile profile = profileService.getByPatientId(userId);
+                if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
+                    weight = profile.getWeight();
+                    stringRedisTemplate.opsForHash().put(USER_PROFILE_KEY+userId,"weight",weight.toString());
+                    stringRedisTemplate.expire(USER_PROFILE_KEY+userId,USER_PROFILE_TTL,
+                            TimeUnit.MINUTES);
+                }
                 QueryWrapper<Exercise> exerciseQueryWrapper = new QueryWrapper<>();
                 exerciseQueryWrapper.eq("patient_id", user_id);
                 //TODO
-                Integer exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).
-                        get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
+                Object lastid = stringRedisTemplate.opsForValue().get(CACHE_USER_LAST_EXERCISE_KEY + user_id);
+                Integer exercise_id=0;
+                if(lastid!=null&&StrUtil.isNotBlank(lastid.toString()))
+                    exercise_id=Integer.valueOf(lastid.toString());
+                else
+                    exercise_id = exerciseMapper.selectList(exerciseQueryWrapper).
+                            get(exerciseMapper.selectList(exerciseQueryWrapper).size() - 1).getExerciseId();
                 insert_exercise = exercise_id;
                 stringRedisTemplate.opsForValue().set(CACHE_USER_LAST_EXERCISE_KEY + user_id,
                         exercise_id.toString());
@@ -403,11 +418,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         //获取用户体重数据
         int weight=70;
 
-        Profile profile = profileService.getByPatientId(userId);
-        if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
-            weight = profile.getWeight();
-            System.out.println("weight: " + weight);
-        }
+        weight=Integer.parseInt(stringRedisTemplate.opsForHash().get(USER_PROFILE_KEY+userId,"weight").toString());
         RealTimeSportDTO ans = new RealTimeSportDTO();
         LocalDateTime now = LocalDateTime.now();
         //获取最近一次运动记录
