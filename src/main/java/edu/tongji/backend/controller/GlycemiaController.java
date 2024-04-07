@@ -14,6 +14,7 @@ import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHelper;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Locale;
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/glycemia")//对应的api路径
 public class GlycemiaController {
@@ -55,13 +56,13 @@ public class GlycemiaController {
 
             Chart result = glycemiaService.showGlycemiaDiagram(type, user_id, formattedDate);
             //LOG
-            System.out.println(result);
+            log.info(result.toString());
             return Response.success(result,"chart API has passed!");
         }catch (GlycemiaException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal business exception");
         }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
@@ -98,13 +99,13 @@ public class GlycemiaController {
                 throw new GlycemiaException("If you want to loop up the chart record, startTime is required");
             CompositeChart result = glycemiaService.showGlycemiaHistoryDiagram(span, user_id, formattedDate);
             //LOG
-            System.out.println(result);
+            log.info(result.toString());
             return Response.success(result,"Successfully get the glycemia record!");
         }catch (GlycemiaException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal business exception");
         }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
@@ -122,10 +123,10 @@ public class GlycemiaController {
             Intervals res = exerciseService.getExerciseIntervalsInOneDay(type, user_id, formattedDate.toString());
             return Response.success(res, "Successfully get all the intervals during a day!");
         }catch (GlycemiaException|ExerciseException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal business failure");
         }catch (Exception|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
@@ -137,10 +138,10 @@ public class GlycemiaController {
             Double data=glycemiaService.getLatestGlycemia(user_id);
             return Response.success(data,"You've get the latest glycemia data!");
         }catch (GlycemiaException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal failure");
         }catch (Exception|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external failure");
         }
     }
@@ -153,13 +154,13 @@ public class GlycemiaController {
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
 
             DailyChart result = glycemiaService.showDailyGlycemiaDiagram(user_id, formattedDate);
-            System.out.println(result);
+            log.info(result.toString());
             return Response.success(result,"dailychart API has passed!");
         }catch (GlycemiaException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal business exception");
         }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external business exception or system error!");
         }
     }
@@ -189,10 +190,10 @@ public class GlycemiaController {
                     return Response.fail("Fatal error");
             }
         }catch (GlycemiaException e){
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Expected internal failure");
         }catch (Exception|Error e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
             return Response.fail("Unexpected external failure");
         }
 

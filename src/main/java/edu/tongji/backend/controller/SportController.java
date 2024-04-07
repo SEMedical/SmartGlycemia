@@ -12,11 +12,12 @@ import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.TimeTypeChecker;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/sports")//对应的api路径
 public class SportController {
@@ -41,7 +42,7 @@ public class SportController {
             else
                 return Response.fail("数据库更新失败");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
            return Response.fail(e.getMessage());
         }
     }
@@ -92,7 +93,7 @@ public class SportController {
             else
                 return Response.fail("运动记录不存在");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
             return Response.fail(e.getMessage());
         }
     }
@@ -114,7 +115,7 @@ public class SportController {
             else
                 return Response.fail("运动记录不存在");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
             return Response.fail(e.getMessage());
         }
     }
@@ -148,7 +149,7 @@ public class SportController {
             else
                 return Response.fail("运动方案不存在");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
             return Response.fail(e.getMessage());
         }
     }

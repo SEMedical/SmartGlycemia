@@ -7,12 +7,13 @@ import edu.tongji.backend.service.IScenarioService;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/sports")//对应的api路径
 public class ScenarioController {
@@ -44,6 +45,7 @@ public class ScenarioController {
         if (scenarioService.setScenario(userId, new Sport(category, minute))) {
             return Response.success("设置成功", "success");
         } else {
+            log.error("setting the scenario failed,the category is"+category+"!");
             return Response.fail("设置失败");
         }
     }

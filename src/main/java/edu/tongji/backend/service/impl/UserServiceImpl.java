@@ -133,6 +133,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result sendCode(String contact, HttpSession session){
         //. Check Phone
         if(RegexUtils.isPhoneInvaild(contact)) {
+            log.warn("Wrong format of contact"+contact);
             //. return error msg
             return Result.fail("Wrong format of contact"+contact);
         }

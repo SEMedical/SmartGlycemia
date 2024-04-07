@@ -9,11 +9,12 @@ import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/health")//对应的api路径
 public class ProfileController {
@@ -39,7 +40,7 @@ public class ProfileController {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
-        System.out.println(profileDTO);
+        log.info(profileDTO.toString());
 
         if (profileService.updateProfile(userId, profileDTO)) {
             return Response.success(true, "更新健康档案成功");

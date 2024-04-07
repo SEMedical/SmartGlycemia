@@ -1,13 +1,14 @@
 package edu.tongji.backend.controller;
 
 import edu.tongji.backend.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.util.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+@Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/register")  //对应的api路径
 public class RegisterController {
@@ -17,7 +18,7 @@ public class RegisterController {
     @PostMapping("/patient")  //对应的api路径
     public Response<Boolean> registerPatient(@RequestBody RegisterDTO info)
     {
-//        System.out.println(info);
+//        log.info(info);
         if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
         {
 
@@ -38,7 +39,7 @@ public class RegisterController {
             return Response.fail("After 2024/1/7,register rules are updated!"+
                     "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.");
         }
-        System.out.println(info);
+        log.info(info.toString());
 
         Integer result = userService.register(info.getName(), info.getPassword(), info.getContact(), info.getGender(), info.getAge());  //调用接口的register函数
         if (result == -1)  //如果返回的result为false
@@ -55,7 +56,7 @@ public class RegisterController {
     @PostMapping("/doctor")  //对应的api路径
     public Response<Boolean> registerDoctor(@RequestBody RegisterDTO info)
     {
-//        System.out.println(info);
+//        log.info(info);
         if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
         {
             return Response.fail("手机号或密码为空");  //返回错误信息

@@ -64,34 +64,36 @@ class BackendApplicationTests {
     //一个用于测试实时获取运动数据的测试用例
     @Test
     void testExercise2() throws Exception {
-        exerciseService.Init_exerciseRunning();
-        System.out.println("Start test");
-        Integer i1 = exerciseService.addExercise("1", 121.20947, 31.282196);
-        if(i1==-1)return;
-        List<Double> longis=new ArrayList<>();
-        List<Double> latis=new ArrayList<>();
-        //From Cao'an Highway No.4800 to the Lookup to the Sky
-        longis.add(121.2094711);
-        latis.add(31.282196);
+        for(int j=0;j<10;j++) {
+            exerciseService.Init_exerciseRunning();
+            System.out.println("Start test");
+            Integer i1 = exerciseService.addExercise("1", 121.20947, 31.282196);
+            if (i1 == -1) continue;
+            List<Double> longis = new ArrayList<>();
+            List<Double> latis = new ArrayList<>();
+            //From Cao'an Highway No.4800 to the Lookup to the Sky
+            longis.add(121.2094711);
+            latis.add(31.282196);
 
-        longis.add(121.212404);
-        latis.add(31.282595);
-        //31.2827989,121.2076651
-        longis.add(121.2076651);
-        latis.add(31.2827989);
-        //31.283511, 121.212851
-        longis.add(121.212851);
-        latis.add(31.283511);
-        //31.284311, 121.213488
-        longis.add(121.213488);
-        latis.add(31.284311);
-        for (int i = 0; i < 5; i++) {
-            Thread.sleep(1000);//1s<10s
-            exerciseService.getRealTimeSport("1",longis.get(i),latis.get(i));
+            longis.add(121.212404);
+            latis.add(31.282595);
+            //31.2827989,121.2076651
+            longis.add(121.2076651);
+            latis.add(31.2827989);
+            //31.283511, 121.212851
+            longis.add(121.212851);
+            latis.add(31.283511);
+            //31.284311, 121.213488
+            longis.add(121.213488);
+            latis.add(31.284311);
+            for (int i = 0; i < 5; i++) {
+                Thread.sleep(1000);//1s<10s
+                exerciseService.getRealTimeSport("1", longis.get(i), latis.get(i));
+            }
+            exerciseService.finishExercise("1");
+            log.info("test");
+            System.out.println("End test");
         }
-        exerciseService.finishExercise("1");
-        log.info("test");
-        System.out.println("End test");
     }
     @Test
     void showGlycemiaHistoryDiagramBatch() {//Only w/ Redis:11s891(66.8%)  w/Redis&Bloom 4s103(65.5%,88.5%) None:35s844

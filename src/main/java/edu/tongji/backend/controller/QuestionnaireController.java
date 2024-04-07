@@ -8,11 +8,12 @@ import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/sports/questionnaire")//对应的api路径
 public class QuestionnaireController {
@@ -29,7 +30,7 @@ public class QuestionnaireController {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
-//        System.out.println(questionnaireService.getQuestionnaire1());
+//        log.info(questionnaireService.getQuestionnaire1());
 
         return Response.success(questionnaireService.getQuestionnaire1(), "success");
     }
@@ -40,9 +41,9 @@ public class QuestionnaireController {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
-//        System.out.println(answer);
+//        log.info(answer);
 
-//        System.out.println(questionnaireService.getQuestionnaire2(userId, answer.getResult()));
+//        log.info(questionnaireService.getQuestionnaire2(userId, answer.getResult()));
 
         List<QuestionnaireDTO> result = questionnaireService.getQuestionnaire2(userId, answer.getResult());
         if (result == null) {
@@ -58,14 +59,14 @@ public class QuestionnaireController {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
-        System.out.println(answer);
+        log.info(answer.toString());
 
         ScenarioDTO result = questionnaireService.getRecommendedSportPlan(userId, answer.getResult());
         if (result == null) {
             return Response.fail("问卷上传失败");
         }
 
-//        System.out.println(profileService.getRecommendedSportPlan(userId));
+//        log.info(profileService.getRecommendedSportPlan(userId));
 
 //        return Response.success(profileService.getRecommendedSportPlan(userId), "success");
         return Response.success(result, "success");

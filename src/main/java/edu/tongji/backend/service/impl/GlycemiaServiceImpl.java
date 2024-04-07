@@ -71,7 +71,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             }else {
                 glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
                 if (glycemiaValue == null) {
-                    log.info("(Penetration!)No data found at" + startDateTime.format(formatter));
+                    log.warn("(Penetration!)No data found at" + startDateTime.format(formatter));
                     continue;
                 }
                 glycemia_bf.put(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -115,7 +115,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
                 glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
                 if (glycemiaValue == null) {
-                    log.info("(Penetration)No data found around" + startDateTime.format(formatter));
+                    log.warn("(Penetration)No data found around" + startDateTime.format(formatter));
                     continue;
                 }
                 daily_glycemia_bf.put(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -221,7 +221,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter));
                 //TODO:月度统计
                 if (glycemiaValue == null) {
-                    log.info("(Penetration)No data found at" + startDate.format(formatter));
+                    log.warn("(Penetration)No data found at" + startDate.format(formatter));
                     startDate = startDate.plusDays(1);
                     continue;
                 }
