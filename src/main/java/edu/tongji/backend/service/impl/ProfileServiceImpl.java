@@ -10,6 +10,7 @@ import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.IComplicationService;
 import edu.tongji.backend.service.IProfileService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
+@Slf4j
 @Service
 public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> implements IProfileService {
     @Autowired
@@ -112,7 +113,7 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 //前端传来的并发症字符串可以用任意一个字符分割
         List<String> complications = IComplicationService.parseComplicationStr(profileDTO.getComplications());
 
-        System.out.println(complications);
+        log.info(complications.toString());
         //首先在complication表中删除该病人的所有并发症
         QueryWrapper<Complication> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", patientId);
@@ -125,13 +126,13 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         Profile dummy = profileMapper.getByPatientIdProfile(patientId);
         if (dummy == null) {
 
-           System.out.println("insert");
+           log.info("insert");
 
             return profileMapper.insert(profile) == 1;
         }
 
-//        System.out.println("update");
-//        System.out.println(profile);
+//        log.info("update");
+//        log.info(profile);
 
         return profileMapper.update(profile);
     }

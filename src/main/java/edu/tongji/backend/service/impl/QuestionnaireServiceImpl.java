@@ -6,12 +6,13 @@ import edu.tongji.backend.entity.Questionnaire;
 import edu.tongji.backend.mapper.QuestionnaireMapper;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IQuestionnaireService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.ArrayList;
-
+@Slf4j
 @Service
 public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Questionnaire> implements IQuestionnaireService {
     @Autowired
@@ -127,10 +128,10 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
         int joggingDuration = 20;
         int ropeSkippingDuration = 10;
 
-//        System.out.println(yoga);
-//        System.out.println(jogging);
-//        System.out.println(ropeSkipping);
-//        System.out.println("**********");
+//        log.info(yoga);
+//        log.info(jogging);
+//        log.info(ropeSkipping);
+//        log.info("**********");
 
         String questionnaire1Answer = questionnaireMapper.selectByPatientIdAndTemplate(userId, 1);
         if (questionnaire1Answer.charAt(4) == '1') {
@@ -145,20 +146,20 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
             ropeSkipping = false;
         }
 
-//        System.out.println(yoga);
-//        System.out.println(jogging);
-//        System.out.println(ropeSkipping);
-//        System.out.println("**********");
+//        log.info(yoga);
+//        log.info(jogging);
+//        log.info(ropeSkipping);
+//        log.info("**********");
 
         Integer age = profileService.getByPatientId(userId.toString()).getAge();
         if (age >= 60) {
             ropeSkipping = false;
         }
 
-//        System.out.println(yoga);
-//        System.out.println(jogging);
-//        System.out.println(ropeSkipping);
-//        System.out.println("**********");
+//        log.info(yoga);
+//        log.info(jogging);
+//        log.info(ropeSkipping);
+//        log.info("**********");
 
         for (Answer2 answer2 : answer) {
             if (answer2.getQuestion_no() == 1) {
@@ -240,8 +241,7 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
         for (Answer2 answer2 : answer) {
             questionNo.add(answer2.getQuestion_no());
         }
-
-        System.out.println(questionNo);
+        questionNo.forEach(element->log.info(element.toString()));
 
         int count = 0;
         for (int i = 1; i <= 11; i++) {

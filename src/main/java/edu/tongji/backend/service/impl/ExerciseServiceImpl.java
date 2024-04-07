@@ -15,6 +15,7 @@ import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.util.CalorieCalculator;
 import edu.tongji.backend.util.SimpleRedisLock;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,7 +35,7 @@ import static edu.tongji.backend.util.BloomFilterUtil.exercise_running_bf;
 import static edu.tongji.backend.util.BloomFilterUtil.glycemia_bf;
 import static edu.tongji.backend.util.RedisConstants.*;
 import static java.lang.Thread.sleep;
-
+@Slf4j
 @Service
 public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> implements IExerciseService {
     @Autowired
@@ -68,7 +69,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime date1 = LocalDateTime.parse(list.getStartTime(), formatter);
             LocalDateTime date2=date1.plusMinutes(list.getDuration());
-            System.out.println(date2);
+            log.info(date2.toString());
             formattedLists.add(new HashMap<>(Map.of(date1,date2)));
             intervals.setDatas(formattedLists);
         }
@@ -88,7 +89,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 Exercise exercise = new Exercise();
                 exercise.setPatientId(user_id);
                 exercise.setStartTime(LocalDateTime.now());
-                System.out.println("开始时间为" + exercise.getStartTime());
+                log.info("开始时间为" + exercise.getStartTime());
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 //查找这个用户的运动方案
                 QueryWrapper<Scenario> queryWrapper = new QueryWrapper<>();
@@ -98,7 +99,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                     return null;
                 Scenario last_scenario = scenarios.get(scenarios.size() - 1);
                 exercise.setCategory(last_scenario.getCategory());
-                System.out.println("找到的运动种类为" + exercise.getCategory());
+                log.info("找到的运动种类为" + exercise.getCategory());
 
                 Integer weight=70;
 
@@ -124,7 +125,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 exercise.setExerciseId(exercise_id);
                 insert_exercise = exerciseMapper.insert(exercise);//往exercise表里插入一条记录
                 if (insert_exercise == 0) {
-                    System.out.println("插入exercise表失败");
+                    log.info("插入exercise表失败");
                     return null;
                 }
                 insert_exercise = exercise_id;
@@ -139,7 +140,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                         CACHE_RUNNING_TTL, TimeUnit.MINUTES);
                 stringRedisTemplate.expire(CACHE_RUNNING_KEY+exercise_id,
                         CACHE_RUNNING_TTL, TimeUnit.MINUTES);
-                System.out.println("插入exercise表成功，exercise_id为" + insert_exercise);
+                log.info("插入exercise表成功，exercise_id为" + insert_exercise);
 
                 insert_running = 1;
                 //如果是跑步，还要往running表里插入一条记录
@@ -157,10 +158,10 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                     //running表里有：distance,pace
                     //他们是随着运动过程中不断变化的
                     //insert_running = runningMapper.insert(running);
-                    System.out.println("插入running表成功");
+                    log.info("插入running表成功");
                     exercise_running_bf.put(EXERCISE_RUNNING_KEY + insert_exercise);
                 }else
-                    System.out.println("Opps!");
+                    log.info("Opps!");
                 return insert_exercise * insert_running;
             }catch(Exception e) {
                 lock.unlock();
@@ -192,7 +193,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         Profile profile = profileService.getByPatientId(userId);
         if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
             weight = profile.getWeight();
-            System.out.println("weight: " + weight);
+            log.info("weight: " + weight);
         }
         //转换时区
         ZoneId currentZoneId = ZoneId.systemDefault();
@@ -224,7 +225,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                     running.setPace(Integer.parseInt(pace.toString()));
                     running.setDistance(Double.parseDouble(distance.toString())/1000);
                     running.setExerciseId(exerciseId);
-                    System.out.println("test" + running);
+                    log.info("test" + running);
                     runningMapper.insert(running);
                 }
             }
@@ -232,7 +233,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             //创建这个exercise对应的mapper
         res*= exerciseMapper.updateById(last_exercise);
         if (res > 0)
-            System.out.println("结束exercise成功，exercise_id为" + last_exercise.getExerciseId());
+            log.info("结束exercise成功，exercise_id为" + last_exercise.getExerciseId());
         return res;
     }
 
@@ -244,13 +245,13 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         LocalDateTime startTime = start_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
 
         SportRecordDTO ans= new SportRecordDTO();
-        //System.out.println("数组长度为"+ans.getMinute_record().length);
+        //log.info("数组长度为"+ans.getMinute_record().length);
         int user_id = Integer.parseInt(userId);
         QueryWrapper<Exercise> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("patient_id", user_id).isNotNull("duration");
         //查找最近7天的运动记录，从7天前的0点到今天的现在
         queryWrapper.ge("start_time", startTime);
-        System.out.println("起始日期为" + startTime_sh+"UTC时区的起始日期为"+startTime);
+        log.info("起始日期为" + startTime_sh+"UTC时区的起始日期为"+startTime);
 
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         int total_minute = 0;
@@ -266,12 +267,12 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             LocalDateTime start_time1 = exercise.getStartTime().atZone(ZoneId.of("UTC")).withZoneSameInstant(currentZoneId).toLocalDateTime();
             //计算start_time1和startTime_sh的差值，得到这个运动是在第几天
             int day = (int) startTime_sh.until(start_time1.withHour(0).withMinute(0).withSecond(0), ChronoUnit.DAYS);
-            //System.out.println("day为" + day + "start_time1为" + start_time1 + "startTime_sh为" + startTime_sh);
+            //log.info("day为" + day + "start_time1为" + start_time1 + "startTime_sh为" + startTime_sh);
             //要知道这个运动是在第几天，然后在对应的位置加上运动时间
 
             ans.getMinute_record()[day] += exercise.getDuration();
-            //System.out.println("在第" + day + "天运动了" + exercise.getDuration() + "分钟");
-            //System.out.println("这一天的日期是" + exercise.getStartTime().toLocalDate());
+            //log.info("在第" + day + "天运动了" + exercise.getDuration() + "分钟");
+            //log.info("这一天的日期是" + exercise.getStartTime().toLocalDate());
             //要知道这个运动是什么种类，然后在对应的位置加上运动时间
             String category = Scenario.check(exercise.getCategory());
             if (category == null)
@@ -316,7 +317,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 ans.setCalorie_record(new int[1]);
                 break;
         }
-        System.out.println("起始日期为"+startTime+"终止日期为"+endTime+"运动种类为"+category+"时间类型为"+time_type);
+        log.info("起始日期为"+startTime+"终止日期为"+endTime+"运动种类为"+category+"时间类型为"+time_type);
         //需要把start_time和end_time转换为UTC时区
         ZoneId currentZoneId = ZoneId.systemDefault();
         ZonedDateTime start_time0 = startTime.atZone(currentZoneId);
@@ -341,13 +342,13 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 ans.getMinute_record()[i] += exercise.getDuration();
                 sum_duration += exercise.getDuration();
                 int exercise_id = exercise.getExerciseId();
-                System.out.println("exercise_id为"+exercise_id);
+                log.info("exercise_id为"+exercise_id);
                 if (category.equalsIgnoreCase("walking") || category.equalsIgnoreCase("jogging"))
                 {
                     //根据exercise_id查找running表
                     Running running=runningMapper.getByExerciseIdRunning(exercise_id);
                     if (running != null) {
-                        System.out.println("获得的distance为"+running.getDistance());
+                        log.info("获得的distance为"+running.getDistance());
                         sum_distance += running.getDistance();
                         mean_pace += running.getPace();
                         running_times++;
@@ -398,7 +399,7 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         ZoneId currentZoneId = ZoneId.systemDefault();
         ZonedDateTime start_time0=LocalDate.now().atStartOfDay().atZone(currentZoneId);
         LocalDateTime start_time = start_time0.withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-       // System.out.println("开始时间为"+start_time);
+       // log.info("开始时间为"+start_time);
         //接下来要计算 当天这个用户这个运动类型的运动总时长和总卡路里
         QueryWrapper<Exercise> queryWrapper1 = new QueryWrapper<>();
         queryWrapper1.eq("patient_id", user_id).eq("category", category.toLowerCase());
@@ -431,14 +432,14 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
         queryWrapper.eq("exercise_id", exerciseId);
         List<Exercise> exercises = exerciseMapper.selectList(queryWrapper);
         Exercise last_exercise = exercises.get(0);
-        System.out.println("最近一次运动的id为"+last_exercise.getExerciseId());
+        log.info("最近一次运动的id为"+last_exercise.getExerciseId());
         //统一时区，把start_time转为当前时区
         ZoneId currentZoneId = ZoneId.systemDefault();
         ZonedDateTime start_time0 = last_exercise.getStartTime().atZone(ZoneId.of("UTC") );//默认是用UTC
         LocalDateTime start_time = start_time0.withZoneSameInstant(currentZoneId).toLocalDateTime();//转为SystemDefault
         String category = last_exercise.getCategory().toLowerCase();
         //获取两个时间的差值
-        System.out.println("开始时间为"+start_time+"现在时间为"+now);
+        log.info("开始时间为"+start_time+"现在时间为"+now);
         int duration = (int) Duration.between(start_time,now).toSeconds();
         //duration是以秒为单位的，需要转为相应的字符串返回给前端
         if(duration<60)

@@ -1,5 +1,6 @@
 package edu.tongji.backend;
 
+
 import edu.tongji.backend.controller.GlycemiaController;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.controller.RegisterController;
@@ -16,7 +17,11 @@ import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
 import edu.tongji.backend.service.impl.RunningServiceImpl;
 import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.util.Jwt;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -28,12 +33,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@Slf4j
 @SpringBootTest
 class BackendApplicationTests {
     @Autowired
@@ -54,6 +60,7 @@ class BackendApplicationTests {
     GlycemiaServiceImpl glycemiaService;
     @Autowired
     RegisterController register;
+    public static final Logger LOGGER= LoggerFactory.getLogger(BackendApplicationTests.class);
     //一个用于测试实时获取运动数据的测试用例
     @Test
     void testExercise2() throws Exception {
@@ -83,6 +90,7 @@ class BackendApplicationTests {
             exerciseService.getRealTimeSport("1",longis.get(i),latis.get(i));
         }
         exerciseService.finishExercise("1");
+        log.info("test");
         System.out.println("End test");
     }
     @Test

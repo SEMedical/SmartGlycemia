@@ -11,6 +11,7 @@ import edu.tongji.backend.mapper.HospitalMapper;
 import edu.tongji.backend.service.IHospitalService;
 import edu.tongji.backend.util.SystemConstants;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResult;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import static edu.tongji.backend.util.RedisConstants.HOSPITAL_GEO_KEY;
+@Slf4j
 @Service
 public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> implements IHospitalService {
     @Resource
@@ -36,7 +38,7 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
         if(x==null||y==null) {
             Page<Hospital> page = query().page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
             for (Hospital hospital : page.getRecords()) {
-                System.out.println(hospital);
+                log.info(hospital.toString());
             }
             return Result.ok(page.getRecords());
         }
@@ -68,7 +70,7 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
         String idStr = StrUtil.join(",", ids);
         List<Hospital> hospitals = query().in("hospital_id", ids).last("ORDER BY FIELD(hospital_id," + idStr + ")").list();
         for (Hospital hospital : hospitals) {
-            System.out.println(hospital);
+            log.info(hospital.toString());
         }
         return Result.ok(hospitals);
     }

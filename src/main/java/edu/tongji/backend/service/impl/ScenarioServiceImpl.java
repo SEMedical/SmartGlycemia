@@ -8,9 +8,10 @@ import edu.tongji.backend.mapper.ScenarioMapper;
 import edu.tongji.backend.service.IProfileService;
 import edu.tongji.backend.service.IScenarioService;
 import edu.tongji.backend.util.CalorieCalculator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+@Slf4j
 @Service
 public class ScenarioServiceImpl extends ServiceImpl<ScenarioMapper, Scenario> implements IScenarioService {
     @Autowired
@@ -21,7 +22,7 @@ public class ScenarioServiceImpl extends ServiceImpl<ScenarioMapper, Scenario> i
 
     @Override
     public boolean setScenario(Integer patientId, Sport sport) {
-        System.out.println("种类为"+ sport.getCategory() );
+        log.info("种类为"+ sport.getCategory() );
         Scenario scenario = new Scenario();
         scenario.setPatientId(patientId);
         scenario.setCategory(sport.getCategory());
@@ -31,7 +32,7 @@ public class ScenarioServiceImpl extends ServiceImpl<ScenarioMapper, Scenario> i
         Profile profile = profileService.getByPatientId(patientId.toString());
         if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
             weight = profile.getWeight();
-            System.out.println("weight: " + weight);
+            log.info("weight: " + weight);
         }
 
         Integer calories = CalorieCalculator.getCalorie(sport.getCategory(), sport.getDuration(), weight);

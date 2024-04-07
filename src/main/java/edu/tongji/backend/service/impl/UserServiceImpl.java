@@ -96,7 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String contact=loginForm.getContact();
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
-            return Result.fail("Wrong format of contact");
+            return Result.fail("Wrong format of contact"+contact);
         }
         //2. error TODO :get captcha from Redis
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
@@ -134,7 +134,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //. Check Phone
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
-            return Result.fail("Wrong format of contact");
+            return Result.fail("Wrong format of contact"+contact);
         }
         //. fit,generate verification code
         String code= generatedcode(6);
