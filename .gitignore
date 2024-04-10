@@ -34,3 +34,6 @@ build/
 
 
 backend/src/main/resources/application.yaml
+*.html
+*.log
+*.gz

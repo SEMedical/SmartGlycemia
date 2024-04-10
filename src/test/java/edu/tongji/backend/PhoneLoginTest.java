@@ -68,7 +68,7 @@ public class PhoneLoginTest {
     void testWithoutCaptcha() throws Exception {
         log.debug("[2] test without captcha ");
         boolean verbose=false;
-        LoginFormDTO user=new LoginFormDTO("15555555555",null,null);
+        LoginFormDTO user=new LoginFormDTO("15555555555","0","0");
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/phone")
@@ -76,8 +76,7 @@ public class PhoneLoginTest {
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
-        )./*andExpect(status().is4xxClientError()).*/
-                andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
+        ).andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
         else

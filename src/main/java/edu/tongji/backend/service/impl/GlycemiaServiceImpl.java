@@ -159,15 +159,15 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                         element.getRecordTime().toLocalDateTime().format(formatter)));
     }
     public void Init_GlycemiaDiagram(){
-        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        /*QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         glycemias.forEach(element->glycemia_bf.put(
                 CACHE_GLYCEMIA_KEY+element.getPatientId()+":"+
-                        element.getRecordTime().toLocalDateTime().format(formatter)));
+                        element.getRecordTime().toLocalDateTime().format(formatter)));*/
     }
     public void Init_DailyGlycemiaDiagram(){
-        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
+        /*QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -179,7 +179,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             daily_glycemia_bf.put(
                     CACHE_DAILY_GLYCEMIA_KEY + element.getPatientId() + ":" +
                             dateTime.format(formatter));
-        });
+        });*/
     }
     public void Init_LatestGlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();

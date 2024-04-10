@@ -4,12 +4,25 @@ logging:
     file: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %msg %n"
   level:
     edu:
-      tongji: trace
+      tongji: info
   file:
     path: "/log/springboot/"
 server:
   port: 81
+  tomcat:
+    accesslog:
+      buffered: true
+      directory: /logs/springboot/
+      enabled: true
+      file-date-format: .yyyy-MM-dd
+      pattern: common
+      prefix: access_log
+      rename-on-rotate: false
+      request-attributes-enabled: false
+      rotate: true
+      suffix: .log
 spring:
+
   profiles:
     active: pro
   rabbitmq:
@@ -40,6 +53,8 @@ spring:
 
   jackson:
     default-property-inclusion: non-null
+    serialization:
+        FAIL_ON_EMPTY_BEANS: false
     #type: com.alibaba.druid.pool.DruidDataSource
 mybatis-plus:
   mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml

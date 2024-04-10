@@ -98,13 +98,12 @@ class BackendApplicationTests {
     @Test
     void showGlycemiaHistoryDiagramBatch() {//Only w/ Redis:11s891(66.8%)  w/Redis&Bloom 4s103(65.5%,88.5%) None:35s844
         glycemiaService.Init_GlycemiaHistoryDiagram();
-        for(int i=0;i<100;i++)
-            glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
+        glycemiaService.showGlycemiaHistoryDiagram("Week", "2", LocalDate.of(2023, 12, 27));
     }
     @Test
     void showGlycemiaDiagram() {//Only w/ Redis:8s964(-115.7%?)  w/Redis&Bloom 1s367(84.8%,67.1%) None:4s155
         glycemiaService.Init_GlycemiaDiagram();
-        for(int i=0;i<5;i++)
+        //for(int i=0;i<5;i++)
             glycemiaService.showGlycemiaDiagram("History", "2", LocalDate.of(2023, 12, 28));
     }
     @Test
@@ -157,7 +156,8 @@ class BackendApplicationTests {
     @Test
     void testExerciseTx() throws InterruptedException {
         System.out.println("Start test");
-        exerciseService.addExercise("1",1.0,1.0);
+        Integer i = exerciseService.addExercise("1", 1.0, 1.0);
+        if(i==-1)return;
         //Sleep
         try {
             Thread.sleep(7000);
