@@ -1,0 +1,23 @@
+logging:
+  #file:
+  #  name: logs/${spring.application.name}.log
+  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=logback-spring.xml
+spring:
+  application:
+    name: glycemia-service
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR}
+      discovery:
+        cluster-name: Shanghai
+        namespace: ${NACOS_NAMESPACE}
+        ephemeral: false
+        group: PATIENT
+      config:
+        file-extension: yaml
+        extension-configs:
+          - data-id: common.yml
+            group: COMMON
+            refresh: true

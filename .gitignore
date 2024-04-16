@@ -34,3 +34,9 @@ build/
 
 
 backend/src/main/resources/application.yaml
+logs/*
+logs/
+mvnw.cmd
+mvnw
+.mvn/*
+.mvn
