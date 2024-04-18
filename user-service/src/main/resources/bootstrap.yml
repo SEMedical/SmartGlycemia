@@ -16,8 +16,14 @@ spring:
         ephemeral: false
         group: PATIENT
       config:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: SECURITY
         file-extension: yaml
         extension-configs:
           - data-id: common.yml
             group: COMMON
+            refresh: true
+          - data-id: security.yml
+            group: SECURITY
             refresh: true
