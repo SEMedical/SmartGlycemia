@@ -13,7 +13,7 @@
         <module>glycemia-service</module>
         <module>exercise-service</module>
         <module>common-api</module>
-<!--        <module>gateway</module>-->
+        <module>gateway</module>
     </modules>
     <properties>
         <project.version>1.0</project.version>
