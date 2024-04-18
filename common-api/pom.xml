@@ -9,7 +9,8 @@
     </parent>
 
     <artifactId>common-api</artifactId>
-
+    <groupId>${parent.groupId}</groupId>
+    <version>${parent.version}</version>
     <name>common-api</name>
     <description>backend</description>
     <properties>
@@ -187,6 +188,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <skip>true</skip>
+                    <fork>true</fork>
+                    <addResources>true</addResources>
                 </configuration>
             </plugin>
         </plugins>

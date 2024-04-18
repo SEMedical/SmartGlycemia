@@ -15,19 +15,21 @@
         <module>common-api</module>
         <module>gateway</module>
     </modules>
-    <packaging>pom</packaging>
-    <groupId>edu.tongji</groupId>
-    <artifactId>backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>backend</name>
-    <description>backend</description>
     <properties>
+        <project.version>1.0</project.version>
         <java.version>1.8</java.version>
         <spring-cloud.version>Hoxton.SR7</spring-cloud.version>
         <spring-boot.version>2.2.1.RELEASE</spring-boot.version>
         <spring.version>5.2.1.RELEASE</spring.version>
         <spring.cloud.alibaba.version>2.2.1.RELEASE</spring.cloud.alibaba.version>
     </properties>
+    <packaging>pom</packaging>
+    <groupId>edu.tongji</groupId>
+    <artifactId>backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>backend</name>
+    <description>backend</description>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -180,11 +182,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
             <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid-spring-boot-starter</artifactId>
-            <version>1.2.21</version>
         </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>

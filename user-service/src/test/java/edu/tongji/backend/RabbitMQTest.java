@@ -9,14 +9,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 @Slf4j
 @SpringBootTest
 public class RabbitMQTest {
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-    @Test
-    public void testSimpleQueue(){
-        String queueName="simple.queue";
-        String message="hello,spring amqb!";
-        rabbitTemplate.convertAndSend(queueName,message);
-    }
+//    @Autowired
+//    private RabbitTemplate rabbitTemplate;
+//    @Test
+//    public void testSimpleQueue(){
+//        String queueName="simple.queue";
+//        String message="hello,spring amqb!";
+//        rabbitTemplate.convertAndSend(queueName,message);
+//    }
     /*@Test
     @RabbitListener(queues="simple.queue")
     public void listenSimpleQueueMsg(String msg){
