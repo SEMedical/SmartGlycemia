@@ -200,7 +200,7 @@
                 <executions>
                     <execution>
                         <id>install-vim25</id>
-                        <phase>compile</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>install-file</goal>
                         </goals>
