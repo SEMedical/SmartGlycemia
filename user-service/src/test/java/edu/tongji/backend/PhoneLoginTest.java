@@ -1,9 +1,9 @@
 package edu.tongji.backend;
 
 import com.alibaba.fastjson.JSONObject;
+import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.dto.LoginFormDTO;
-import edu.tongji.backend.service.impl.UserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +17,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_CODE_TIMEOUT;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;

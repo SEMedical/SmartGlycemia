@@ -1,6 +1,8 @@
 server:
   port: 83
 spring:
+  main:
+    allow-bean-definition-overriding: true
   config:
     location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
   jackson:

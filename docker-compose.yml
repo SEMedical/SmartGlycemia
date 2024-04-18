@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  user-service:
+    build: ./user-service
+  glycemia-service:
+    build: ./glycemia-service
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+  exercise-service:
+    build: ./exercise-service

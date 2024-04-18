@@ -7,6 +7,8 @@ spring:
     name: glycemia-service
   profiles:
     active: dev
+  main:
+    allow-bean-definition-overriding: true
   cloud:
     nacos:
       server-addr: ${NACOS_ADDR}

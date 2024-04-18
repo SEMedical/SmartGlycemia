@@ -1,7 +1,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="edu.tongji.backend.mapper.ProfileMapper">
+<mapper namespace="mapper.edu.tongji.backend.ProfileMapper">
     <select id="getByPatientIdProfile" resultType="edu.tongji.backend.entity.Profile">
         SELECT * FROM profile WHERE patient_id = #{patient_id}
     </select>
