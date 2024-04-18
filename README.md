@@ -6,8 +6,8 @@
 ## 运行方式
 ```shell
 docker compose up -d
-docker run backend-glycemia-service --env-file=web-variables.yml
-docker run backend-user-service --env-file=web-variables.yml
-docker run backend-exercise-service --env-file=web-variables.yml
-docker run backend-gateway --env-file=web-variables.yml
+docker run backend-glycemia-service --env-file=web-variables.env
+docker run backend-user-service --env-file=web-variables.env
+docker run backend-exercise-service --env-file=web-variables.env
+docker run backend-gateway --env-file=web-variables.env
 ```
