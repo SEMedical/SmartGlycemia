@@ -181,16 +181,6 @@
             <version>1.3.5</version>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>localRepository</id>
-            <url>file:G:/Repo</url>
-        </repository>
-        <snapshotRepository>
-            <id>localRepository</id>
-            <url>file:G:/Repo</url>
-        </snapshotRepository>
-    </distributionManagement>
     <build>
         <finalName>app</finalName>
         <plugins>

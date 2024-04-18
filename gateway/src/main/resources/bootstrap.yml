@@ -8,6 +8,20 @@ spring:
   profiles:
     active: dev
   cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/health/**,/api/login/**,/api/register/**
+        - id: glycemia-service
+          uri: lb://glycemia-service
+          predicates:
+            - Path=/api/glycemia/**
+        - id: exercise-service
+          uri: lb://exercise-service
+          predicates:
+            - Path=/api/sports/**
     nacos:
       server-addr: ${NACOS_ADDR}
       discovery:

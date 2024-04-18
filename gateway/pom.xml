@@ -21,11 +21,6 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>edu.tongji</groupId>
-            <artifactId>common-api</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-loadbalancer</artifactId>
         </dependency>
@@ -40,13 +35,5 @@
     </dependencies>
     <build>
         <finalName>app</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 </project>
