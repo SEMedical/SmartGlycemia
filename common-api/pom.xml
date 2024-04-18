@@ -10,7 +10,7 @@
 
     <artifactId>common-api</artifactId>
     <groupId>${parent.groupId}</groupId>
-    <version>${parent.version}</version>
+    <version>1.0.0</version>
     <name>common-api</name>
     <description>backend</description>
     <properties>
@@ -181,9 +181,39 @@
             <version>1.3.5</version>
         </dependency>
     </dependencies>
-
+    <distributionManagement>
+        <repository>
+            <id>localRepository</id>
+            <url>file:G:/Repo</url>
+        </repository>
+        <snapshotRepository>
+            <id>localRepository</id>
+            <url>file:G:/Repo</url>
+        </snapshotRepository>
+    </distributionManagement>
     <build>
+        <finalName>app</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-vim25</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <packaging>jar</packaging>
+                            <groupId>edu.tongji</groupId>
+                            <artifactId>common-api</artifactId>
+                            <version>1.0.0</version>
+                            <file>./target/app.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
