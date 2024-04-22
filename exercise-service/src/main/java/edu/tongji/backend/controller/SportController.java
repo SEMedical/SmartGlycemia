@@ -23,7 +23,7 @@ public class SportController {
     @Autowired
     IRunningService runningService;
     @GetMapping("/getExerciseIntvl")
-    public Intervals getExerciseIntervals(String category,String date,HttpServletRequest request){
+    public Intervals getExerciseIntervals(@RequestParam("category") String category,@RequestParam("date") String date,HttpServletRequest request){
         try {
             UserDTO user = UserHolder.getUser();
             String user_id = user.getUserId();

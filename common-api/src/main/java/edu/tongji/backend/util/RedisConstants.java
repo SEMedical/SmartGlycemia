@@ -25,4 +25,5 @@ public class RedisConstants {
     public static final Long RUNNING_GEO_TTL=30L;
     public static final String USER_PROFILE_KEY="user:profile:";
     public static final Long USER_PROFILE_TTL=30L;
+    public static final String EMPHERAL_TOKEN_HEADER="empheral_token_header:";
 }

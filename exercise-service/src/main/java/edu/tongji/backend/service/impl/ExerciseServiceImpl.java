@@ -14,6 +14,7 @@ import edu.tongji.backend.service.IExerciseService;
 import edu.tongji.backend.util.CalorieCalculator;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.SimpleRedisLock;
+import edu.tongji.backend.util.TokenHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Point;
@@ -106,7 +107,10 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
                 log.info("找到的运动种类为" + exercise.getCategory());
 
                 Integer weight=70;
+                String token = request.getHeader("authorization");
+                TokenHolder.saveToken(token);
                 Profile profile=userClient.getByPatientId(request);
+                TokenHolder.removeToken();
                 if (profile != null && profile.getWeight() != null&&profile.getWeight()>0) {
                     weight = profile.getWeight();
                     stringRedisTemplate.opsForHash().put(USER_PROFILE_KEY+userId,"weight",weight.toString());

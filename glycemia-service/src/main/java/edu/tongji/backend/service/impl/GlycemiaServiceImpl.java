@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -60,7 +61,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             System.out.println(startDateTime);
             startDateTime = startDateTime.plus(interval);
             if(!glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))){
-                System.out.println("No data found at" + startDateTime.format(formatter));
+                log.warn("No data found at" + startDateTime.format(formatter));
                 continue;
             }
             String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -70,7 +71,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             }else {
                 glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
                 if (glycemiaValue == null) {
-                    System.out.println("(Penetration!)No data found at" + startDateTime.format(formatter));
+                    log.warn("(Penetration!)No data found at" + startDateTime.format(formatter));
                     continue;
                 }
                 glycemia_bf.put(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -149,14 +150,6 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
         return interval1 == interval2;
     }
-    public void Init_GlycemiaHistoryDiagram(){
-        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
-        List<Glycemia> exercises = glycemiaMapper.selectList(queryWrapper);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        exercises.forEach(element->history_glycemia_bf.put(
-                CACHE_HISTORY_GLYCEMIA_KEY+element.getPatientId()+":"+
-                        element.getRecordTime().toLocalDateTime().format(formatter)));
-    }
     public void Init_GlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
@@ -180,11 +173,36 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                             dateTime.format(formatter));
         });
     }
+    @PostConstruct
     public void Init_LatestGlycemiaDiagram(){
+
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> exercises = glycemiaMapper.selectList(queryWrapper);
         exercises.forEach(element->latest_glycemia_bf.put(
                 CACHE_LATEST_GLYCEMIA_KEY+element.getPatientId()));
+        exercises.clear();
+
+        exercises = glycemiaMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        exercises.forEach(element->history_glycemia_bf.put(
+                CACHE_HISTORY_GLYCEMIA_KEY+element.getPatientId()+":"+
+                        element.getRecordTime().toLocalDateTime().format(formatter)));
+        exercises.clear();
+
+        List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        glycemias.forEach(element-> {
+            LocalDateTime dateTime = element.getRecordTime().toLocalDateTime().minusHours(8);
+            int minute = dateTime.getMinute();
+            int nearestMultipleOf15 = (int) Math.floor(minute / 15.0) * 15;
+            dateTime=dateTime.withMinute(nearestMultipleOf15).withSecond(0);
+            daily_glycemia_bf.put(
+                    CACHE_DAILY_GLYCEMIA_KEY + element.getPatientId() + ":" +
+                            dateTime.format(formatter2));
+            dateTime=null;
+        });
+        glycemias.clear();
     }
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
@@ -319,7 +337,8 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             log.debug(glyValue.toString());
             return glyValue;
         }else if(LocalDateTime.now().getHour()>22||LocalDateTime.now().getHour()<6){
-            throw new GlycemiaException("Maybe the user is sleeping,remind him/her to keep track of her glycemia");
+            log.warn("Maybe the user is sleeping,remind him/her to keep track of her glycemia");
+            return 0.0;
         }else {
             Double glyValue = val.getGlycemia();
             log.warn("The latest data is out-of-date"+glyValue.toString());
