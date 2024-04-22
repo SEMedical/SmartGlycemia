@@ -6,8 +6,16 @@
 ## 运行方式
 ```shell
 docker compose up -d
-docker run backend-glycemia-service --env-file=web-variables.env
-docker run backend-user-service --env-file=web-variables.env
-docker run backend-exercise-service --env-file=web-variables.env
-docker run backend-gateway --env-file=web-variables.env
+docker run -d backend-glycemia-service --env-file=web-variables.env
+docker run -d backend-user-service --env-file=web-variables.env
+docker run -d backend-exercise-service --env-file=web-variables.env
+docker run -d -p 8080:8080 backend-gateway --env-file=web-variables.env
+```
+## Docker镜像
+```shell
+docker compose up -d
+docker pull victor005/exercise-service:latest
+docker pull victor005/user-service:latest
+docker pull victor005/backend-gateway:latest
+docker pull victor005/glycemia-service:latest
 ```

@@ -2,6 +2,7 @@ package edu.tongji.backend.controller;
 
 import edu.tongji.backend.clients.ExerciseClient;
 import edu.tongji.backend.clients.UserClient;
+import edu.tongji.backend.config.FeignConfig;
 import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.Profile;
 import edu.tongji.backend.exception.ExerciseException;
@@ -9,14 +10,17 @@ import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.service.IGlycemiaService;
 import edu.tongji.backend.util.Jwt;
 import edu.tongji.backend.util.Response;
+import edu.tongji.backend.util.TokenHolder;
 import edu.tongji.backend.util.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -103,6 +107,8 @@ public class GlycemiaController {
     }
     @Autowired
     ExerciseClient exerciseClient;
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
     @GetMapping("/isExercise")
     public Response<Intervals> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
         try {
@@ -116,7 +122,9 @@ public class GlycemiaController {
                 throw new ExerciseException("exercise category must be one of the followings:" +
                         "Jogging,Yoga...");
             // 2.2.发送http请求，实现远程调用
-            Intervals intervals = exerciseClient.getExerciseIntervals(type, formattedDate.toString(), request);
+            TokenHolder.saveToken(token);
+            Intervals intervals = exerciseClient.getExerciseIntervals(type, formattedDate.toString());
+            TokenHolder.removeToken();
             return Response.success(intervals, "Successfully get all the intervals during a day!");
         }catch (GlycemiaException|ExerciseException e){
             System.out.println(e.getMessage());
@@ -164,11 +172,14 @@ public class GlycemiaController {
     UserClient userClient;
     @GetMapping("/realTimePrompt")
     public Response<Tip> GetRealtimeTips(HttpServletRequest request){
-        glycemiaService.Init_LatestGlycemiaDiagram();
+        //glycemiaService.Init_LatestGlycemiaDiagram();
         try {
             UserDTO user= UserHolder.getUser();
             String user_id= user.getUserId();
-            Response<Integer> age0 =userClient.getUserAge(request);
+            String token = request.getHeader("authorization");
+            TokenHolder.saveToken(token);
+            Response<Integer> age0 =userClient.getUserAge();
+            TokenHolder.removeToken();
             Integer age=age0.getResponse();
             Double data=glycemiaService.getLatestGlycemia(user_id);
             GlycemiaLevel level=glycemiaService.GetGlycemiaLevel(Double.valueOf(age),LocalDateTime.now(),data);

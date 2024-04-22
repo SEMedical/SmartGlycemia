@@ -168,11 +168,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         jwtInfo.put("userId", result.getUserId());
         jwtInfo.put("userPermission", result.getRole());
         String jwt = Jwt.generate(jwtInfo);
-
         loginDTO.setToken(jwt);
         loginDTO.setRole(result.getRole());
         loginDTO.setName(result.getName());
-
+        UserDTO userDTO= BeanUtil.copyProperties(result,UserDTO.class);
+        Map<String,Object> userMap=BeanUtil.beanToMap(userDTO,new HashMap<>(),
+                CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor(
+                        (fieldName,fieldValue)->fieldValue!=null?fieldValue.toString():"NULL"
+                ));
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+jwt,userMap);
+        stringRedisTemplate.expire(LOGIN_TOKEN_KEY+jwt,LOGIN_TOKEN_TTL,TimeUnit.MINUTES);
 //        log.info("loginDTO: " + loginDTO);
 
         return loginDTO;
