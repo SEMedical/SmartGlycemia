@@ -17,4 +17,8 @@ mybatis-plus:
       logic-not-delete-value: 0
     table-prefix: tbl_
     id-type: auto
+management:
+  metrics:
+    tags:
+      application: jmx-exercise-service
 

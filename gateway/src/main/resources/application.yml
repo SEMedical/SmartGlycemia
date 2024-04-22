@@ -1,5 +1,20 @@
 server:
   port: 8080
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+        enabled: true
+    tags:
+      application: jvm-gateway
+  endpoints:
+    web:
+      exposure:
+        include: '*'
 spring:
   config:
     location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
