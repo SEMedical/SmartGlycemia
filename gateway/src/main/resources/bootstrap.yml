@@ -8,6 +8,9 @@ spring:
   profiles:
     active: dev
   cloud:
+    sentinel:
+      transport:
+        port: 8719
     gateway:
       routes:
         - id: user-service
@@ -39,5 +42,11 @@ spring:
             group: COMMON
             refresh: true
           - data-id: security.yml
+            group: SECURITY
+            refresh: true
+          - data-id: sentinel-dev.yml
+            group: COMMON
+            refresh: true
+          - data-id: gateway.yml
             group: SECURITY
             refresh: true

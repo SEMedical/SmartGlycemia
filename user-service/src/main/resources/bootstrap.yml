@@ -10,6 +10,9 @@ spring:
   main:
     allow-bean-definition-overriding: true
   cloud:
+    sentinel:
+      transport:
+        port: 8722
     nacos:
       server-addr: ${NACOS_ADDR}
       discovery:
@@ -28,4 +31,7 @@ spring:
             refresh: true
           - data-id: security.yml
             group: SECURITY
+            refresh: true
+          - data-id: sentinel-dev.yml
+            group: COMMON
             refresh: true
