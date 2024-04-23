@@ -1,7 +1,7 @@
 logging:
   #file:
   #  name: logs/${spring.application.name}.log
-  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=logback-spring.xml
+  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.config.namespace}&dataId=logback-spring.xml
 spring:
   application:
     name: glycemia-service

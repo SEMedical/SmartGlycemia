@@ -73,7 +73,7 @@ public class PhoneLoginTest {
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
         )./*andExpect(status().is4xxClientError()).*/
-                andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
+                andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
         else

@@ -20,7 +20,7 @@ public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
     @PostMapping("/phone")
-    public Result loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+    public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         return userService.loginByPhone(loginForm,session);
     }
     @RequestMapping("/captcha")
