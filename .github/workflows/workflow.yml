@@ -54,7 +54,7 @@ jobs:
           source: target/backend-0.0.1-SNAPSHOT.jar
           target: $JAR_HOME
       - name: Deploy the application
-        if: ${{ github.ref == 'refs/heads/main' }}
+        #if: ${{ github.ref == 'refs/heads/main' }}
         uses: appleboy/ssh-action@v1.0.0
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
