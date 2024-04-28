@@ -32,6 +32,7 @@ spring:
         namespace: ${NACOS_NAMESPACE}
         ephemeral: false
         group: PATIENT
+        ip: ${SELF_IP:localhost}
       config:
         server-addr: ${NACOS_ADDR}
         namespace: ${NACOS_NAMESPACE}
