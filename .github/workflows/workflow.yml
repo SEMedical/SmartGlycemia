@@ -51,7 +51,7 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: target/backend-0.0.1-SNAPSHOT.jar
+          source: .
           target: $JAR_HOME
       - name: Deploy the application
         #if: ${{ github.ref == 'refs/heads/main' }}
