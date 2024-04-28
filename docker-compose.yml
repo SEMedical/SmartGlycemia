@@ -2,11 +2,29 @@ version: "3.8"
 services:
   user-service:
     build: ./user-service
+    ports:
+      - "8722:8722"
+      - "81:81"
+    env_file:
+      - ./web-variables.env
   glycemia-service:
     build: ./glycemia-service
+    ports:
+      - "8721:8721"
+      - "82:82"
+    env_file:
+      - ./web-variables.env
   gateway:
     build: ./gateway
     ports:
       - "8080:8080"
+      - "8719:8719"
+    env_file:
+      - ./web-variables.env
   exercise-service:
     build: ./exercise-service
+    ports:
+      - "8720:8720"
+      - "83:83"
+    env_file:
+      - ./web-variables.env
