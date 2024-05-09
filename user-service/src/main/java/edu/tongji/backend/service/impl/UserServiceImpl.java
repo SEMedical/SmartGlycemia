@@ -16,6 +16,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.RegexUtils;
+import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -89,18 +90,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
     }
     @Override
-    public Result loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+    public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         //1. Check phone and verification
         String contact=loginForm.getContact();
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
-            return Result.fail("Wrong format of contact");
+            log.warn("Wrong format of contact");
+            return Response.fail("Wrong format of contact");
         }
         //2. error TODO :get captcha from Redis
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
         String code=loginForm.getCode();
         if(cachecode==null||!cachecode.equals(code)){
-            return Result.fail("verification failed");
+            return Response.fail("verification failed");
         }
         //3. find user by phonenumber
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -128,7 +130,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         session.setAttribute("user", BeanUtil.copyProperties(userinfo,UserDTO.class));
         session.setAttribute("authorization",token);
         //No need to return JWT,because it's carried by session
-        return Result.ok();
+        LoginDTO loginDTO=new LoginDTO(token, userinfo.getRole(), userinfo.getName(),code);
+        return Response.success(loginDTO,"Login Success");
     }
     @Override
     public Result sendCode(String contact, HttpSession session){

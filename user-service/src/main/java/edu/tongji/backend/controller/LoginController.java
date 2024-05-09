@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
 import edu.tongji.backend.dto.UserDTO;
@@ -20,10 +21,11 @@ public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
     @PostMapping("/phone")
-    public Result loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+    public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         return userService.loginByPhone(loginForm,session);
     }
     @RequestMapping("/captcha")
+    @SentinelResource("captcha")
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
         return userService.sendCode(contact,session);
     }

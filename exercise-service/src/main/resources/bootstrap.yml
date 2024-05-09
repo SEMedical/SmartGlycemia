@@ -1,13 +1,16 @@
 logging:
   #file:
   #  name: logs/${spring.application.name}.log
-  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=logback-spring.xml
+  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.config.namespace}&dataId=logback-spring.xml
 spring:
   application:
     name: exercise-service
   profiles:
     active: dev
   cloud:
+    sentinel:
+      transport:
+        port: 8720
     nacos:
       server-addr: ${NACOS_ADDR}
       discovery:
@@ -15,6 +18,7 @@ spring:
         namespace: ${NACOS_NAMESPACE}
         ephemeral: false
         group: PATIENT
+        ip: ${SELF_IP:localhost}
       config:
         server-addr: ${NACOS_ADDR}
         namespace: ${NACOS_NAMESPACE}
@@ -26,4 +30,7 @@ spring:
             refresh: true
           - data-id: security.yml
             group: SECURITY
+            refresh: true
+          - data-id: sentinel-dev.yml
+            group: COMMON
             refresh: true

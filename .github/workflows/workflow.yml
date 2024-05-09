@@ -51,7 +51,7 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: target/backend-0.0.1-SNAPSHOT.jar
+          source: .
           target: $JAR_HOME
       - name: Deploy the application
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -65,18 +65,16 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: | 
-            mv $JAR_HOME/target/backend-0.0.1-SNAPSHOT.jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar
-            echo "Kill existing tomcat process"
-            killtomcat.sh
-            echo "Run tomcat(background)"
-            nohup java -jar $JAR_HOME/backend-0.0.1-SNAPSHOT.jar > tomcat.log 2>&1 &
-            echo "Show tomcat logs"
-            cat tomcat.log
-      - name: Upload JAR as Artifact
+            docker compose stop
+      - name: Upload JARs as Artifact
         uses: actions/upload-artifact@v2
         with:
           name: Maven Jar File
-          path: target/${{ env.JAR_NAME }}
+          path: | 
+            user-service/target/${{ env.JAR_NAME }}
+            glycemia-service/target/${{ env.JAR_NAME }}
+            exercise-service/target/${{ env.JAR_NAME }}
+            gateway/target/${{ env.JAR_NAME }}
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -84,13 +82,13 @@ jobs:
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: docker build
         run: docker compose up -d
-      - name: docker run 4 Applications
+      - name: docker run All Applications
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
         run: |
-          docker run backend-glycemia-service --env-file=web-variables.env
-          docker run backend-user-service --env-file=web-variables.env
-          docker run backend-exercise-service --env-file=web-variables.env
-          docker run backend-gateway --env-file=web-variables.env
+          docker run -d backend-glycemia-service --env-file=web-variables.env
+          docker run -d backend-user-service --env-file=web-variables.env
+          docker run -d backend-exercise-service --env-file=web-variables.env
+          docker run -d backend-gateway --env-file=web-variables.env
  
