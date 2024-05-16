@@ -2,6 +2,7 @@ package edu.tongji.backend.aspect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.session.StandardSessionFacade;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -10,6 +11,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Aspect
 @Component
@@ -45,8 +48,45 @@ public class WebLogAspect {
         int length = args.length;
         log.info("Request Args:");
         for (int i=0;i<length;i++) {
-            log.info("Arg {}: {}",i, args[i]);
+            if(!(args[i] instanceof StandardSessionFacade))
+                log.info("Arg {}: {}",i, maskSecrets(args[i].toString()));
+            else
+                log.info("Session Content:---");
         }
+    }
+    public static String maskSecrets(String input) {
+        String chineseNamePattern = "(\\\"name\\\":\\\")([^\\\"]*)(\\\")";
+
+        String phoneNumberPattern = "(\\d{3})\\d{4}(\\d{4})";
+        String captchaPattern="(?<!\\d)\\d{6}(?!\\d)";
+
+        Pattern chineseNameRegex = Pattern.compile(chineseNamePattern);
+        Matcher chineseNameMatcher = chineseNameRegex.matcher(input);
+
+        Pattern phoneNumberRegex = Pattern.compile(phoneNumberPattern);
+        Matcher phoneNumberMatcher = phoneNumberRegex.matcher(input);
+
+        Pattern captchaRegex=Pattern.compile(captchaPattern);
+        Matcher captchaMatcher=captchaRegex.matcher(input);
+
+        StringBuilder Input = new StringBuilder(input);
+        if (chineseNameMatcher.find()) {
+            int start = chineseNameMatcher.start();
+            int end = chineseNameMatcher.end();
+            //9 The start of the name
+            Input.replace(start+9, end-1, "*");
+        }
+        if (phoneNumberMatcher.find()) {
+            int start = phoneNumberMatcher.start();
+            int end = phoneNumberMatcher.end();
+            Input.replace(start+3, end-4, "****");
+        }
+        if (captchaMatcher.find()) {
+            int start = captchaMatcher.start();
+            int end = captchaMatcher.end();
+            Input.replace(start+1, end-1, "****");
+        }
+        return Input.toString();
     }
     @After("requestMapping()")
     public void doAfter() throws Throwable {
@@ -58,8 +98,10 @@ public class WebLogAspect {
         //开始时间
         long startTime = System.currentTimeMillis();
         Object result = proceedingJoinPoint.proceed();
+        String s = new ObjectMapper().writeValueAsString(result);
+
         // 打印出参
-        log.info("Response Args  : {}", new ObjectMapper().writeValueAsString(result));
+        log.info("Response Args  : {}", maskSecrets(s));
         // 执行耗时
         log.info("Time-Consuming : {} ms", System.currentTimeMillis() - startTime);
         return result;

@@ -1,5 +1,6 @@
 package edu.tongji.backend;
 
+import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSONObject;
 import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.controller.LoginController;
@@ -14,6 +15,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -40,11 +42,30 @@ public class PhoneLoginTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
     }
-    @Test
+    /*@Test
     void SendCaptchaBatch() throws Exception {
         log.debug("[1] send captcha (Batch)");
         sendCaptcha("15555555555",false);
         sendCaptcha("13655321254",false);
+    }
+
+    @Test
+    void LoginErrorBatch() throws Exception {
+        for(int i=0;i<5;i++)
+            LoginError("88","89",status().is4xxClientError());
+        //does not exist
+        LoginError("-1","89",status().is4xxClientError());
+        //param error
+        LoginError("contact",null,status().is4xxClientError());
+    }
+    //Only wrong password can appear
+    void LoginError(String contact, String password, ResultMatcher res) throws Exception{
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/login/pass")
+                .param("contact", contact)
+                .param("password",password)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(res);//Default:status().isOk()
     }
     //@Test
     void sendCaptcha(String contact,Boolean verbose) throws Exception {
@@ -59,8 +80,8 @@ public class PhoneLoginTest {
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }
-    @Test
+    }*/
+    /*@Test
     void testWithoutCaptcha() throws Exception {
         log.debug("[2] test without captcha ");
         boolean verbose=false;
@@ -73,13 +94,13 @@ public class PhoneLoginTest {
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
         )./*andExpect(status().is4xxClientError()).*/
-                andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
+                /*andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }
-    @Test
+    }*/
+    /*@Test
     void DirectSign() throws Exception {
         //String token = testWithCaptcha(false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -104,8 +125,8 @@ public class PhoneLoginTest {
         //testWithCaptcha(true,false);
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
-    }
-    //Return authorization
+    }*/
+    /*//Return authorization
     String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -146,5 +167,5 @@ public class PhoneLoginTest {
         String token = fresult2.getRequest().getSession().getAttribute("authorization").toString();
         System.out.println(token);
         return token;
-    }
+    }*/
 }

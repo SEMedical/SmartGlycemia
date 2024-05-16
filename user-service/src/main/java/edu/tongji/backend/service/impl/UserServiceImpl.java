@@ -3,6 +3,7 @@ package edu.tongji.backend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.LoginFormDTO;
@@ -24,12 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -90,19 +95,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
     }
     @Override
-    public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+    public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         //1. Check phone and verification
         String contact=loginForm.getContact();
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
-            log.warn("Wrong format of contact");
-            return Response.fail("Wrong format of contact");
+            String msg="Wrong format of contact";
+            log.warn(msg);
+            return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
         }
         //2. error TODO :get captcha from Redis
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
         String code=loginForm.getCode();
         if(cachecode==null||!cachecode.equals(code)){
-            return Response.fail("verification failed");
+            return new ResponseEntity<>(Response.fail("verification failed"),HttpStatus.BAD_REQUEST);
         }
         //3. find user by phonenumber
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -131,7 +137,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         session.setAttribute("authorization",token);
         //No need to return JWT,because it's carried by session
         LoginDTO loginDTO=new LoginDTO(token, userinfo.getRole(), userinfo.getName(),code);
-        return Response.success(loginDTO,"Login Success");
+        return new ResponseEntity<>(Response.success(loginDTO,"Login Success"),HttpStatus.OK);
     }
     @Override
     public Result sendCode(String contact, HttpSession session){
@@ -152,21 +158,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //return OK
         return Result.ok("The code is "+code);
     }
+    private String convertToSHA256(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+        byte[] encodedhash = digest.digest(password.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : encodedhash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1)
+                hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
     @Override
-    public LoginDTO login(String contact, String password){
-//        log.info(userMapper);
+    public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
         LoginDTO loginDTO = new LoginDTO();
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id", "role", "name")
-                .eq("contact", contact)
-                .eq("password", password);
+        wrapper.select("user_id", "role", "name","password")
+                .eq("contact", contact);
         User result = userMapper.selectOne(wrapper);
 //        log.info("user: " + result);
-
+        String hexString=convertToSHA256(password);
         if(result == null){
+            log.warn("The user "+contact+"doesn't exist");
             return null;
         }
-
+        if(!result.getPassword().equals(hexString.toString())) {
+            log.warn("The password is not correct!");
+            return null;
+        }
         Map<String,Object> jwtInfo = new HashMap<>();
         jwtInfo.put("userId", result.getUserId());
         jwtInfo.put("userPermission", result.getRole());
@@ -181,7 +203,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 ));
         stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+jwt,userMap);
         stringRedisTemplate.expire(LOGIN_TOKEN_KEY+jwt,LOGIN_TOKEN_TTL,TimeUnit.MINUTES);
-//        log.info("loginDTO: " + loginDTO);
 
         return loginDTO;
     }
@@ -189,7 +210,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     // 病人注册
     @Override
     @Transactional
-    public Integer register(String name, String password, String contact, String gender, Integer age){
+    public Integer register(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException {
             QueryWrapper<User> wrapper = new QueryWrapper<>();
             wrapper.select("user_id")
                     .eq("contact", contact);
@@ -197,11 +218,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             if (result != null) {
                 return -1;  // 手机号已被注册
             }
-
+            String hexString=convertToSHA256(password);
             User user = new User();
             user.setName(name);
             user.setContact(contact);
-            user.setPassword(password);
+            user.setPassword(hexString);
             user.setRole("patient");
             int userNum = userMapper.insert(user);
             result = userMapper.selectOne(wrapper);
@@ -277,7 +298,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<Long> result = stringRedisTemplate.opsForValue().bitField(
                 key, BitFieldSubCommands.create().get(
                         BitFieldSubCommands.BitFieldType.unsigned(
-                                dayOfMonth
+                                dayOfMonth-1
                         )
                 ).valueAt(0)
         );//Because there might be many subcommands ,so the return type is list
