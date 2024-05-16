@@ -13,6 +13,8 @@ import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -29,7 +31,7 @@ public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
     @PostMapping("/phone")
-    public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+    public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         return userService.loginByPhone(loginForm,session);
     }
     @RequestMapping("/captcha")
@@ -45,12 +47,12 @@ public class LoginController {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
     @PostMapping("/pass")//对应的api路径
-    public Response<LoginDTO> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
+    public ResponseEntity<Response<LoginDTO>> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
     {
         
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
         {
-            return Response.fail("手机号或密码为空");  //返回错误信息
+            return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
         }
         String contact=user.getContact();
         if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
@@ -59,7 +61,7 @@ public class LoginController {
             if(Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))<0) {
                 String msg = "You've retried more than 5 times,your account will be frozen for 12 hours";
                 log.error(msg);
-                return Response.fail(msg);
+                return new ResponseEntity<>(Response.fail(msg),HttpStatus.TOO_MANY_REQUESTS);
             }
         }
         stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
@@ -69,12 +71,13 @@ public class LoginController {
             stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
             Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
-            String msg="You can only try no more than"+ String.valueOf(5-i)+" times";
+            String msg="You can only try no more than"+ String.valueOf(i)+" times";
             log.warn(msg);
-            return Response.fail(msg);  //返回错误信息
+            return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);  //返回错误信息
         }
         log.info("登录成功");
-        return Response.success(loginDTO,"登录成功");  //返回成功信息
+        stringRedisTemplate.delete(LOGIN_LIMIT+contact);
+        return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
     }
     @PostMapping("/sign")
     public Result sign(){
