@@ -3,6 +3,7 @@ package edu.tongji.backend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.LoginFormDTO;
@@ -171,7 +172,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
         LoginDTO loginDTO = new LoginDTO();
-
+        if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+            stringRedisTemplate.expire(LOGIN_LIMIT + contact,12,TimeUnit.HOURS);
+        }else{
+            if(Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))<0) {
+                String msg = "You've retried more than 5 times,your account will be frozen for 12 hours";
+                log.error(msg);
+                return null;
+            }
+        }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.select("user_id", "role", "name","password")
                 .eq("contact", contact);
@@ -184,6 +194,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         if(!result.getPassword().equals(hexString.toString())) {
             log.warn("The password is not correct!");
+            stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT);
+            Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
+            log.warn("You can only try no more than"+ String.valueOf(5-i)+" times");
             return null;
         }
         Map<String,Object> jwtInfo = new HashMap<>();

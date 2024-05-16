@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
@@ -11,10 +12,15 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
+
+import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
 
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -36,6 +42,8 @@ public class LoginController {
         UserDTO user= UserHolder.getUser();
         return Result.ok(user);
     }
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     @PostMapping("/pass")//对应的api路径
     public Response<LoginDTO> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
     {
@@ -44,11 +52,26 @@ public class LoginController {
         {
             return Response.fail("手机号或密码为空");  //返回错误信息
         }
-
+        String contact=user.getContact();
+        if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+        }else{
+            if(Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))<0) {
+                String msg = "You've retried more than 5 times,your account will be frozen for 12 hours";
+                log.error(msg);
+                return Response.fail(msg);
+            }
+        }
+        stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
         LoginDTO loginDTO = userService.login(user.getContact(), user.getPassword());  //调用接口的login函数
         if (loginDTO == null)  //如果返回的loginDTO为空
         {
-            return Response.fail("账号或密码不正确");  //返回错误信息
+            stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
+            Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
+            String msg="You can only try no more than"+ String.valueOf(5-i)+" times";
+            log.warn(msg);
+            return Response.fail(msg);  //返回错误信息
         }
         log.info("登录成功");
         return Response.success(loginDTO,"登录成功");  //返回成功信息
