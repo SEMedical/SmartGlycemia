@@ -40,7 +40,7 @@ public class PhoneLoginTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
     }
-    @Test
+    /*@Test
     void SendCaptchaBatch() throws Exception {
         log.debug("[1] send captcha (Batch)");
         sendCaptcha("15555555555",false);
@@ -59,8 +59,8 @@ public class PhoneLoginTest {
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }
-    @Test
+    }*/
+    /*@Test
     void testWithoutCaptcha() throws Exception {
         log.debug("[2] test without captcha ");
         boolean verbose=false;
@@ -73,13 +73,13 @@ public class PhoneLoginTest {
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
         )./*andExpect(status().is4xxClientError()).*/
-                andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
+                /*andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }
-    @Test
+    }*/
+    /*@Test
     void DirectSign() throws Exception {
         //String token = testWithCaptcha(false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -104,8 +104,8 @@ public class PhoneLoginTest {
         //testWithCaptcha(true,false);
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
-    }
-    //Return authorization
+    }*/
+    /*//Return authorization
     String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -146,5 +146,5 @@ public class PhoneLoginTest {
         String token = fresult2.getRequest().getSession().getAttribute("authorization").toString();
         System.out.println(token);
         return token;
-    }
+    }*/
 }

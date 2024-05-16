@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.security.NoSuchAlgorithmException;
+
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/login")  //对应的api路径
@@ -35,8 +37,9 @@ public class LoginController {
         return Result.ok(user);
     }
     @PostMapping("/pass")//对应的api路径
-    public Response<LoginDTO> login(@RequestBody User user)  //把请求中的内容映射到user
+    public Response<LoginDTO> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
     {
+        
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
         {
             return Response.fail("手机号或密码为空");  //返回错误信息

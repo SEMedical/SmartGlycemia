@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -152,21 +154,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //return OK
         return Result.ok("The code is "+code);
     }
+    private String convertToSHA256(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+        byte[] encodedhash = digest.digest(password.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : encodedhash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1)
+                hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
     @Override
-    public LoginDTO login(String contact, String password){
-//        log.info(userMapper);
+    public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
         LoginDTO loginDTO = new LoginDTO();
+
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id", "role", "name")
-                .eq("contact", contact)
-                .eq("password", password);
+        wrapper.select("user_id", "role", "name","password")
+                .eq("contact", contact);
         User result = userMapper.selectOne(wrapper);
 //        log.info("user: " + result);
-
+        String hexString=convertToSHA256(password);
         if(result == null){
+            log.warn("The user "+contact+"doesn't exist");
             return null;
         }
-
+        if(!result.getPassword().equals(hexString.toString())) {
+            log.warn("The password is not correct!");
+            return null;
+        }
         Map<String,Object> jwtInfo = new HashMap<>();
         jwtInfo.put("userId", result.getUserId());
         jwtInfo.put("userPermission", result.getRole());
@@ -189,7 +208,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     // 病人注册
     @Override
     @Transactional
-    public Integer register(String name, String password, String contact, String gender, Integer age){
+    public Integer register(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException {
             QueryWrapper<User> wrapper = new QueryWrapper<>();
             wrapper.select("user_id")
                     .eq("contact", contact);
@@ -197,11 +216,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             if (result != null) {
                 return -1;  // 手机号已被注册
             }
-
+            String hexString=convertToSHA256(password);
             User user = new User();
             user.setName(name);
             user.setContact(contact);
-            user.setPassword(password);
+            user.setPassword(hexString);
             user.setRole("patient");
             int userNum = userMapper.insert(user);
             result = userMapper.selectOne(wrapper);
