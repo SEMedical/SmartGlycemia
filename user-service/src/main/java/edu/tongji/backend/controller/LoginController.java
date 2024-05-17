@@ -32,11 +32,28 @@ public class LoginController {
     IUserService userService;
     @PostMapping("/phone")
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
+        if (loginForm.getContact() == null || loginForm.getCode() == null)  //如果请求中的内容不完整
+        {
+            return new ResponseEntity<>(Response.fail("手机号或验证码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
+        }
+        String contact=loginForm.getContact();
+        if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+            stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
+        }else{
+            stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
+            if(Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))<0) {
+                String msg = "You've retried more than 5 times,your account will be frozen for 12 hours";
+                log.error(msg);
+                return new ResponseEntity<>(Response.fail(msg),HttpStatus.TOO_MANY_REQUESTS);
+            }
+        }
         return userService.loginByPhone(loginForm,session);
     }
     @RequestMapping("/captcha")
     @SentinelResource("captcha")
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
+
         return userService.sendCode(contact,session);
     }
     @GetMapping("/me")
@@ -57,14 +74,15 @@ public class LoginController {
         String contact=user.getContact();
         if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+            stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
         }else{
+            stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
             if(Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))<0) {
                 String msg = "You've retried more than 5 times,your account will be frozen for 12 hours";
                 log.error(msg);
                 return new ResponseEntity<>(Response.fail(msg),HttpStatus.TOO_MANY_REQUESTS);
             }
         }
-        stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
         LoginDTO loginDTO = userService.login(user.getContact(), user.getPassword());  //调用接口的login函数
         if (loginDTO == null)  //如果返回的loginDTO为空
         {

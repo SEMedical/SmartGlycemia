@@ -108,7 +108,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
         String code=loginForm.getCode();
         if(cachecode==null||!cachecode.equals(code)){
-            return new ResponseEntity<>(Response.fail("verification failed"),HttpStatus.BAD_REQUEST);
+            stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
+            Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
+            String msg="You can only try no more than"+ String.valueOf(i)+" times";
+            return new ResponseEntity<>(Response.fail("verification failed"+msg),HttpStatus.BAD_REQUEST);
         }
         //3. find user by phonenumber
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -137,6 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         session.setAttribute("authorization",token);
         //No need to return JWT,because it's carried by session
         LoginDTO loginDTO=new LoginDTO(token, userinfo.getRole(), userinfo.getName(),code);
+        stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"Login Success"),HttpStatus.OK);
     }
     @Override
