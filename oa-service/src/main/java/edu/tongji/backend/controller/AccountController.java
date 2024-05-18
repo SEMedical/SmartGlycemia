@@ -64,7 +64,6 @@ public class AccountController {
     }
 
     @DeleteMapping("/deleteAccount")
-//    删 doctor 和 user，事务？
     public void deleteAccount(@RequestParam int doctor_id) {
         System.out.println("删除账号");
         accountService.deleteAccount(doctor_id);

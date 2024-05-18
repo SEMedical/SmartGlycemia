@@ -302,11 +302,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void addUser(User user) {
-        userMapper.insert(user);
+        try {
+            userMapper.insert(user);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void removeUser(Integer userId) {
-        userMapper.deleteById(userId);
+    public void rmUser(Integer userId) {
+        try {
+            userMapper.deleteById(userId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

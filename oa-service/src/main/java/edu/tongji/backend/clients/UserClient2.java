@@ -7,11 +7,12 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name="user-service",configuration = FeignConfig.class)
 public interface UserClient2 {
     @PostMapping(value="/api/register/addUser")
     void addUser(User user);
-    @DeleteMapping (value="/api/register/removeUser")
-    void removeUser(Integer userId);
+    @PostMapping (value="/api/register/rmUser")
+    void rmUser(@RequestParam("userId") Integer userId);
 }

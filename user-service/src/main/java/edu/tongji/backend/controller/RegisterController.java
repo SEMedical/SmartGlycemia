@@ -54,12 +54,12 @@ public class RegisterController {
         return Response.success(true, "注册成功");
     }
     @PostMapping("/addUser")
-    public void addUser(User user){
+    public void addUser(@RequestBody User user){
         userService.addUser(user);
     }
-    @DeleteMapping ("/removeUser")
-    public void removeUser(Integer userId){
-        userService.removeUser(userId);
+    @PostMapping ("/rmUser")
+    public void rmUser(@RequestParam("userId") Integer userId){
+        userService.rmUser(userId);
     }
     @PostMapping("/doctor")  //对应的api路径
     public Response<Boolean> registerDoctor(@RequestBody RegisterDTO info)

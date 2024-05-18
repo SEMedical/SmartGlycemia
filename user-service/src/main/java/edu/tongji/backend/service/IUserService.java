@@ -25,5 +25,5 @@ public interface IUserService extends IService<User> {
 
     void addUser(User user);
 
-    void removeUser(Integer userId);
+    void rmUser(Integer userId);
 }

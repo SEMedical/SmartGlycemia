@@ -37,7 +37,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
                 defaultPassword = idCard.substring(idCard.length() - 6);
         }
 
-        User user = new User(doctorId, "", "", "", defaultPassword, "doctor");
+        User user = new User(doctorId, "4800,Caoan Hwy,Jiading,Shanghai", "Alice", "02165980001", defaultPassword, "doctor");
         userClient2.addUser(user);
         doctorMapper.insert(doctor);
         return;
@@ -46,7 +46,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     @Override
     public void deleteAccount(int doctorId) {
         doctorMapper.deleteById(doctorId);
-        userClient2.removeUser(doctorId);
+        userClient2.rmUser(doctorId);
         return;
     }
 }
