@@ -57,6 +57,10 @@ public class RegisterController {
     public void addUser(User user){
         userService.addUser(user);
     }
+    @DeleteMapping ("/removeUser")
+    public void removeUser(Integer userId){
+        userService.removeUser(userId);
+    }
     @PostMapping("/doctor")  //对应的api路径
     public Response<Boolean> registerDoctor(@RequestBody RegisterDTO info)
     {

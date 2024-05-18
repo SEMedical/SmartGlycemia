@@ -19,7 +19,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     @Autowired
     DoctorMapper doctorMapper;
     @Autowired
-    UserClient2 userClient;
+    UserClient2 userClient2;
 
     @Override
     public List<DoctorInfoDTO> getAccountList() {
@@ -38,7 +38,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         }
 
         User user = new User(doctorId, "", "", "", defaultPassword, "doctor");
-        userClient.addUser(user);
+        userClient2.addUser(user);
         doctorMapper.insert(doctor);
         return;
     }
@@ -46,7 +46,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     @Override
     public void deleteAccount(int doctorId) {
         doctorMapper.deleteById(doctorId);
-//        userMapper.deleteById(doctorId);
+        userClient2.removeUser(doctorId);
         return;
     }
 }

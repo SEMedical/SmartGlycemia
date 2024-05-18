@@ -24,4 +24,6 @@ public interface IUserService extends IService<User> {
     Result signCount(UserDTO user);
 
     void addUser(User user);
+
+    void removeUser(Integer userId);
 }

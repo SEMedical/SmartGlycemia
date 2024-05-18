@@ -2,13 +2,16 @@ package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.DoctorInfoDTO;
 import edu.tongji.backend.entity.Doctor;
+import edu.tongji.backend.entity.Hospital;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.IAccountService;
+import edu.tongji.backend.service.IHospitalService;
 import edu.tongji.backend.util.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -17,6 +20,27 @@ import java.util.List;
 public class AccountController {
     @Autowired
     IAccountService accountService;
+    @Autowired
+    IHospitalService hospitalService;
+
+    @PostMapping("/addHospital")
+    public void addHospital(@RequestParam int hospital_id, @RequestParam String hospital_name, @RequestParam String level,
+                            @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
+                            @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
+                            @RequestParam String introduction) {
+        System.out.println("添加医院");
+        Hospital hospital = new Hospital(hospital_id, hospital_name, level, address, latitude, longitude,
+                                         zipcode, hospital_phone, outpatient_hour, introduction);
+        hospitalService.addHospital(hospital);
+        return;
+    }
+
+    @DeleteMapping("/removeHospital")
+    public void deleteHospital(@RequestParam int hospital_id) {
+        System.out.println("删除医院");
+        hospitalService.deleteHospital(hospital_id);
+        return;
+    }
 
     @GetMapping("/getAccountList")
 //    join user表 除了密码和角色
@@ -27,22 +51,23 @@ public class AccountController {
 
     @PostMapping("/addAccount")
 //    自动生成ID
-//    同时创建user，role为doctor，默认密码idCard后六位，加密sha256，验证数据有效性，（加拦截器后）请求头保存管理员useId，身份是admin，
+//    同时创建user，role为doctor，默认密码idCard后六位，加密sha256，验证数据有效性（doctor的hospital_id是否存在）
+//    加拦截器后：请求头保存管理员useId，身份是admin，
 //    错误处理：log4j 接口 sl4j 实现，低耦合
 
-    public void addAccount(@RequestParam int doctorId, @RequestParam int hospitalId, @RequestParam String idCard,
-                           @RequestParam String department, @RequestParam String title, @RequestParam String photoPath) {
+    public void addAccount(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
+                           @RequestParam String department, @RequestParam String title, @RequestParam String photo_path) {
         System.out.println("添加账号");
-        Doctor doctor = new Doctor(doctorId, hospitalId, idCard, department, title, photoPath);
+        Doctor doctor = new Doctor(doctor_id, hospital_id, id_card, department, title, photo_path);
         accountService.addAccount(doctor);
         return;
     }
 
-    @PostMapping("/deleteAccount")
+    @DeleteMapping("/deleteAccount")
 //    删 doctor 和 user，事务？
-    public void deleteAccount(@RequestParam int doctorId) {
+    public void deleteAccount(@RequestParam int doctor_id) {
         System.out.println("删除账号");
-        accountService.deleteAccount(doctorId);
+        accountService.deleteAccount(doctor_id);
         return;
     }
 }
