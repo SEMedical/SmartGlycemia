@@ -299,4 +299,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return Result.ok(count);
     }
+
+    @Override
+    public void addUser(User user) {
+        userMapper.insert(user);
+    }
 }

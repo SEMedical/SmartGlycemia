@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,10 @@ public class RegisterController {
         }
         return Response.success(true, "注册成功");
     }
-
+    @PostMapping("/addUser")
+    public void addUser(User user){
+        userService.addUser(user);
+    }
     @PostMapping("/doctor")  //对应的api路径
     public Response<Boolean> registerDoctor(@RequestBody RegisterDTO info)
     {
