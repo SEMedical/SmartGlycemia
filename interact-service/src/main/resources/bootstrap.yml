@@ -1,0 +1,31 @@
+logging:
+  #file:
+  #  name: logs/${spring.application.name}.log
+  config: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=COMMON&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=logback-spring.xml
+spring:
+  application:
+    name: interact-service
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR}
+      discovery:
+        cluster-name: Shanghai
+        namespace: ${NACOS_NAMESPACE}
+        ephemeral: false
+        group: PATIENT
+      config:
+        server-addr: ${NACOS_ADDR}
+        namespace: ${NACOS_NAMESPACE}
+        group: SECURITY
+        file-extension: yaml
+        extension-configs:
+          - data-id: common.yml
+            group: COMMON
+            refresh: true
+          - data-id: security.yml
+            group: SECURITY
+            refresh: true
