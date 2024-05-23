@@ -4,6 +4,8 @@ public class RedisConstants {
     public static final String LOGIN_CODE_KEY="login:code:";
     public static final String LOGIN_TOKEN_KEY="login:token:";
     public static final Integer LOGIN_TOKEN_TTL=30;//Unit:Minute
+    public static final String LOGIN_LIMIT="login:limit:";
+    public static final Integer LOGIN_LIMIT_TIMEOUT=12;
     public static final Integer LOGIN_CODE_TIMEOUT=1;
     public static final Long CACHE_NULL_TTL=2L;
     public static final String CACHE_GLYCEMIA_KEY="cache:glycemia:";

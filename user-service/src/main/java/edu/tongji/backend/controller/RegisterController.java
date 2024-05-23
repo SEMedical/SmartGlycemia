@@ -9,6 +9,9 @@ import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.util.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.security.NoSuchAlgorithmException;
+
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/register")  //对应的api路径
@@ -17,8 +20,7 @@ public class RegisterController {
     IUserService userService;
 
     @PostMapping("/patient")  //对应的api路径
-    public Response<Boolean> registerPatient(@RequestBody RegisterDTO info)
-    {
+    public Response<Boolean> registerPatient(@RequestBody RegisterDTO info) throws NoSuchAlgorithmException {
 //        log.info(info);
         if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
         {

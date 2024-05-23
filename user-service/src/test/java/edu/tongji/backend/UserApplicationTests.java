@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.security.NoSuchAlgorithmException;
+
 @SpringBootTest
 class UserApplicationTests {
     @Autowired
@@ -15,11 +17,11 @@ class UserApplicationTests {
     RegisterController register;
     //一个用于测试实时获取运动数据的测试用例
     @Test
-    void testTx1(){
+    void testTx1() throws NoSuchAlgorithmException {
         userService.register("Alice","femmves","12345678912","Female",21);
     }
     @Test
-    void register(){
+    void register() throws NoSuchAlgorithmException {
         register.registerPatient(new RegisterDTO("Bob","123456Aa,","16055555554","Male",21));
     }
     @Test
