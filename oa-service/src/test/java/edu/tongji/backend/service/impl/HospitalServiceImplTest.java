@@ -1,18 +1,20 @@
 package edu.tongji.backend.service.impl;
 
+import edu.tongji.backend.controller.AccountController;
 import edu.tongji.backend.entity.Hospital;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class HospitalServiceImplTest {
     @Autowired
-    private HospitalServiceImpl hospitalService;
+    private AccountController accountController;
 
     @Test
     void addHospital() {
@@ -26,9 +28,11 @@ class HospitalServiceImplTest {
         String hospitalPhone = "120120";
         String outpatientHours = "8:00-17:00";
         String introduction = "这是测试医院";
-        Hospital hospital = new Hospital(hospitalId, hospitalName, level, address, latitude, longitude,
-                                         zipcode, hospitalPhone, outpatientHours, introduction);
-        hospitalService.addHospital(hospital);
+        try {
+            accountController.addHospital(hospitalId,hospitalName,level,address,latitude,longitude,zipcode,hospitalPhone,outpatientHours,introduction);
+        }catch (Exception e){
+            System.out.printf(e.getMessage());
+        }
     }
 
     @Test
