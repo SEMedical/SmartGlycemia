@@ -22,7 +22,6 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
 
     @Override
     public void deleteHospital(int hospitalId) {
-//        doctor依赖hospitalId
         hospitalMapper.deleteById(hospitalId);
         return;
     }

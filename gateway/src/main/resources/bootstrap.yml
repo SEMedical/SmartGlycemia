@@ -21,6 +21,10 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/health/**,/api/login/**,/api/register/**
+        - id: oa-service
+          uri: lb://oa-service
+          predicates:
+            - Path=/api/oa/**
         - id: glycemia-service
           uri: lb://glycemia-service
           predicates:

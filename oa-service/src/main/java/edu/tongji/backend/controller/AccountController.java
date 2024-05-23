@@ -37,29 +37,24 @@ public class AccountController {
 
     @DeleteMapping("/removeHospital")
     public void deleteHospital(@RequestParam int hospital_id) {
+//        医生对医院有外键依赖
         System.out.println("删除医院");
         hospitalService.deleteHospital(hospital_id);
         return;
     }
 
     @GetMapping("/getAccountList")
-//    join user表 除了密码和角色
     public Response<List<DoctorInfoDTO>> getAccountList() {
         System.out.println("查看账号");
         return Response.success(accountService.getAccountList(),"return list success");
     }
 
     @PostMapping("/addAccount")
-//    自动生成ID
-//    同时创建user，role为doctor，默认密码idCard后六位，加密sha256，验证数据有效性（doctor的hospital_id是否存在）
-//    加拦截器后：请求头保存管理员useId，身份是admin，
-//    错误处理：log4j 接口 sl4j 实现，低耦合
-
     public void addAccount(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
-                           @RequestParam String department, @RequestParam String title, @RequestParam String photo_path) {
+                           @RequestParam String department, @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact) {
         System.out.println("添加账号");
         Doctor doctor = new Doctor(doctor_id, hospital_id, id_card, department, title, photo_path);
-        accountService.addAccount(doctor);
+        accountService.addAccount(doctor, contact);
         return;
     }
 

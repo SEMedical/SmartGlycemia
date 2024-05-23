@@ -1,10 +1,12 @@
 package edu.tongji.backend.controller;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.User;
+import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.service.IUserService;
@@ -20,6 +22,8 @@ import javax.servlet.http.HttpSession;
 public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
+    @Autowired
+    UserMapper userMapper;
     @PostMapping("/phone")
     public Response<LoginDTO> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         return userService.loginByPhone(loginForm,session);
@@ -28,6 +32,18 @@ public class LoginController {
     @SentinelResource("captcha")
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
         return userService.sendCode(contact,session);
+    }
+    //For oa service only
+    @PostMapping("/repeatedContact")
+    public Boolean repeatedContact(@RequestParam("contact") String contact){
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.select("user_id")
+                .eq("contact", contact);
+        User result = userMapper.selectOne(wrapper);
+        if(result != null){
+            return true;  // 手机号已被注册
+        }
+        return false;
     }
     @GetMapping("/me")
     public Result me(){
