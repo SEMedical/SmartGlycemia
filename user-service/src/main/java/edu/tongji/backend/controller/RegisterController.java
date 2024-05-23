@@ -59,6 +59,12 @@ public class RegisterController {
     public void addUser(@RequestBody User user){
         userService.addUser(user);
     }
+    /**
+     *
+     * <p>Description:remove a user ,<b>only can be called by oa service</b></p>
+     * @since 2.2.0
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
     @PostMapping ("/rmUser")
     public void rmUser(@RequestParam("userId") Integer userId){
         userService.rmUser(userId);

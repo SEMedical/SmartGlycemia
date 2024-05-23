@@ -2,6 +2,7 @@ package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.tongji.backend.clients.UserClient2;
 import edu.tongji.backend.dto.DoctorInfoDTO;
 import edu.tongji.backend.entity.Doctor;
@@ -14,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 @Slf4j
@@ -30,23 +33,23 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     public List<DoctorInfoDTO> getAccountList() {
         return doctorMapper.getAccountList();
     }
+    //TODO:it's repeated,so it need to be removed later
+    private String convertToSHA256(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
+        byte[] encodedhash = digest.digest(password.getBytes());
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : encodedhash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1)
+                hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
     @Override
-    public void addAccount(Doctor doctor, String contact) {
-        System.out.println("判断contact是否已经存在");
-
-        if (userClient2.repeatedContact(contact)) {  // 判断contact是否已经存在
-            throw new RuntimeException("repeated contact is not allowed");
-        }
-
-        System.out.println(doctor.getHospitalId());
-        QueryWrapper<Hospital> wrapper = new QueryWrapper<>();
-        wrapper.eq("hospital_id", doctor.getHospitalId());
-        Hospital result = hospitalMapper.selectOne(wrapper);
-        if (result == null) {  // hospital_id不存在
-            throw new RuntimeException("hospital does not exist");
-        }
-
+    public void addAccount(Doctor doctor, String contact,String address) throws NoSuchAlgorithmException {
 //        验证数据有效性（id_card，department，title）
 //        自动生成ID
 //        加拦截器后：请求头保存管理员useId，身份是admin
@@ -57,19 +60,23 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         if (idCard != null) {
             defaultPassword = idCard;
             if (idCard.length() >= 6)
-                defaultPassword = idCard.substring(idCard.length() - 6);
+                defaultPassword=convertToSHA256(idCard.substring(idCard.length() - 6));
         }
 
-        User user = new User(doctorId, "4800,Caoan Hwy,Jiading,Shanghai", "Alice", "02165980001", defaultPassword, "doctor");
+        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "doctor");
         userClient2.addUser(user);
         doctorMapper.insert(doctor);
-        return;
     }
 
     @Override
     public void deleteAccount(int doctorId) {
-        doctorMapper.deleteById(doctorId);
-        userClient2.rmUser(doctorId);
+        try {
+            doctorMapper.deleteById(doctorId);
+            userClient2.rmUser(doctorId);
+        }catch (Exception e){
+            e.printStackTrace();
+            System.err.println(e.getMessage());
+        }
         return;
     }
 }

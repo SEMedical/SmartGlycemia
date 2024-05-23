@@ -43,17 +43,28 @@ public class LoginController {
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
         return userService.sendCode(contact,session);
     }
-    //For oa service only
-    @PostMapping("/repeatedContact")
-    public Boolean repeatedContact(@RequestParam("contact") String contact){
+    /**
+     * NOTE:only can be called by oa service
+     * <p>Description:check whether the contact is available ,</p>
+     * @return http status code along with a bool response:<b>true</b> for unavailability,vice versa.
+     * @since 2.2.0
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
+    @GetMapping("/repeatedContact")
+    public Response<Boolean> repeatedContact(@RequestParam("contact") String contact){
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.select("user_id")
                 .eq("contact", contact);
         User result = userMapper.selectOne(wrapper);
-        if(result != null){
-            return true;  // 手机号已被注册
+        try {
+            if (result != null) {
+                return Response.success(true, "The phone number has been registered");  // 手机号已被注册
+            }
+            return Response.success(false, "The phone number is available");
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        return false;
+        return Response.fail("Service 's crashed down!");
     }
     @GetMapping("/me")
     public Result me(){

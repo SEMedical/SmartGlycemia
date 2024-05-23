@@ -15,6 +15,6 @@ public interface UserClient2 {
     void addUser(User user);
     @PostMapping (value="/api/register/rmUser")
     void rmUser(@RequestParam("userId") Integer userId);
-    @PostMapping(value="/api/login/repeatedContact")
-    Boolean repeatedContact(@RequestParam("contact") String contact);
+    @GetMapping(value="/api/login/repeatedContact")
+    Response<Boolean> repeatedContact(@RequestParam("contact") String contact);
 }

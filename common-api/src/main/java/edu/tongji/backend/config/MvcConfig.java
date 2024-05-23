@@ -18,13 +18,13 @@ public class MvcConfig implements WebMvcConfigurer {
         //Login
         registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns("error","/api/login/captcha","/api/login/phone","/api/register/doctor",
-                "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/removeUser",
+                "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                 "/api/login/repeatedContact")
                 .order(1);
         //Token Refresh
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).
                 excludePathPatterns("error","/api/login/captcha","/api/login/phone","/api/register/doctor",
-                        "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/removeUser",
+                        "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                         "/api/login/repeatedContact")
                 .order(0);
     }
