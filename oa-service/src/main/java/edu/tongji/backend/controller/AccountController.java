@@ -29,11 +29,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.rmi.server.ExportException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -43,31 +46,82 @@ public class AccountController {
     IAccountService accountService;
     @Autowired
     IHospitalService hospitalService;
-
+    /**
+     * NOTE:must be accessible only to the admin
+     * <p>Description:register a hospital </p>
+     * @return 200 for normal functioning,404/400 for client error ,usually paramter error
+     * @throws SQLIntegrityConstraintViolationException maybe primary key contraints compromise.
+     * FIXME: the PRIMARY key needs to be automatically incremented
+     * @since 2.2.0
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
+     *
+     *
+     */
     @PostMapping("/addHospital")
-    public void addHospital(@RequestParam int hospital_id, @RequestParam String hospital_name, @RequestParam String level,
+    public ResponseEntity<Response<String>> addHospital(@RequestParam int hospital_id, @RequestParam String hospital_name, @RequestParam String level,
                             @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
                             @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
                             @RequestParam String introduction) {
         System.out.println("添加医院");
         Hospital hospital = new Hospital(hospital_id, hospital_name, level, address, latitude, longitude,
                                          zipcode, hospital_phone, outpatient_hour, introduction);
-        hospitalService.addHospital(hospital);
-        return;
+        try {
+            hospitalService.addHospital(hospital);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            if(e instanceof SQLIntegrityConstraintViolationException)
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.CONFLICT);
+            else
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+        String msg="The "+hospital_name+" has been registered successfully!";
+        log.info(msg);
+        return new ResponseEntity<>(Response.success(null,msg),HttpStatus.NOT_FOUND);
     }
-
-    @DeleteMapping("/removeHospital")
-    public void deleteHospital(@RequestParam int hospital_id) {
+    /**
+     * NOTE:must be accessible only to the admin
+     * <p>Description:unregister a hospital </p>
+     * @return 200 for normal functioning,404/400 for client error ,usually the hospital doesn't exist
+     * FIXME: the PRIMARY key needs to be automatically incremented
+     * DELETE Request can't work!
+     * TODO: authentication for the admin account
+     * @throws NoSuchElementException It's OK,just means the element you want to remove doesn't exist
+     * @since 2.2.0
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
+     *
+     *
+     */
+    @PostMapping("/removeHospital")
+    public ResponseEntity<Response<String>> deleteHospital(@RequestParam("hospital_id") Integer hospital_id) {
 //        医生对医院有外键依赖
         System.out.println("删除医院");
-        hospitalService.deleteHospital(hospital_id);
-        return;
+        try {
+            hospitalService.deleteHospital(hospital_id);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            if(e instanceof NoSuchElementException){
+                return new ResponseEntity<>(Response.success(null,e.getMessage()),HttpStatus.NOT_FOUND);
+            }else
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+        String msg="The hospital"+hospital_id+" has been removed successfully!";
+        log.info(msg);
+        return new ResponseEntity<>(Response.success(null,msg),HttpStatus.OK);
     }
 
     @GetMapping("/getAccountList")
     public Response<List<DoctorInfoDTO>> getAccountList() {
         System.out.println("查看账号");
-        return Response.success(accountService.getAccountList(),"return list success");
+        List<DoctorInfoDTO> accountList=new ArrayList<>();
+        try {
+            accountList = accountService.getAccountList();
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return Response.fail(e.getMessage());
+        }
+        String msg="return list success";
+        log.info(msg);
+        return Response.success(accountList,msg);
     }
     @Autowired
     UserClient2 userClient2;
@@ -89,7 +143,7 @@ public class AccountController {
      *
      */
     @PostMapping("/addAccount")
-    public ResponseEntity<Response<Void>> addAccount(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
+    public ResponseEntity<Response<String>> addAccount(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
                                                     @RequestParam String department, @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
             throws IOException, JSONException {
         if(id_card.length()!=18&& id_card.length()!=15)
@@ -116,8 +170,10 @@ public class AccountController {
                     throw new DateTimeException("The date must reside before today!");
                 Period period = Period.between(parsed, LocalDate.now());
             }catch (Exception e){
+
                 if(!(e instanceof DateTimeException)) {
                     String msg = id_card.substring(7, 14) + " doesn't adhere to the format of a valid birth date";
+                    log.error(msg);
                     throw new IllegalArgumentException(msg);
                 }else{
                     throw e;
@@ -128,6 +184,7 @@ public class AccountController {
                 throw new IllegalArgumentException("The ID is invalid though the region code and birth date is valid!");
             }
         }catch (Exception e){
+            log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
         System.out.println("添加账号");
@@ -150,6 +207,7 @@ public class AccountController {
         try {
             accountService.addAccount(doctor, contact,addr);
         }catch (Exception e){
+            log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(Response.success(null,"The account has been added successfully!"), HttpStatus.OK);
@@ -163,9 +221,16 @@ public class AccountController {
      * @author <a href="https://github.com/rmEleven">rmEleven</a>
      */
     @PostMapping("/deleteAccount")
-    public void deleteAccount(@RequestParam int doctor_id) {
+    public ResponseEntity<Response<String>> deleteAccount(@RequestParam int doctor_id) {
         System.out.println("删除账号");
-        accountService.deleteAccount(doctor_id);
-        return;
+        try {
+            accountService.deleteAccount(doctor_id);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+        String msg="The doctor account "+doctor_id+" has been removed";
+        log.info(msg);
+        return new ResponseEntity<>(Response.success(null,msg),HttpStatus.OK);
     }
 }
