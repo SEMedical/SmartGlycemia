@@ -1,5 +1,6 @@
 package edu.tongji.backend.config;
 
+import edu.tongji.backend.util.AdminInterceptor;
 import edu.tongji.backend.util.LoginInterceptor;
 import edu.tongji.backend.util.RefreshTokenInterceptor;
 import org.springframework.context.annotation.Configuration;
@@ -15,15 +16,20 @@ public class MvcConfig implements WebMvcConfigurer {
     private StringRedisTemplate stringRedisTemplate;
     @Override
     public void addInterceptors(InterceptorRegistry registry){
+        //Admin Login
+        registry.addInterceptor(new AdminInterceptor())
+                .excludePathPatterns("/api/login/*","/api/register/*","/api/interaction/*",
+                        "/api/glycemia/*","/api/exercise/*","/api/oa/_*")
+                .order(1);
         //Login
         registry.addInterceptor(new LoginInterceptor())
-                .excludePathPatterns("error","/api/login/captcha","/api/login/phone","/api/register/doctor",
+                .excludePathPatterns("/error","/api/login/captcha","/api/login/phone","/api/register/doctor",
                 "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                 "/api/login/repeatedContact")
                 .order(1);
         //Token Refresh
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).
-                excludePathPatterns("error","/api/login/captcha","/api/login/phone","/api/register/doctor",
+                excludePathPatterns("/error","/api/login/captcha","/api/login/phone","/api/register/doctor",
                         "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                         "/api/login/repeatedContact")
                 .order(0);

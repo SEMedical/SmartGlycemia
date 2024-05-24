@@ -16,7 +16,7 @@ spring:
         - id: oa-service
           uri: lb://oa-service
           predicates:
-            - Path=/api/oa/**
+            - Path=/api/oa/^[A-Za-z]+$
         - id: user-service
           uri: lb://user-service
           predicates:

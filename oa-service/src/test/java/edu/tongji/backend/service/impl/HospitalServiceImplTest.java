@@ -29,7 +29,7 @@ class HospitalServiceImplTest {
         String outpatientHours = "8:00-17:00";
         String introduction = "这是测试医院";
         try {
-            accountController.addHospital(hospitalId,hospitalName,level,address,latitude,longitude,zipcode,hospitalPhone,outpatientHours,introduction);
+            accountController.addHospital(hospitalName,level,address,latitude,longitude,zipcode,hospitalPhone,outpatientHours,introduction);
         }catch (Exception e){
             System.out.printf(e.getMessage());
         }
