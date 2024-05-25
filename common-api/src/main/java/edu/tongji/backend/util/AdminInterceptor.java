@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
 import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_TTL;
 
-public class LoginInterceptor implements HandlerInterceptor {
+public class AdminInterceptor implements HandlerInterceptor {
 
 
     @Override
@@ -25,7 +25,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             response.setStatus(401);
             return false;
         }
-        if(!UserHolder.getUser().getRole().equals("patient")) {
+        if(!UserHolder.getUser().getRole().equals("admin")) {
             response.setStatus(401);
             return false;
         }

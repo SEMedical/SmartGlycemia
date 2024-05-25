@@ -15,10 +15,14 @@ import java.util.NoSuchElementException;
 public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> implements IHospitalService {
     @Autowired
     HospitalMapper hospitalMapper;
-
+    static Integer id;
     @Override
     public void addHospital(Hospital hospital) {
         try {
+            id=hospitalMapper.getMaxId();
+            synchronized (id) {
+                hospital.setHospitalId(id + 1);
+            }
             hospitalMapper.insert(hospital);
         }catch (Exception e){
             System.err.println(e.getMessage());
