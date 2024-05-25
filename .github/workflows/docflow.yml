@@ -17,7 +17,7 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
       - name: Create docs/
-        run: mkdir docs
+        run: mkdir docs & chmod 755 docs/
       - name: Generate doc under docs/
         run: javadoc -d docs -sourcepath exercise-service/src/main/java/:oa-service/src/main/java/:glycemia-service/src/main/java/:user-service/src/main/java/:gateway/src/main/java/:common-api/src/main/java/ -subpackages edu.tongji.backend -Xdoclint:none
         continue-on-error: true
