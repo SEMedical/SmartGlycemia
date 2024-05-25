@@ -3,12 +3,14 @@ package edu.tongji.backend.util;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.User;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +28,13 @@ public class AdminInterceptor implements HandlerInterceptor {
             return false;
         }
         if(!UserHolder.getUser().getRole().equals("admin")) {
-            response.setStatus(401);
+            response.setStatus(418);
+            PrintWriter out = response.getWriter();
+            String message="Only patient account can access this method!";
+            String success="false";
+            String jsonResponse = "{ \"message\": \"" + message + "\", \"success\": \"" + success + "\" }";
+            out.write(jsonResponse);
+            out.flush();
             return false;
         }
         return true;
