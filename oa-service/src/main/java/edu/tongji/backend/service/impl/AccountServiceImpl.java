@@ -48,13 +48,22 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         }
         return hexString.toString();
     }
+    static Integer doctorId;
     @Override
     public void addAccount(Doctor doctor, String contact,String address) throws NoSuchAlgorithmException {
-//        验证数据有效性（id_card，department，title）
-//        自动生成ID
 //        加拦截器后：请求头保存管理员useId，身份是admin
 //        错误处理：log4j 接口 sl4j 实现，低耦合
-        int doctorId = doctor.getDoctorId();
+        try {
+            doctorId = userClient2.getMaxUserId();
+            synchronized (doctorId) {
+                doctorId++;
+                doctor.setDoctorId(doctorId);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+
         String idCard = doctor.getIdCard();
         String defaultPassword = "";
         if (idCard != null) {
@@ -78,5 +87,10 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
             System.err.println(e.getMessage());
         }
         return;
+    }
+
+    @Override
+    public Boolean repeatedIdCard(String idCard) {
+        return doctorMapper.repeatedIdCard(idCard);
     }
 }

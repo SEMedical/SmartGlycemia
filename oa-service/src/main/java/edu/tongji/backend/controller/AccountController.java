@@ -197,10 +197,10 @@ public class AccountController {
     @Autowired
     HospitalMapper hospitalMapper;
     @PostMapping("/addAccount")
-    public ResponseEntity<Response<String>> addAccount2(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
-                                                       @RequestParam String department, @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount2(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
+                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
             throws IOException, JSONException{
-        return addAccount(doctor_id,hospital_id,id_card,department,title,photo_path,
+        return addAccount(hospital_id,id_card,department,title,photo_path,
                 contact);
     }
     /**
@@ -221,8 +221,8 @@ public class AccountController {
      *
      */
     @PostMapping("/_addAccount")
-    public ResponseEntity<Response<String>> addAccount(@RequestParam int doctor_id, @RequestParam int hospital_id, @RequestParam String id_card,
-                                                    @RequestParam String department, @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
+                                                       @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
             throws IOException, JSONException {
         if(id_card.length()!=18&& id_card.length()!=15)
             return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
@@ -266,11 +266,17 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
         System.out.println("添加账号");
-        Doctor doctor = new Doctor(doctor_id, hospital_id, id_card, department, title, photo_path);
+        Doctor doctor = new Doctor(null, hospital_id, id_card, department, title, photo_path);
         System.out.println("判断contact是否已经存在");
         Boolean res=userClient2.repeatedContact(contact).getResponse();
         if (res) {  // 判断contact是否已经存在
             String msg="repeated contact is not allowed";
+            log.error(msg);
+            return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
+        }
+        Boolean res2=accountService.repeatedIdCard(id_card);
+        if (res2) {  // 判断id card是否已经存在
+            String msg="repeated ID card is not allowed";
             log.error(msg);
             return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
         }

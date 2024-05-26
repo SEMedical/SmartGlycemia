@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Doctor {
     @TableId
-    private int doctorId;
+    private Integer doctorId;
 
     private int hospitalId;
     private String idCard;

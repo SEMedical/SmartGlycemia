@@ -17,4 +17,6 @@ public interface UserClient2 {
     void rmUser(@RequestParam("userId") Integer userId);
     @GetMapping(value="/api/login/repeatedContact")
     Response<Boolean> repeatedContact(@RequestParam("contact") String contact);
+    @GetMapping(value="/api/login/getMaxUserId")
+    Integer getMaxUserId();
 }

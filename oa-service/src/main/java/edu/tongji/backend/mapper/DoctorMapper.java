@@ -16,6 +16,8 @@ public interface DoctorMapper extends BaseMapper<Doctor> {
             "FROM doctor d " +
             "JOIN user u ON d.doctor_id = u.user_id;")
     List<DoctorInfoDTO> getAccountList();
+    @Select("SELECT count(*)>0 from doctor where id_card= #{ idCard };")
+    Boolean repeatedIdCard(String idCard);
 
 //    @Insert("INSERT INTO doctor(doctor_id, hospital_id, id_card, department, title, photo_path)" +
 //            "VALUES(#{doctorId}, #{hospitalId}, #{idCard}, #{department}, #{title}, #{photoPath});")

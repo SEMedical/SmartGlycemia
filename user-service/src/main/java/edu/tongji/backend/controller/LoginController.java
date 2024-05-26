@@ -43,6 +43,10 @@ public class LoginController {
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
         return userService.sendCode(contact,session);
     }
+    @GetMapping("/getMaxUserId")
+    public Integer getMaxUserId(){
+        return userMapper.getMaxUserId();
+    }
     /**
      * NOTE:only can be called by oa service
      * <p>Description:check whether the contact is available ,</p>
