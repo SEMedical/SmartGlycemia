@@ -2,6 +2,9 @@ package edu.tongji.backend;
 
 import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.dto.LoginFormDTO;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -21,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_CODE_TIMEOUT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,13 +47,12 @@ public class PhoneLoginTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
     }
-    /*@Test
+    @Test
     void SendCaptchaBatch() throws Exception {
         log.debug("[1] send captcha (Batch)");
         sendCaptcha("15555555555",false);
         sendCaptcha("13655321254",false);
     }
-
     @Test
     void LoginErrorBatch() throws Exception {
         for(int i=0;i<5;i++)
@@ -60,11 +64,16 @@ public class PhoneLoginTest {
     }
     //Only wrong password can appear
     void LoginError(String contact, String password, ResultMatcher res) throws Exception{
+        User user=new User();
+        user.setContact(contact);
+        user.setPassword(password);
+        String jsonString = JSONObject.toJSONString(user);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/pass")
-                .param("contact", contact)
-                .param("password",password)
+                .param("user",jsonString)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .content(jsonString)
+                .contentType("application/json;charset=UTF-8")
         ).andExpect(res);//Default:status().isOk()
     }
     //@Test
@@ -80,8 +89,8 @@ public class PhoneLoginTest {
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }*/
-    /*@Test
+    }
+    @Test
     void testWithoutCaptcha() throws Exception {
         log.debug("[2] test without captcha ");
         boolean verbose=false;
@@ -93,14 +102,14 @@ public class PhoneLoginTest {
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
-        )./*andExpect(status().is4xxClientError()).*/
-                /*andExpect(content().json("{\"success\":false,\"message\":\"verification failed\"}"));
+        ).andExpect(status().is4xxClientError()).
+                andExpect(content().json("{\"success\":false,\"message\":\"手机号或验证码为空\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
         else
             result.andReturn();
-    }*/
-    /*@Test
+    }
+    @Test
     void DirectSign() throws Exception {
         //String token = testWithCaptcha(false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -111,9 +120,45 @@ public class PhoneLoginTest {
     @Test
     void LoginThenSign() throws Exception {
         String token = testWithCaptcha(false, false);
+        //Get the consecutive count #1
+        ResultActions result1 = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/login/sign/count")
+                .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        MockHttpServletResponse response = result1.andReturn().getResponse();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(response.getContentAsString());
+        Integer Beforedata = jsonNode.get("response").asInt();
+        //Sign
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/sign")
                         .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        String signMsg = result.andReturn().getResponse().getContentAsString();
+        jsonNode = objectMapper.readTree(signMsg);
+        Boolean repeated = (jsonNode.get("response").asInt()==2);
+        //Get the consecutive count again
+        ResultActions result2 = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/login/sign/count")
+                .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        response = result2.andReturn().getResponse();
+        jsonNode = objectMapper.readTree(response.getContentAsString());
+        Integer Afterdata = jsonNode.get("response").asInt();
+        if(!repeated)
+            assertEquals (Beforedata,Afterdata-1);
+        else
+            assertEquals (Beforedata,Afterdata);
+    }
+    @Test
+    void LoginThenGetInfo() throws Exception{
+        String token = testWithCaptcha(false, false);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/login/me")
+                .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().isOk());
     }
@@ -125,8 +170,8 @@ public class PhoneLoginTest {
         //testWithCaptcha(true,false);
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
-    }*/
-    /*//Return authorization
+    }
+    //Return authorization
     String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -165,7 +210,7 @@ public class PhoneLoginTest {
         else
             fresult2=raw.andReturn();
         String token = fresult2.getRequest().getSession().getAttribute("authorization").toString();
-        System.out.println(token);
+        log.info(token);
         return token;
-    }*/
+    }
 }

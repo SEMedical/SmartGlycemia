@@ -59,6 +59,7 @@ public class LoginController {
     @GetMapping("/me")
     public Result me(){
         UserDTO user= UserHolder.getUser();
+        log.info("One want to get his message:"+user);
         return Result.ok(user);
     }
     @Resource
@@ -66,7 +67,6 @@ public class LoginController {
     @PostMapping("/pass")//对应的api路径
     public ResponseEntity<Response<LoginDTO>> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
     {
-        
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
         {
             return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
@@ -98,13 +98,14 @@ public class LoginController {
         return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
     }
     @PostMapping("/sign")
-    public Result sign(){
+    public ResponseEntity<Response<Integer>> sign(){
         UserDTO user= UserHolder.getUser();
         return userService.sign(user);
     }
-    @PostMapping("sign/count")
-    public Result signCount(){
+    @GetMapping("sign/count")
+    public ResponseEntity<Response<Integer>> signCount(){
         UserDTO user= UserHolder.getUser();
        return userService.signCount(user);
+
     }
 }
