@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
@@ -24,7 +25,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.annotation.Resource;
+
 import static edu.tongji.backend.util.RedisConstants.LOGIN_CODE_TIMEOUT;
+import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -109,6 +113,8 @@ public class PhoneLoginTest {
         else
             result.andReturn();
     }
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     @Test
     void DirectSign() throws Exception {
         //String token = testWithCaptcha(false, false);
@@ -178,6 +184,17 @@ public class PhoneLoginTest {
         return testWithCaptcha(mockMvc,expire,verbose,"15555555555");
     }
     //Return authorization
+    public String testWithCaptcha(StringRedisTemplate stringRedisTemplate,MockMvc mockMvc,Boolean expire,boolean verbose,String contact) throws Exception {
+        stringRedisTemplate.delete(LOGIN_LIMIT+contact);
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+        return testWithCaptcha(mockMvc,expire,verbose,contact);
+    }
+    public String testWithCaptcha(StringRedisTemplate stringRedisTemplate,MockMvc mockMvc,Boolean expire,boolean verbose) throws Exception {
+        String contact="15555555555";
+        stringRedisTemplate.delete(LOGIN_LIMIT+contact);
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+        return testWithCaptcha(mockMvc,expire,verbose,contact);
+    }
     public String testWithCaptcha(MockMvc mockMvc,Boolean expire,boolean verbose,String contact) throws Exception {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")
@@ -196,7 +213,7 @@ public class PhoneLoginTest {
         if(expire){
             Thread.sleep(LOGIN_CODE_TIMEOUT*60*1000);
         }
-        LoginFormDTO user=new LoginFormDTO("15555555555",captcha.toString(),null);
+        LoginFormDTO user=new LoginFormDTO(contact,captcha.toString(),null);
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions raw = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/phone")

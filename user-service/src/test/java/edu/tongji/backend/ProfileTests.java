@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_CODE_TIMEOUT;
@@ -45,6 +47,8 @@ class ProfileTests {
     private ProfileServiceImpl profileService;
     private MockMvc mockMvc;
     private MockHttpSession session;
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
     private PhoneLoginTest phoneLoginTest=new PhoneLoginTest();
     //在每个测试方法执行之前都初始化MockMvc对象
     @BeforeEach
@@ -54,7 +58,7 @@ class ProfileTests {
     }
     @Test
     public void TestGetHealthRecord() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(mockMvc,false, false);
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/health-record")
                 .header("authorization",token)
@@ -64,7 +68,7 @@ class ProfileTests {
         System.out.println(response.getContentAsString());
     }
     public void TestUpdateHealthRecord(ProfileDTO profile) throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(mockMvc,false, false);
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
         String jsonResult= JSONObject.toJSONString(profile);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/health/update-health-record")
@@ -84,7 +88,7 @@ class ProfileTests {
     }
     @Test
     public void TestGetUserAge() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(mockMvc,false, false);
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getUserAge")
                 .header("authorization",token)
@@ -95,7 +99,7 @@ class ProfileTests {
     }
     @Test
     public void TestGetProfile() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(mockMvc,false, false);
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getProfile")
                 .header("authorization",token)
@@ -106,7 +110,7 @@ class ProfileTests {
     }
     @Test
     public void TestGetUserName() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(mockMvc,false, false);
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getUserName")
                 .header("authorization",token)
