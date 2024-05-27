@@ -18,4 +18,5 @@ public interface UserMapper extends BaseMapper<User> {
     String getUserName(int id);
     @Select("SELECT MAX(user_id) FROM user;")
     Integer getMaxUserId();
+    static Integer UserIdLock = 1;
 }

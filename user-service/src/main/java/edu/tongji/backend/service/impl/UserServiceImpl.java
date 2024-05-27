@@ -12,14 +12,11 @@ import edu.tongji.backend.dto.Result;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.Profile;
 import edu.tongji.backend.mapper.ProfileMapper;
-import edu.tongji.backend.util.Jwt;
+import edu.tongji.backend.util.*;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.IUserService;
-import edu.tongji.backend.util.RegexUtils;
-import edu.tongji.backend.util.Response;
-import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -230,6 +227,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setContact(contact);
             user.setPassword(hexString);
             user.setRole("patient");
+            synchronized (GlobalLock.UserIDLock) {
+                user.setUserId(userMapper.getMaxUserId() + 1);
+            }
             int userNum = userMapper.insert(user);
             result = userMapper.selectOne(wrapper);
             Profile profile = new Profile();
