@@ -77,7 +77,10 @@ jobs:
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
       - name: Run user-service background
-        run: nohup java -jar user-service/target/app.jar & 
+        run: nohup java -jar user-service/target/app.jar &
+        env:
+          NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
+          NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
