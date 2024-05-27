@@ -77,7 +77,7 @@ jobs:
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
       - name: Run user-service background
-        run: nohup java -jar user-service/target/${{ env.JAR_NAME }}
+        run: nohup java -jar user-service/target/app.jar & 
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
