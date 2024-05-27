@@ -40,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,12 +91,13 @@ public class AccountController {
                             @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
                             @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
                             @RequestParam String introduction) {
-        System.out.println("添加医院");
         Hospital hospital = new Hospital(null, hospital_name, level, address, latitude, longitude,
                                          zipcode, hospital_phone, outpatient_hour, introduction);
         try {
             if (hospitalMapper.InfoRepeated(hospital_phone,hospital_name,address))
-                throw new IllegalArgumentException("The hospital phone/name/adress might have been used before!");
+                throw new IllegalArgumentException("The hospital phone/name/address might have been used before!");
+            if (!Objects.equals(level, "三甲") && !Objects.equals(level, "三乙"))
+                throw new IllegalArgumentException("The level must equals to \"三甲\" or \"三乙\"");
             if (new BigDecimal("-90").compareTo(latitude) > 0 || new BigDecimal("90").compareTo(latitude) < 0)
                 throw new IllegalArgumentException("The latitude has exceeded the range [-90,90]");
             if (new BigDecimal("-180").compareTo(longitude) > 0 || new BigDecimal("180").compareTo(longitude) < 0)
@@ -160,7 +162,6 @@ public class AccountController {
     @PostMapping("/_removeHospital")
     public ResponseEntity<Response<String>> deleteHospital(@RequestParam("hospital_id") Integer hospital_id) {
 //        医生对医院有外键依赖
-        System.out.println("删除医院");
         try {
             hospitalService.deleteHospital(hospital_id);
         }catch (Exception e){
@@ -180,7 +181,6 @@ public class AccountController {
     }
     @GetMapping("/_getAccountList")
     public Response<List<DoctorInfoDTO>> getAccountList() {
-        System.out.println("查看账号");
         List<DoctorInfoDTO> accountList=new ArrayList<>();
         try {
             accountList = accountService.getAccountList();
@@ -250,7 +250,7 @@ public class AccountController {
             }catch (Exception e){
 
                 if(!(e instanceof DateTimeException)) {
-                    String msg = id_card.substring(7, 14) + " doesn't adhere to the format of a valid birth date";
+                    String msg = id_card.substring(6, 14) + " doesn't adhere to the format of a valid birth date";
                     log.error(msg);
                     throw new IllegalArgumentException(msg);
                 }else{
@@ -265,9 +265,7 @@ public class AccountController {
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        System.out.println("添加账号");
         Doctor doctor = new Doctor(null, hospital_id, id_card, department, title, photo_path);
-        System.out.println("判断contact是否已经存在");
         Boolean res=userClient2.repeatedContact(contact).getResponse();
         if (res) {  // 判断contact是否已经存在
             String msg="repeated contact is not allowed";
@@ -310,7 +308,6 @@ public class AccountController {
      */
     @PostMapping("/_deleteAccount")
     public ResponseEntity<Response<String>> deleteAccount(@RequestParam int doctor_id) {
-        System.out.println("删除账号");
         try {
             accountService.deleteAccount(doctor_id);
         }catch (Exception e){
