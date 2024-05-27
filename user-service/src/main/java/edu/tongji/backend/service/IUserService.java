@@ -21,9 +21,11 @@ public interface IUserService extends IService<User> {
     Integer register(String name, String password, String contact);
     Integer getUserId(String contact);
 
-    Result sign(UserDTO user);
+    ResponseEntity<Response<Integer>> sign(UserDTO user);
     //Consecutive sign
-    Result signCount(UserDTO user);
+    ResponseEntity<Response<Integer>> signCount(UserDTO user);
+
+    Boolean unregister(Integer userId);
 
     void addUser(User user);
 

@@ -6,6 +6,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.netflix.ribbon.proxy.annotation.Http;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
 import edu.tongji.backend.dto.UserDTO;
@@ -108,7 +109,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
         String code=loginForm.getCode();
         if(cachecode==null||!cachecode.equals(code)){
-            return new ResponseEntity<>(Response.fail("verification failed"),HttpStatus.BAD_REQUEST);
+            stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
+            Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
+            String msg="You can only try no more than"+ String.valueOf(i)+" times";
+            return new ResponseEntity<>(Response.fail("verification failed"+msg),HttpStatus.BAD_REQUEST);
         }
         //3. find user by phonenumber
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -137,6 +142,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         session.setAttribute("authorization",token);
         //No need to return JWT,because it's carried by session
         LoginDTO loginDTO=new LoginDTO(token, userinfo.getRole(), userinfo.getName(),code);
+        stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"Login Success"),HttpStatus.OK);
     }
     @Override
@@ -269,7 +275,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result sign(UserDTO user) {
+    public ResponseEntity<Response<Integer>> sign(UserDTO user) {
         String userId = user.getUserId();
         //get date
         LocalDateTime now= LocalDateTime.now();
@@ -280,19 +286,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //get the day of month
         int dayOfMonth=now.getDayOfMonth();
         //write to the Redis
-        stringRedisTemplate.opsForValue().
-                setBit(key,dayOfMonth-1,true);
-        return Result.ok();
+        if(stringRedisTemplate.opsForValue().getBit(key,dayOfMonth)) {
+            stringRedisTemplate.opsForValue().
+                    setBit(key, dayOfMonth - 1, true);
+            return new ResponseEntity<>(Response.success(1,"Signed successfully!"),HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(Response.success(2,"Had signed today before!"),HttpStatus.OK);
+        }
     }
 
     @Override
-    public Result signCount(UserDTO user) {
+    public ResponseEntity<Response<Integer>> signCount(UserDTO user) {
         String userId = user.getUserId();
         //get date
         LocalDateTime now= LocalDateTime.now();
         //concat key
         String keySuffix = now.format(DateTimeFormatter.ofPattern("yyyy:MM"));
-        String key=USER_SIGN_KEY+userId+keySuffix;
+        String key=USER_SIGN_KEY+userId+":"+keySuffix;
         int dayOfMonth=now.getDayOfMonth();
         //5. get all the sign records
         List<Long> result = stringRedisTemplate.opsForValue().bitField(
@@ -303,10 +313,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 ).valueAt(0)
         );//Because there might be many subcommands ,so the return type is list
         if(result==null||result.isEmpty())
-            return  Result.ok(0);
+            return new ResponseEntity<>(Response.success(0,"Data unavailable"), HttpStatus.OK);
         Long num=result.get(0);
         if(num==null||num==0)
-            return Result.ok(0);
+            return new ResponseEntity<>(Response.success(0,"No record of sign"), HttpStatus.OK);
         int count=0;
         //6. Iterate
         while (true){
@@ -318,7 +328,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
             num>>=1;//TODO:>>>???(unsigned right shift)
         }
-        return Result.ok(count);
+        return new ResponseEntity<>(Response.success(count,"The sign count executed successfully!"), HttpStatus.OK);
+    }
+
+    @Override
+    public Boolean unregister(Integer userId) {
+        //Remove foreign key constraints data
+        try {
+            //TODO:remove one's glycemia,exercise data,etc.
+            profileMapper.deleteById(userId);
+            userMapper.deleteById(userId);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return false;
+        }
+        return true;
     }
 
     @Override

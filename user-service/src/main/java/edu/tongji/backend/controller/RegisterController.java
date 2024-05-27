@@ -1,9 +1,14 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.dto.UserDTO;
+import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.IUserService;
+import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.util.Response;
@@ -18,13 +23,22 @@ import java.security.NoSuchAlgorithmException;
 public class RegisterController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
-
+    @PostMapping("/unregister")
+    public ResponseEntity<Response<Boolean>> unregisterPatient(){
+        UserDTO user= UserHolder.getUser();
+        Boolean unregistered = userService.unregister(Integer.valueOf(user.getUserId()));
+        if(unregistered)
+            return new ResponseEntity<>(Response.success(true,"The unregisterPatient Function haven't been implemented yet"),
+                    HttpStatus.OK);
+        else
+            return new ResponseEntity<>(Response.success(false,"The unregisterPatient Function haven't been implemented yet"),
+                    HttpStatus.OK);
+    }
     @PostMapping("/patient")  //对应的api路径
     public Response<Boolean> registerPatient(@RequestBody RegisterDTO info) throws NoSuchAlgorithmException {
 //        log.info(info);
         if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
         {
-
             return Response.fail("手机号或密码为空");  //返回错误信息
         }
         //The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16.

@@ -25,7 +25,7 @@ public class ProfileController {
     IProfileService profileService;
 
     @GetMapping("/health-record") //对应的api路径
-    public Response<ProfileDTO> getHealthRecord(HttpServletRequest request) throws ParseException {
+    public Response<ProfileDTO> getHealthRecord() throws ParseException {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
         ProfileDTO profileDTO = profileService.getCompleteProfile(userId);
@@ -36,7 +36,7 @@ public class ProfileController {
     }
 
     @PostMapping("/update-health-record") //对应的api路径
-    public Response<Boolean> updateHealthRecord(HttpServletRequest request, @RequestBody ProfileDTO profileDTO) throws ParseException {
+    public Response<Boolean> updateHealthRecord(@RequestBody ProfileDTO profileDTO) throws ParseException {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
