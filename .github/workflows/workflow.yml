@@ -81,6 +81,8 @@ jobs:
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
+      - name: Waiting for the launch of user-service
+        run: sleep 15s
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
