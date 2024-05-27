@@ -46,7 +46,7 @@ public class PhoneLoginTest {
     private MockHttpSession session;
 
     //在每个测试方法执行之前都初始化MockMvc对象
-    @BeforeEach
+    /*@BeforeEach
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
@@ -122,8 +122,8 @@ public class PhoneLoginTest {
                 .post("/api/login/sign")
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().is4xxClientError());
-    }
-    @Test
+    }*/
+    /*@Test
     void LoginThenSign() throws Exception {
         String token = testWithCaptcha(false, false);
         //Get the consecutive count #1

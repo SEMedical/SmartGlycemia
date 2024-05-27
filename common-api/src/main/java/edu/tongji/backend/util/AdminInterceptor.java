@@ -1,48 +1,42 @@
 package edu.tongji.backend.util;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
 import edu.tongji.backend.dto.UserDTO;
-import lombok.extern.slf4j.Slf4j;
+import edu.tongji.backend.entity.User;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
 import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_TTL;
-@Slf4j
-public class RefreshTokenInterceptor implements HandlerInterceptor {
-    public RefreshTokenInterceptor(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
+
+public class AdminInterceptor implements HandlerInterceptor {
+
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //TODO get token in the header
-        String token = request.getHeader("authorization");
-        if(StrUtil.isBlank(token)){
-            return true;
+        if(UserHolder.getUser()==null) {
+            response.setStatus(401);
+            return false;
         }
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(LOGIN_TOKEN_KEY+token);
-        if(userMap.isEmpty()){
-            //Doesn't exist
-            return true;
+        if(!UserHolder.getUser().getRole().equals("admin")) {
+            response.setStatus(418);
+            PrintWriter out = response.getWriter();
+            String message="Only patient account can access this method!";
+            String success="false";
+            String jsonResponse = "{ \"message\": \"" + message + "\", \"success\": \"" + success + "\" }";
+            out.write(jsonResponse);
+            out.flush();
+            return false;
         }
-        //TODO convert Hash to UserDTO
-        UserDTO userDTO= BeanUtil.fillBeanWithMap(userMap,new UserDTO(),false);
-        //Exist(ThreadLocal)
-        UserHolder.saveUser(userDTO);
-        //TODO Refresh expiration of the token
-        stringRedisTemplate.expire(LOGIN_TOKEN_KEY+token,LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
-
         return true;
     }
     @Override

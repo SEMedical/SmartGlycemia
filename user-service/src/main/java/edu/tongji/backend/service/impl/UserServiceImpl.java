@@ -344,4 +344,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return true;
     }
+
+    @Override
+    public void addUser(User user) {
+        try {
+            userMapper.insert(user);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void rmUser(Integer userId) {
+        try {
+            userMapper.deleteById(userId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

@@ -13,10 +13,18 @@ spring:
         port: 8719
     gateway:
       routes:
+        - id: oa-service
+          uri: lb://oa-service
+          predicates:
+            - Path=/api/oa/^[A-Za-z]+$
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/api/health/**,/api/login/**,/api/register/**
+        - id: oa-service
+          uri: lb://oa-service
+          predicates:
+            - Path=/api/oa/**
         - id: glycemia-service
           uri: lb://glycemia-service
           predicates:

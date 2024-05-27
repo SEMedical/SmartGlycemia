@@ -2,6 +2,7 @@ package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.mapper.ProfileMapper;
+import edu.tongji.backend.entity.User;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +69,20 @@ public class RegisterController {
         }
         return Response.success(true, "注册成功");
     }
-
+    @PostMapping("/addUser")
+    public void addUser(@RequestBody User user){
+        userService.addUser(user);
+    }
+    /**
+     *
+     * <p>Description:remove a user ,<b>only can be called by oa service</b></p>
+     * @since 2.2.0
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
+    @PostMapping ("/rmUser")
+    public void rmUser(@RequestParam("userId") Integer userId){
+        userService.rmUser(userId);
+    }
     @PostMapping("/doctor")  //对应的api路径
     public Response<Boolean> registerDoctor(@RequestBody RegisterDTO info)
     {
