@@ -26,7 +26,6 @@ public interface IUserService extends IService<User> {
     ResponseEntity<Response<Integer>> signCount(UserDTO user);
 
     Boolean unregister(Integer userId);
-    Result signCount(UserDTO user);
 
     void addUser(User user);
 

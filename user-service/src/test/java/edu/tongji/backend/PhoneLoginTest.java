@@ -46,7 +46,7 @@ public class PhoneLoginTest {
     private MockHttpSession session;
 
     //在每个测试方法执行之前都初始化MockMvc对象
-    /*@BeforeEach
+    @BeforeEach
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
@@ -101,12 +101,12 @@ public class PhoneLoginTest {
         LoginFormDTO user=new LoginFormDTO("15555555555",null,null);
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/login/phone")
-                .param("loginForm", jsonResult)
-                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .content(jsonResult)
-                .contentType("application/json;charset=UTF-8")
-        ).andExpect(status().is4xxClientError()).
+                        .post("/api/login/phone")
+                        .param("loginForm", jsonResult)
+                        .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                        .content(jsonResult)
+                        .contentType("application/json;charset=UTF-8")
+                ).andExpect(status().is4xxClientError()).
                 andExpect(content().json("{\"success\":false,\"message\":\"手机号或验证码为空\"}"));
         if(verbose)
             result.andDo( print()).andReturn();
@@ -122,8 +122,8 @@ public class PhoneLoginTest {
                 .post("/api/login/sign")
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().is4xxClientError());
-    }*/
-    /*@Test
+    }
+    @Test
     void LoginThenSign() throws Exception {
         String token = testWithCaptcha(false, false);
         //Get the consecutive count #1
@@ -139,7 +139,7 @@ public class PhoneLoginTest {
         //Sign
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/sign")
-                        .header("authorization",token)
+                .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().isOk());
         String signMsg = result.andReturn().getResponse().getContentAsString();

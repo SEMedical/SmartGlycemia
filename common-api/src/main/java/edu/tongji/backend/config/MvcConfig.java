@@ -18,7 +18,7 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry){
         //Admin Login
         registry.addInterceptor(new AdminInterceptor())
-                .excludePathPatterns("/api/login/*","/api/register/*","/api/interaction/*",
+                .excludePathPatterns("/api/login/*","/api/register/*","/api/interaction/*","/api/health/*","/api/login/sign/*",
                         "/api/glycemia/*","/api/exercise/*","/api/oa/_*","/api/login/getMaxUserId")
                 .order(1);
         //Login
