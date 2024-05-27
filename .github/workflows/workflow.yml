@@ -76,8 +76,6 @@ jobs:
             exercise-service/target/${{ env.JAR_NAME }}
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
-      - name: Waiting for the launch of user-service
-        run: sleep 15s
       - name: Run tests
         run: mvn --batch-mode --update-snapshots verify
         env:
@@ -90,7 +88,7 @@ jobs:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
         run: |
-          docker run -d oa-service --env-file=web-variables.env
+          docker run -d backend-oa-service --env-file=web-variables.env
           docker run -d backend-glycemia-service --env-file=web-variables.env
           docker run -d backend-user-service --env-file=web-variables.env
           docker run -d backend-exercise-service --env-file=web-variables.env
