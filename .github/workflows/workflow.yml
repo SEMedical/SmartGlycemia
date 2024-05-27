@@ -81,6 +81,10 @@ jobs:
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: docker build
         run: docker compose up -d
       - name: docker run All Applications
@@ -93,4 +97,4 @@ jobs:
           docker run -d backend-user-service --env-file=web-variables.env
           docker run -d backend-exercise-service --env-file=web-variables.env
           docker run -d backend-gateway --env-file=web-variables.env
- 
+      
