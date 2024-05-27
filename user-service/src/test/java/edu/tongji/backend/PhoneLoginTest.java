@@ -154,6 +154,8 @@ public class PhoneLoginTest {
         response = result2.andReturn().getResponse();
         jsonNode = objectMapper.readTree(response.getContentAsString());
         Integer Afterdata = jsonNode.get("response").asInt();
+        System.out.println("Before data:"+Beforedata);
+        System.out.println("Afterdata - 1"+(Afterdata-1));
         if(!repeated)
             assertEquals (Beforedata,Afterdata-1);
         else
@@ -196,6 +198,10 @@ public class PhoneLoginTest {
         return testWithCaptcha(mockMvc,expire,verbose,contact);
     }
     public String testWithCaptcha(MockMvc mockMvc,Boolean expire,boolean verbose,String contact) throws Exception {
+        if(stringRedisTemplate!=null){
+            stringRedisTemplate.delete(LOGIN_LIMIT+contact);
+            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
+        }
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")
                 .param("contact", contact)
