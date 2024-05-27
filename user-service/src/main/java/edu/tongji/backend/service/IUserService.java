@@ -24,4 +24,6 @@ public interface IUserService extends IService<User> {
     ResponseEntity<Response<Integer>> sign(UserDTO user);
     //Consecutive sign
     ResponseEntity<Response<Integer>> signCount(UserDTO user);
+
+    Boolean unregister(Integer userId);
 }

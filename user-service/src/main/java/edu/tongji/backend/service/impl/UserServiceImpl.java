@@ -330,4 +330,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return new ResponseEntity<>(Response.success(count,"The sign count executed successfully!"), HttpStatus.OK);
     }
+
+    @Override
+    public Boolean unregister(Integer userId) {
+        //Remove foreign key constraints data
+        try {
+            //TODO:remove one's glycemia,exercise data,etc.
+            profileMapper.deleteById(userId);
+            userMapper.deleteById(userId);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return false;
+        }
+        return true;
+    }
 }

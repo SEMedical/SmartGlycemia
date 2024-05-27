@@ -1,8 +1,11 @@
 package edu.tongji.backend.controller;
 
+import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.util.Response;
@@ -17,7 +20,12 @@ import java.security.NoSuchAlgorithmException;
 public class RegisterController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
-
+    @PostMapping("/unregister")
+    public ResponseEntity<Response<Boolean>> unregisterPatient(Integer userId){
+        Boolean unregistered = userService.unregister(userId);
+        return new ResponseEntity<>(Response.fail("The unregisterPatient Function haven't been implemented yet"),
+                HttpStatus.NOT_IMPLEMENTED);
+    }
     @PostMapping("/patient")  //对应的api路径
     public Response<Boolean> registerPatient(@RequestBody RegisterDTO info) throws NoSuchAlgorithmException {
 //        log.info(info);

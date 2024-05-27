@@ -70,9 +70,7 @@ public interface IComplicationService extends IService<Complication> {
         if (complicationStr.contains("高血脂")) {
             complications.add("hyperlipidemia");
         }
-        if (complicationStr.contains("其他")) {
-            complications.add("others");
-        }
+        complications.add("others");
         return complications;
     }
 }

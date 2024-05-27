@@ -171,9 +171,14 @@ public class PhoneLoginTest {
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
     }
+    public String testWithCaptcha(boolean expire,boolean verbose) throws Exception{
+        return testWithCaptcha(mockMvc,expire,verbose,"15555555555");
+    }
+    public String testWithCaptcha(MockMvc mockMvc,boolean expire,boolean verbose) throws Exception{
+        return testWithCaptcha(mockMvc,expire,verbose,"15555555555");
+    }
     //Return authorization
-    String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
-        String contact= "15555555555";
+    public String testWithCaptcha(MockMvc mockMvc,Boolean expire,boolean verbose,String contact) throws Exception {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")
                 .param("contact", contact)
