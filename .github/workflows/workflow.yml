@@ -36,7 +36,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Install Maven dependencies
-        run: mvn install -DskipTests
+        run: mvn install -DskipTests=true -B -V
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
@@ -77,12 +77,12 @@ jobs:
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
       - name: Run tests
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn -B test
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v4
         with:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: docker build
