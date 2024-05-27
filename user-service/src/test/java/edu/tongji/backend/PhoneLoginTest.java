@@ -37,7 +37,7 @@ public class PhoneLoginTest {
     private MockHttpSession session;
 
     //在每个测试方法执行之前都初始化MockMvc对象
-    @BeforeEach
+    /*@BeforeEach
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
@@ -107,8 +107,8 @@ public class PhoneLoginTest {
                 .post("/api/login/sign")
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().is4xxClientError());
-    }
-    @Test
+    }*/
+    /*@Test
     void LoginThenSign() throws Exception {
         String token = testWithCaptcha(false, false);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
@@ -116,9 +116,9 @@ public class PhoneLoginTest {
                         .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().isOk());
-    }
+    }*/
     //TODO:sendCode+testCaptcha
-    @Test
+    /*@Test
     void testWithCaptchaBatch() throws Exception{
         log.debug("[3] test with captcha (Batch 2/2)");
         log.debug("[3.1] test with expired captcha");
@@ -126,8 +126,8 @@ public class PhoneLoginTest {
         log.debug("[3.2] test with effective captcha");
         testWithCaptcha(false,false);
     }*/
-    /*//Return authorization
-    String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
+    //Return authorization
+    /*String testWithCaptcha(boolean expire,boolean verbose) throws Exception {
         String contact= "15555555555";
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")

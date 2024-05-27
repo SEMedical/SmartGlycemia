@@ -24,4 +24,8 @@ public interface IUserService extends IService<User> {
     Result sign(UserDTO user);
     //Consecutive sign
     Result signCount(UserDTO user);
+
+    void addUser(User user);
+
+    void rmUser(Integer userId);
 }

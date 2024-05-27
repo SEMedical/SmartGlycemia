@@ -2,10 +2,12 @@ package edu.tongji.backend.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.tongji.backend.dto.LoginFormDTO;
 import edu.tongji.backend.dto.Result;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.User;
+import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.service.IUserService;
@@ -30,6 +32,8 @@ import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
 public class LoginController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
+    @Autowired
+    UserMapper userMapper;
     @PostMapping("/phone")
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         return userService.loginByPhone(loginForm,session);
@@ -38,6 +42,33 @@ public class LoginController {
     @SentinelResource("captcha")
     public Result sendCaptcha(@RequestBody String contact, HttpSession session){
         return userService.sendCode(contact,session);
+    }
+    @GetMapping("/getMaxUserId")
+    public Integer getMaxUserId(){
+        return userMapper.getMaxUserId();
+    }
+    /**
+     * NOTE:only can be called by oa service
+     * <p>Description:check whether the contact is available ,</p>
+     * @return http status code along with a bool response:<b>true</b> for unavailability,vice versa.
+     * @since 2.2.0
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
+    @GetMapping("/repeatedContact")
+    public Response<Boolean> repeatedContact(@RequestParam("contact") String contact){
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.select("user_id")
+                .eq("contact", contact);
+        User result = userMapper.selectOne(wrapper);
+        try {
+            if (result != null) {
+                return Response.success(true, "The phone number has been registered");  // 手机号已被注册
+            }
+            return Response.success(false, "The phone number is available");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return Response.fail("Service 's crashed down!");
     }
     @GetMapping("/me")
     public Result me(){
