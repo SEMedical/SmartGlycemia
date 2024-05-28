@@ -108,7 +108,12 @@ class ProfileTests {
     }
     @Test
     public void TestGetUserAge() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
+        TestGetUserAge("15555555555");
+        TestGetUserAge("15411111111");
+    }
+
+    public void TestGetUserAge(String contact) throws Exception {
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getUserAge")
                 .header("authorization",token)
@@ -145,7 +150,11 @@ class ProfileTests {
     }
     @Test
     public void TestGetUserName() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
+        TestGetUserName("15555555555");
+        TestGetUserName("15411111111");//FIXME: suffer when name is null
+    }
+    public void TestGetUserName(String contact) throws Exception {
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getUserName")
                 .header("authorization",token)

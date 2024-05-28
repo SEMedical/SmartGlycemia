@@ -66,7 +66,7 @@ public class ProfileController {
         return profileService.getByPatientId(patient_id);
     }
     @GetMapping("/getUserName")
-    public Response<String> test(HttpServletRequest request){
+    public Response<String> getUserName(HttpServletRequest request){
         UserDTO user= UserHolder.getUser();
         Integer userId=Integer.valueOf(user.getUserId());
         String name=profileService.getUserName(userId);
