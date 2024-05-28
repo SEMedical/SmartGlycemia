@@ -101,7 +101,7 @@ public class PhoneLoginTest {
         LoginFormDTO user=new LoginFormDTO("15555555555",null,null);
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                        .post("/api/login/phone")
+                        .post("/api/login/hone")
                         .param("loginForm", jsonResult)
                         .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                         .content(jsonResult)

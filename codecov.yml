@@ -1,0 +1,29 @@
+# ... previous config options...
+
+comment:
+  layout: "header, diff, flags, components"  # show component info in the PR comment
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        branches:
+          - "!main"
+  individual_components:
+    - component_id: gateway 
+      name: Gateway
+      paths:
+        - gateway/**
+    - component_id: user-service
+      name: User Service
+      paths:
+        - user-service/**
+    - component_id: glycemia-service
+      name: Glycemia Service
+      paths:
+        - glycemia-service/**
+    - component_id: exercise-service
+      name: Exercise Service
+      paths:
+        - exercise-service/**
