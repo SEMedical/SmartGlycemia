@@ -11,6 +11,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.DoctorMapper;
 import edu.tongji.backend.mapper.HospitalMapper;
 import edu.tongji.backend.service.IAccountService;
+import edu.tongji.backend.util.GlobalLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
 //        错误处理：log4j 接口 sl4j 实现，低耦合
         try {
             doctorId = userClient2.getMaxUserId();
-            synchronized (doctorId) {
+            synchronized (GlobalLock.UserIDLock) {
                 doctorId++;
                 doctor.setDoctorId(doctorId);
             }

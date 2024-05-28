@@ -22,10 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '8'
           distribution: 'adopt'
 
       - name: Set up the Maven dependencies caching
@@ -41,7 +41,7 @@ jobs:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: copy file via ssh password
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main2' }}
         uses: appleboy/scp-action@v0.1.7
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
@@ -54,7 +54,7 @@ jobs:
           source: .
           target: $JAR_HOME
       - name: Deploy the application
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main2' }}
         uses: appleboy/ssh-action@v1.0.0
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
@@ -67,6 +67,7 @@ jobs:
           script: | 
             docker compose stop
       - name: Upload JARs as Artifact
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v2
         with:
           name: Maven Jar File
@@ -77,10 +78,15 @@ jobs:
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
       - name: Run tests
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn -B test jacoco:report
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
       - name: docker build
         run: docker compose up -d
       - name: docker run All Applications
@@ -93,4 +99,4 @@ jobs:
           docker run -d backend-user-service --env-file=web-variables.env
           docker run -d backend-exercise-service --env-file=web-variables.env
           docker run -d backend-gateway --env-file=web-variables.env
- 
+      

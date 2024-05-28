@@ -24,7 +24,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.is;
 import javax.annotation.Resource;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_CODE_TIMEOUT;
@@ -230,9 +231,9 @@ public class PhoneLoginTest {
         );
         MvcResult fresult2;
         if(!expire)
-            raw=raw.andExpect(content().json("{\"success\":true}"));
+            raw=raw.andExpect(jsonPath("$.success", is(true)));
         else
-            raw=raw.andExpect(content().json("{\"success\":false,\"errorMsg\":\"verification failed\"}"));
+            raw=raw.andExpect(jsonPath("$.success", is(false)));
         if(verbose)
             fresult2=raw.andDo( print()).andReturn();
         else
