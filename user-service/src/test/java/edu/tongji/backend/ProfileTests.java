@@ -105,9 +105,9 @@ class ProfileTests {
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("男",22,"154cm","110kg","妊娠期糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
-        profile=new ProfileDTO("Male",22,"170cm","110kg","II","Hysteria," +
-                "diabetic foot,diabetic eye,diabetic kidney,diabetic cardiovascular disease,diabetic neuropathy," +
-                "diabetic skin disease,hypertension,hyperlipidemia,others",2019,null);
+        profile=new ProfileDTO("Male",22,"170cm","110kg","II","糖尿病足," +
+                "糖尿病眼,糖尿病肾,糖尿病心血管疾病,糖尿病神经病变,糖尿病皮肤病," +
+                "高血压,高血脂",2019,null);
         TestUpdateHealthRecord(profile);
 
     }
