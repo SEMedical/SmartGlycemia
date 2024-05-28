@@ -82,8 +82,14 @@ class ProfileTests {
         System.out.println(response.getContentAsString());
     }
     @Test
-    public void TestUpdateHealthRecord() throws Exception {
+    public void TestUpdateHealthRecordBatch() throws Exception {
         ProfileDTO profile=new ProfileDTO("Male",22,"170cm","110kg","II","Autism",2019,null);
+        TestUpdateHealthRecord(profile);
+        profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria",null,null);
+        TestUpdateHealthRecord(profile);
+        profile=new ProfileDTO("女",22,"180cm","110kg","II型糖尿病","Hysteria",null,null);
+        TestUpdateHealthRecord(profile);
+        profile=new ProfileDTO("男",22,"154cm","110kg","妊娠期糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
     }
     @Test

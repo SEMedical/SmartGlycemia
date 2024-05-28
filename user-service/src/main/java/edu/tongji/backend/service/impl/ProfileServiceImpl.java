@@ -96,7 +96,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
             profile.setGender("Male");
         } else if (profileDTO.getGender().equals("女")) {
             profile.setGender("Female");
-        }
+        }else if(profile.getGender()!=null)
+            profile.setGender(profileDTO.getGender());
         profile.setAge(profileDTO.getAge());
         //身高体重前端传来的字符串形式为"xxkg"或"xxcm"，需要去掉单位
         profile.setWeight(Integer.valueOf(profileDTO.getWeight().substring(0, profileDTO.getWeight().length() - 2)));

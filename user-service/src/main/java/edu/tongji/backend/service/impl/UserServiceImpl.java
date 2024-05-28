@@ -253,27 +253,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return userNum == 1 && profileNum == 1 ? 1 : 0;
 
     }
-
-    // 医生注册
-    @Override
-    public Integer register(String name, String password, String contact){
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id")
-                .eq("contact", contact);
-        User result = userMapper.selectOne(wrapper);
-        if(result != null){
-            return -1;  // 手机号已被注册
-        }
-
-        User user = new User();
-        user.setName(name);
-        user.setContact(contact);
-        user.setPassword(password);
-        user.setRole("doctor");
-        int userNum = userMapper.insert(user);
-
-        return userNum == 1 ? 1 : 0;
-    }
     @Override
     public Integer getUserId(String contact)
     {

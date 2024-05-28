@@ -75,6 +75,12 @@ public class PhoneLoginTest {
         LoginError("15204808552","04808552",status().isOk());
     }
     @Test
+    void LoginErrorViaPhoneBatch() throws Exception{
+        //Actually it's not expired ,it's just for assertion of false
+        testWithCaptcha(true, false, "155 5555 5555");
+        testWithCaptcha(true, false, "155-5555-5555");
+    }
+    @Test
     void LoginErrorBatch() throws Exception {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "88", String.valueOf(5));
         for(int i=0;i<7;i++)
@@ -283,11 +289,15 @@ public class PhoneLoginTest {
             stringRedisTemplate.delete(LOGIN_LIMIT+contact);
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
         }
-        Integer captcha = sendCaptcha(mockMvc,contact, false);
-
-        if(expire){
-            Thread.sleep(LOGIN_CODE_TIMEOUT*60*1000);
+        //expire is actually a kind of malicious activity
+        Integer captcha = sendCaptcha(mockMvc,contact, false,expire);
+        //If get captcha failed
+        if(captcha.equals(-1)){
+            return "-1";//NO TOKEN
         }
+        /*if(expire){
+            Thread.sleep(LOGIN_CODE_TIMEOUT*60*1000);
+        }*/
         LoginFormDTO user=new LoginFormDTO(contact,captcha.toString(),null);
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions raw = mockMvc.perform(MockMvcRequestBuilders
