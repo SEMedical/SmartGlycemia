@@ -96,7 +96,8 @@ class ProfileTests {
     }
     @Test
     public void TestUpdateHealthRecordBatch() throws Exception {
-        ProfileDTO profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria",null,null);
+        //Cover all complications
+        ProfileDTO profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria,diabetic foot,diabetic eye,diabetic kidney,diabetic cardiovascular disease,diabetic neuropathy,diabetic skin disease,hypertension,hyperlipidemia,others",null,null);
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("女",22,"180cm","110kg","II型糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
