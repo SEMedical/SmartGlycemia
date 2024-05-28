@@ -44,16 +44,40 @@ public class RegistrationTest {
         this.session = new MockHttpSession();
     }
     @Test
-    void testRegistrationBatch() throws Exception{
+    void testRegistrationPassBatch() throws Exception{
         //name,password,contact,gender,age
         testRegister("Eve","Serpent!1234","13101000002","Female",2024);
         testUnregister("13101000002");
     }
-    void testRegister(String name,String password,String contact,String gender,Integer age) throws Exception {
-        RegisterDTO registerDTO=new RegisterDTO(name,password,contact,gender,age);
-        testRegister(registerDTO);
+    @Test
+    void testRegistrationErrorBatch() throws Exception{
+        //name,password,contact,gender,age
+        //#1: Wrong format password
+        testRegister("Eve","Serpent","13101000002","Female",2024,true);
+        //#2:Wrong format contact
+        testRegister("Eve","Serpent!1234","131 0100 0002","Female",2024,true);
+        //#3: Must be pure Chinese/English
+        testRegister("夏娃Eve","Serpent!1234","13101000002","Female",2024,true);
+        //#4:Limited to 10-digit length
+        testRegister("亚伯拉罕·摩西·耶和华·特洛伊","Serpent!1234","13101000002","Female",2024,true);
+        //#5:Empty contact/password
+        testRegister("Eve",null,"13101000002","Female",2024,true);
+        //#6 ,same as #5
+        testRegister(null,"Serpent!1234","13101000002","Female",2024,true);
+        //#7,repeated contact
+        testRegister("Eve","Serpent!1234","88","Female",2024,true);
     }
-    void testRegister(RegisterDTO registerDTO) throws Exception{
+    void testRegister(String name,String password,String contact,String gender,Integer age) throws Exception {
+        testRegister(name,password,contact,gender,age,false);
+    }
+    void testRegister(String name,String password,String contact,String gender,Integer age,Boolean malicious) throws Exception {
+        RegisterDTO registerDTO=new RegisterDTO(name,password,contact,gender,age);
+        testRegister(registerDTO,malicious);
+    }
+    void testRegister(RegisterDTO registerDTO) throws Exception {
+        testRegister(registerDTO,false);
+    }
+    void testRegister(RegisterDTO registerDTO,Boolean malicious) throws Exception{
         String jsonResult= JSONObject.toJSONString(registerDTO);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/register/patient")
@@ -61,7 +85,11 @@ public class RegistrationTest {
                 .content(jsonResult)
                 .contentType("application/json;charset=UTF-8")
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-        ).andExpect(status().isOk());
+        );
+        if(!malicious)
+            result.andExpect(status().isOk());
+        else
+            result.andExpect(status().is4xxClientError());
     }
 
     void testUnregister(String contact) throws Exception {
