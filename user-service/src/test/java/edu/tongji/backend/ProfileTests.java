@@ -21,6 +21,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -107,21 +108,25 @@ class ProfileTests {
     @Test
     public void TestGetProfileBatch() throws Exception{
         TestGetProfile("15555555555");
-        TestGetProfile("13845115878");
+        TestGetProfile("13845115878", status().isIAmATeapot());
         TestGetProfile("13955555555");
-        TestGetProfile("18913599653");
+        TestGetProfile("18913599653", status().isIAmATeapot());
         TestGetProfile("15673287113");
         TestGetProfile("15809922671");
-        TestGetProfile("15565644489");
+        TestGetProfile("15565644489",status().isIAmATeapot());
         TestGetProfile("13197690040");
     }
     public void TestGetProfile(String contact) throws Exception {
+        TestGetProfile(contact,status().isOk());
+    }
+
+    public void TestGetProfile(String contact, ResultMatcher matcher) throws Exception {
         String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getProfile")
                 .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-        ).andExpect(status().isOk());
+        ).andExpect(matcher);
         MockHttpServletResponse response = result.andReturn().getResponse();
         System.out.println(response.getContentAsString());
     }

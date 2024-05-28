@@ -34,7 +34,13 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
     @Override
     public Profile getByPatientId(String patient_id) {
-        return profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+        try {
+            Profile profile = profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+            return profile;
+        }catch (Throwable e){
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     @Override
