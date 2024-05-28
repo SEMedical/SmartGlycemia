@@ -27,3 +27,7 @@ component_management:
       name: Exercise Service
       paths:
         - exercise-service/**
+    - component_id: oa-service
+      name: OA Service
+      paths:
+        - oa-service/**
