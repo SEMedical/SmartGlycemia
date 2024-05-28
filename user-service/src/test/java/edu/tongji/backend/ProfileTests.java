@@ -59,7 +59,10 @@ class ProfileTests {
     }
     @Test
     public void TestGetHealthRecord() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
+        TestGetHealthRecord("15555555555");
+    }
+    public void TestGetHealthRecord(String contact) throws Exception {
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/health-record")
                 .header("authorization",token)
@@ -81,6 +84,15 @@ class ProfileTests {
         ).andExpect(status().isOk());
         MockHttpServletResponse response = result.andReturn().getResponse();
         System.out.println(response.getContentAsString());
+    }
+    @Test
+    public void TestGetHealthRecordBatch() throws Exception {
+        TestGetHealthRecord("15555555555");
+        TestGetHealthRecord("13955555555");
+        TestGetHealthRecord("15673287113");
+        TestGetHealthRecord("15809922671");
+        TestGetHealthRecord("13197690040");
+        TestGetHealthRecord("13127851068");
     }
     @Test
     public void TestUpdateHealthRecordBatch() throws Exception {
