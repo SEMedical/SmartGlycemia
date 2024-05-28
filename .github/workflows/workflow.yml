@@ -41,7 +41,7 @@ jobs:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: copy file via ssh password
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main2' }}
         uses: appleboy/scp-action@v0.1.7
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
@@ -54,7 +54,7 @@ jobs:
           source: .
           target: $JAR_HOME
       - name: Deploy the application
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main2' }}
         uses: appleboy/ssh-action@v1.0.0
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
