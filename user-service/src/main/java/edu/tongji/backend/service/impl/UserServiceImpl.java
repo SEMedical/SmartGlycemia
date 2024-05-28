@@ -105,12 +105,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //2. error TODO :get captcha from Redis
         String cachecode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY+contact);
         String code=loginForm.getCode();
+        code=String.format("%06d", Integer.parseInt(code));
         if(cachecode==null||!cachecode.equals(code)){
             stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
             Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
             String msg="You can only try no more than"+ String.valueOf(i)+" times";
-            return new ResponseEntity<>(Response.fail("verification failed"+msg),HttpStatus.BAD_REQUEST);
+            if(cachecode==null)
+                return new ResponseEntity<>(Response.fail("verification failed because of no cache code"+msg),HttpStatus.BAD_REQUEST);
+            else
+                return new ResponseEntity<>(Response.fail("verification failed because of mismatched captcha"),HttpStatus.BAD_REQUEST);
         }
         //3. find user by phonenumber
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -339,6 +343,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             profileMapper.deleteById(userId);
             userMapper.deleteById(userId);
         }catch (Exception e){
+            System.out.println(e.getMessage());
             log.error(e.getMessage());
             return false;
         }
