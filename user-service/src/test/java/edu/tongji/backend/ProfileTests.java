@@ -97,13 +97,17 @@ class ProfileTests {
     @Test
     public void TestUpdateHealthRecordBatch() throws Exception {
         //Cover all complications
-        ProfileDTO profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria,diabetic foot,diabetic eye,diabetic kidney,diabetic cardiovascular disease,diabetic neuropathy,diabetic skin disease,hypertension,hyperlipidemia,others",null,null);
+        ProfileDTO profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria,diabetic foot,diabetic eye,diabetic kidney," +
+                "diabetic cardiovascular disease,diabetic neuropathy,diabetic skin disease," +
+                "hypertension,hyperlipidemia,others",null,null);
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("女",22,"180cm","110kg","II型糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("男",22,"154cm","110kg","妊娠期糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
-        profile=new ProfileDTO("Male",22,"170cm","110kg","II","Autism",2019,null);
+        profile=new ProfileDTO("Male",22,"170cm","110kg","II","Hysteria," +
+                "diabetic foot,diabetic eye,diabetic kidney,diabetic cardiovascular disease,diabetic neuropathy," +
+                "diabetic skin disease,hypertension,hyperlipidemia,others",2019,null);
         TestUpdateHealthRecord(profile);
 
     }
