@@ -61,9 +61,27 @@ public class PhoneLoginTest {
         sendCaptcha("13655321254",false);
     }
     @Test
+    void LoginFrozenBatch() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+        //NOTE:ONLY FOR TEST!
+        for(int i=0;i<7;i++)
+            LoginError("15204808552","89",status().is4xxClientError());
+        LoginError("15204808552","04808552",status().is4xxClientError());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+    }
+    @Test
+    void LoginPassBatch() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+        LoginError("15204808552","04808552",status().isOk());
+    }
+    @Test
     void LoginErrorBatch() throws Exception {
-        for(int i=0;i<5;i++)
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "88", String.valueOf(5));
+        for(int i=0;i<7;i++)
             LoginError("88","89",status().is4xxClientError());
+        LoginError("88",null,status().is4xxClientError());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "88", String.valueOf(5));
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "-1", String.valueOf(5));
         //does not exist
         LoginError("-1","89",status().is4xxClientError());
         //param error
