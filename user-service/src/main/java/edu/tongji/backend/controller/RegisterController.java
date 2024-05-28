@@ -74,7 +74,7 @@ public class RegisterController {
         return new ResponseEntity<>(Response.success(true, "注册成功"),HttpStatus.OK);
     }
     @PostMapping("/addUser")
-    public void addUser(@RequestBody User user){
+    public void addUser(@RequestBody User user) {
         userService.addUser(user);
     }
     /**

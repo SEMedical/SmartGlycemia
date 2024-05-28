@@ -211,6 +211,22 @@ public class PhoneLoginTest {
         ).andExpect(status().is4xxClientError());
     }
     @Test
+    void OnlySignCount() throws Exception {
+        String token = testWithCaptcha(false, false,"13245678909");
+        //Get the consecutive count directly
+        ResultActions result2 = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/login/sign/count")
+                .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        ObjectMapper objectMapper = new ObjectMapper();
+        MockHttpServletResponse response = result2.andReturn().getResponse();
+        JsonNode jsonNode = objectMapper.readTree(response.getContentAsString());
+        Integer Afterdata = jsonNode.get("response").asInt();
+        System.out.println("Afterdata :"+(Afterdata));
+        assertEquals (Afterdata,0);
+    }
+    @Test
     void LoginThenSign() throws Exception {
         String token = testWithCaptcha(false, false);
         //Get the consecutive count #1

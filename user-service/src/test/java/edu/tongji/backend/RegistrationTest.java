@@ -2,6 +2,8 @@ package edu.tongji.backend;
 
 import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.controller.RegisterController;
 import edu.tongji.backend.dto.RegisterDTO;
@@ -29,6 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.annotation.Resource;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -112,6 +115,39 @@ public class RegistrationTest {
     UserMapper userMapper;
     @Autowired
     LoginController loginController;
+    @Test
+    void InvalidaddrmUserForOASuite() throws Exception {
+        Integer doctorId=userMapper.getMaxUserId();
+        String address="上海市杨浦区杨树浦路";
+        String contact= PhoneGenerator.getTel();
+        String defaultPassword="a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea";
+        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "patient");//Deliberately
+        String jsonResult= JSONObject.toJSONString(user);
+        Boolean flag1=false;
+        try {
+            ResultActions result1 = mockMvc.perform(MockMvcRequestBuilders
+                    .post("/api/register/addUser")
+                    .param("user", jsonResult)
+                    .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+                    .content(jsonResult)
+                    .contentType("application/json;charset=UTF-8")
+            );
+        }catch (Exception e){
+            flag1=true;
+        }
+        assertEquals(flag1,true);
+        flag1=false;
+        try {
+            ResultActions result2 = mockMvc.perform(MockMvcRequestBuilders
+                    .post("/api/register/rmUser")
+                    .param("userId", String.valueOf(doctorId))
+                    .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+            );
+        }catch (Exception e){
+            flag1=true;
+        }
+        assertEquals(flag1,true);
+    }
     @Test
     void addrmUserForOASuite() throws Exception {
         Integer doctorId=userMapper.getMaxUserId()+1;
