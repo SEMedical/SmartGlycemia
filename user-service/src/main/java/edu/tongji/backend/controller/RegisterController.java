@@ -88,14 +88,4 @@ public class RegisterController {
         userService.rmUser(userId);
     }
 
-    /**
-     *
-     * @deprecated You can refer to POST /api/oa/addDoctor as an admin
-     */
-    @PostMapping("/doctor")  //对应的api路径
-    @Deprecated
-    public ResponseEntity<Response<Boolean>> registerDoctor(@RequestBody RegisterDTO info)
-    {
-        return new ResponseEntity<>(Response.fail("The method has been deprecated"), HttpStatus.GONE);
-    }
 }
