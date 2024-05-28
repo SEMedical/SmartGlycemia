@@ -5,9 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.tongji.backend.entity.User;
+import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.impl.UserServiceImpl;
 import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.dto.LoginFormDTO;
+import edu.tongji.backend.util.PhoneGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,25 +83,83 @@ public class PhoneLoginTest {
                 .contentType("application/json;charset=UTF-8")
         ).andExpect(res);//Default:status().isOk()
     }
+    Integer sendCaptcha(String contact,Boolean verbose) throws Exception {
+        return sendCaptcha(contact,verbose,false);
+    }
+    Integer sendCaptcha(String contact,Boolean verbose,Boolean malicious) throws Exception {
+        return sendCaptcha(mockMvc,contact,verbose,malicious);
+    }
+    Integer sendCaptcha(MockMvc mockMvc,String contact,Boolean verbose) throws Exception {
+        return sendCaptcha(mockMvc,contact,verbose,false);
+    }
     //@Test
-    void sendCaptcha(String contact,Boolean verbose) throws Exception {
+    Integer sendCaptcha(MockMvc mockMvc,String contact,Boolean verbose,Boolean malicious) throws Exception {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/login/captcha")
                 .param("contact", contact)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                 .content(contact)
                 .contentType("application/text;charset=UTF-8")
-        ).andExpect(status().isOk());
-        if(verbose)
-            result.andDo( print()).andReturn();
+        );
+        if(malicious)
+            result.andExpect(status().is4xxClientError());
         else
-            result.andReturn();
+            result.andExpect(status().isOk());
+        MvcResult fresult;
+        if(verbose)
+            fresult=result.andDo( print()).andReturn();
+        else
+            fresult=result.andReturn();
+        try {
+            Integer captcha = Integer.parseInt(fresult.getRequest().getSession().getAttribute("Captcha").toString());
+            return captcha;
+        }catch (NumberFormatException|NullPointerException e){
+            log.error(e.getMessage());
+            return -1;
+        }
     }
     @Test
+    void TestNewContact() throws Exception {
+        String tel="";
+        do {
+            tel = PhoneGenerator.getTel();
+        }while(loginController.repeatedContact(tel).getResponse());
+        System.out.println(tel);
+        testWithCaptcha(false,false,tel);
+    }
+    @Test
+    void testWithoutCaptchaBatch() throws Exception {
+        testWithoutCaptcha("000000");
+        testWithoutCaptcha("123456");
+        testWithoutCaptcha();
+    }
+    void testWithoutCaptcha(String code) throws Exception {
+        testWithoutCaptcha("15555555555",code);
+    }
     void testWithoutCaptcha() throws Exception {
+        testWithoutCaptcha("15555555555",null);
+    }
+    @Test
+    void sendCodeToGhost() throws Exception {
+        log.debug("Test invalid contact format (5/5)");
+        sendCaptcha(";drop table test;--",false,true);
+        sendCaptcha("THEUNITEDKINGDOM",false,true);
+        sendCaptcha("1331234123",false,true);
+        sendCaptcha("130 1234 1234",false,true);
+        sendCaptcha("021-1234-6579",false,true);
+    }
+    void testWithoutCaptcha(String contact,String code) throws Exception {
         log.debug("[2] test without captcha ");
+        Integer realcode;
+        //Must be Wrong Captcha
+        if(code!=null){
+            realcode = sendCaptcha(contact, false);
+            if(code.equals(realcode)){
+                code= code.substring(0, 4);
+            }
+        }
         boolean verbose=false;
-        LoginFormDTO user=new LoginFormDTO("15555555555",null,null);
+        LoginFormDTO user=new LoginFormDTO(contact,code,null);
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                         .post("/api/login/phone")
@@ -107,8 +167,7 @@ public class PhoneLoginTest {
                         .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
                         .content(jsonResult)
                         .contentType("application/json;charset=UTF-8")
-                ).andExpect(status().is4xxClientError()).
-                andExpect(content().json("{\"success\":false,\"message\":\"手机号或验证码为空\"}"));
+                ).andExpect(status().is4xxClientError());
         if(verbose)
             result.andDo( print()).andReturn();
         else
@@ -186,6 +245,9 @@ public class PhoneLoginTest {
     public String testWithCaptcha(MockMvc mockMvc,boolean expire,boolean verbose) throws Exception{
         return testWithCaptcha(mockMvc,expire,verbose,"15555555555");
     }
+    public String testWithCaptcha(boolean expire,boolean verbose,String contact) throws Exception{
+        return testWithCaptcha(mockMvc,expire,verbose,contact);
+    }
     //Return authorization
     public String testWithCaptcha(StringRedisTemplate stringRedisTemplate,MockMvc mockMvc,Boolean expire,boolean verbose,String contact) throws Exception {
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
@@ -203,19 +265,7 @@ public class PhoneLoginTest {
             stringRedisTemplate.delete(LOGIN_LIMIT+contact);
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
         }
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
-                .post("/api/login/captcha")
-                .param("contact", contact)
-                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .content(contact)
-                .contentType("application/text;charset=UTF-8")
-        ).andExpect(status().isOk());
-        MvcResult fresult;
-        if(verbose)
-            fresult=result.andDo( print()).andReturn();
-        else
-            fresult=result.andReturn();
-        Integer captcha = Integer.parseInt(fresult.getRequest().getSession().getAttribute("Captcha").toString());
+        Integer captcha = sendCaptcha(mockMvc,contact, false);
 
         if(expire){
             Thread.sleep(LOGIN_CODE_TIMEOUT*60*1000);

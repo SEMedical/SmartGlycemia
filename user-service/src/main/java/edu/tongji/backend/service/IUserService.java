@@ -14,7 +14,7 @@ import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 
 public interface IUserService extends IService<User> {
-    public Result sendCode(String contact, HttpSession session);
+    public ResponseEntity<Result> sendCode(String contact, HttpSession session);
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session);
     LoginDTO login(String contact, String password) throws NoSuchAlgorithmException;
     Integer register(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException;
