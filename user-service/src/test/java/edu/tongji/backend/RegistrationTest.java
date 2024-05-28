@@ -1,9 +1,15 @@
 package edu.tongji.backend;
 
+import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSONObject;
+import edu.tongji.backend.controller.LoginController;
 import edu.tongji.backend.controller.RegisterController;
 import edu.tongji.backend.dto.RegisterDTO;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import edu.tongji.backend.entity.User;
+import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.service.impl.UserServiceImpl;
+import edu.tongji.backend.util.PhoneGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +71,7 @@ public class RegistrationTest {
         //#6 ,same as #5
         testRegister(null,"Serpent!1234","13101000002","Female",2024,true);
         //#7,repeated contact
-        testRegister("Eve","Serpent!1234","88","Female",2024,true);
+        testRegister("Eve","Serpent!1234","13745678909","Female",2024,true);
     }
     void testRegister(String name,String password,String contact,String gender,Integer age) throws Exception {
         testRegister(name,password,contact,gender,age,false);
@@ -99,5 +105,32 @@ public class RegistrationTest {
                 .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().isOk());
+    }
+    @Autowired
+    UserMapper userMapper;
+    @Autowired
+    LoginController loginController;
+    @Test
+    void addrmUserForOASuite() throws Exception {
+        Integer doctorId=userMapper.getMaxUserId()+1;
+        String address="上海市杨浦区杨树浦路";
+        String contact= PhoneGenerator.getTel();
+        String defaultPassword="a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea";
+        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "doctor");
+        String jsonResult= JSONObject.toJSONString(user);
+        ResultActions result1 = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/register/addUser")
+                .param("user",jsonResult)
+                .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+                .content(jsonResult)
+                .contentType("application/json;charset=UTF-8")
+        ).andExpect(status().isOk());
+        assertEquals(loginController.repeatedContact(contact).getResponse(),true);
+        ResultActions result2 = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/register/rmUser")
+                .param("userId",String.valueOf(doctorId))
+                .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        assertEquals(loginController.repeatedContact(contact).getResponse(),false);
     }
 }
