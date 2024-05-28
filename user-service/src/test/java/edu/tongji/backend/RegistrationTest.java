@@ -17,9 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -116,7 +118,7 @@ public class RegistrationTest {
         String address="上海市杨浦区杨树浦路";
         String contact= PhoneGenerator.getTel();
         String defaultPassword="a109e36947ad56de1dca1cc49f0ef8ac9ad9a7b1aa0df41fb3c4cb73c1ff01ea";
-        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "doctor");
+        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "patient");//Deliberately
         String jsonResult= JSONObject.toJSONString(user);
         ResultActions result1 = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/register/addUser")

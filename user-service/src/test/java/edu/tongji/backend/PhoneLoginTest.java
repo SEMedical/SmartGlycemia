@@ -77,8 +77,11 @@ public class PhoneLoginTest {
     @Test
     void LoginErrorViaPhoneBatch() throws Exception{
         //Actually it's not expired ,it's just for assertion of false
-        testWithCaptcha(true, false, "155 5555 5555");
-        testWithCaptcha(true, false, "155-5555-5555");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithCaptcha(false, false, "15555555555");
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+"15555555555","-1");
+        testWithCaptcha(false, false, "15555555555");
+
     }
     @Test
     void LoginErrorBatch() throws Exception {

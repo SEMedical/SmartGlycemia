@@ -18,7 +18,6 @@ public interface IUserService extends IService<User> {
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session);
     LoginDTO login(String contact, String password) throws NoSuchAlgorithmException;
     Integer register(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException;
-    Integer getUserId(String contact);
 
     ResponseEntity<Response<Integer>> sign(UserDTO user);
     //Consecutive sign
