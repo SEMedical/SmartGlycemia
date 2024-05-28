@@ -11,7 +11,7 @@ component_management:
         branches:
           - "!main"
   individual_components:
-    - component_id: gateway 
+    - component_id: gateway
       name: Gateway
       paths:
         - gateway/**
