@@ -105,8 +105,15 @@ class ProfileTests {
         System.out.println(response.getContentAsString());
     }
     @Test
-    public void TestGetProfile() throws Exception{
+    public void TestGetProfileBatch() throws Exception{
         TestGetProfile("15555555555");
+        TestGetProfile("13845115878");
+        TestGetProfile("13955555555");
+        TestGetProfile("18913599653");
+        TestGetProfile("15673287113");
+        TestGetProfile("15809922671");
+        TestGetProfile("15565644489");
+        TestGetProfile("13197690040");
     }
     public void TestGetProfile(String contact) throws Exception {
         String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
