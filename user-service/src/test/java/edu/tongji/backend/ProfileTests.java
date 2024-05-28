@@ -83,14 +83,15 @@ class ProfileTests {
     }
     @Test
     public void TestUpdateHealthRecordBatch() throws Exception {
-        ProfileDTO profile=new ProfileDTO("Male",22,"170cm","110kg","II","Autism",2019,null);
-        TestUpdateHealthRecord(profile);
-        profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria",null,null);
+        ProfileDTO profile=new ProfileDTO("Female",22,"170cm","110kg","I型糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("女",22,"180cm","110kg","II型糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
         profile=new ProfileDTO("男",22,"154cm","110kg","妊娠期糖尿病","Hysteria",null,null);
         TestUpdateHealthRecord(profile);
+        profile=new ProfileDTO("Male",22,"170cm","110kg","II","Autism",2019,null);
+        TestUpdateHealthRecord(profile);
+
     }
     @Test
     public void TestGetUserAge() throws Exception {
@@ -104,8 +105,11 @@ class ProfileTests {
         System.out.println(response.getContentAsString());
     }
     @Test
-    public void TestGetProfile() throws Exception {
-        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false);
+    public void TestGetProfile() throws Exception{
+        TestGetProfile("15555555555");
+    }
+    public void TestGetProfile(String contact) throws Exception {
+        String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/health/getProfile")
                 .header("authorization",token)
