@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.result.StatusResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -43,12 +45,19 @@ public class GlycemiaTest {
     private GlycemiaServiceImpl glycemiaService;
     private MockMvc mockMvc;
     private MockHttpSession session;
-
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
     //在每个测试方法执行之前都初始化MockMvc对象
     @BeforeEach
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
+        stringRedisTemplate.delete("cache:history:glycemia:1:2023-12-09");
+        stringRedisTemplate.delete("cache:glycemia:1:2024-01-02 09:45:00");
+        stringRedisTemplate.delete("cache:user:last:exercise:1");
+        stringRedisTemplate.delete("cache:running:3275");
+        stringRedisTemplate.delete("cache:daily:glycemia:1:2024-01-02 11:00:00");
+        stringRedisTemplate.delete("cache:glycemia:1:2024-01-01 02:45:00");
     }
     @Test
     public void TestChartRenderingSuites(){
