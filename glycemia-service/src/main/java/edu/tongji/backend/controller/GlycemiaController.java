@@ -214,15 +214,21 @@ public class GlycemiaController {
         }
     }
     @GetMapping("/realTimePrompt")
-    public Response<Tip> GetRealtimeTips(HttpServletRequest request){
+    public ResponseEntity<Response<Tip>> GetRealtimeTips(HttpServletRequest request){
         //glycemiaService.Init_LatestGlycemiaDiagram();
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
-        String token = request.getHeader("authorization");
-        TokenHolder.saveToken(token);
-        Response<Integer> age0 =userClient.getUserAge();
-        TokenHolder.removeToken();
-        Integer age=age0.getResponse();
-        return GetRealtimeTips(user_id,age);
+        try {
+            String token = request.getHeader("authorization");
+            TokenHolder.saveToken(token);
+            Response<Integer> age0 = userClient.getUserAge();
+            TokenHolder.removeToken();
+            Integer age=age0.getResponse();
+            return new ResponseEntity<>(GetRealtimeTips(user_id,age),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
+
     }
 }
