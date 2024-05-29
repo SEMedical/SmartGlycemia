@@ -81,6 +81,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setContact(contact);
         user.setName("momo");
         user.setRole("patient");
+        synchronized (GlobalLock.UserIDLock) {
+            user.setUserId(userMapper.getMaxUserId() + 1);
+        }
         int userNum = userMapper.insert(user);
         User result = userMapper.selectOne(wrapper);
         Profile profile = new Profile();
@@ -124,6 +127,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //4. user exists
         if(userinfo==null){
             createUserWithPhone(contact, wrapper);
+            userinfo = userMapper.selectOne(wrapper);
+            userinfo.setContact(contact);
         }
         // TODO save userinfo to Redis
         // TODO generate token,as login pass
@@ -147,11 +152,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return new ResponseEntity<>(Response.success(loginDTO,"Login Success"),HttpStatus.OK);
     }
     @Override
-    public Result sendCode(String contact, HttpSession session){
+    public ResponseEntity<Result> sendCode(String contact, HttpSession session){
         //. Check Phone
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
-            return Result.fail("Wrong format of contact");
+            return new ResponseEntity<>(Result.fail("Wrong format of contact"),HttpStatus.BAD_REQUEST);
         }
         //. fit,generate verification code
         String code= generatedcode(6);
@@ -163,7 +168,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.debug("send verification code successfully,captcha: {}",code);
         session.setAttribute("Captcha",code);
         //return OK
-        return Result.ok("The code is "+code);
+        return new ResponseEntity<>(Result.ok("The code is "+code),HttpStatus.OK);
     }
     private String convertToSHA256(String password) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -249,35 +254,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     }
 
-    // 医生注册
-    @Override
-    public Integer register(String name, String password, String contact){
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id")
-                .eq("contact", contact);
-        User result = userMapper.selectOne(wrapper);
-        if(result != null){
-            return -1;  // 手机号已被注册
-        }
-
-        User user = new User();
-        user.setName(name);
-        user.setContact(contact);
-        user.setPassword(password);
-        user.setRole("doctor");
-        int userNum = userMapper.insert(user);
-
-        return userNum == 1 ? 1 : 0;
-    }
-    @Override
-    public Integer getUserId(String contact)
-    {
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("contact", contact);
-        User user = userMapper.selectOne(wrapper);
-        return user.getUserId();
-    }
-
     @Override
     public ResponseEntity<Response<Integer>> sign(UserDTO user) {
         String userId = user.getUserId();
@@ -352,19 +328,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public void addUser(User user) {
-        try {
-            userMapper.insert(user);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        userMapper.insert(user);
     }
 
     @Override
     public void rmUser(Integer userId) {
-        try {
-            userMapper.deleteById(userId);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        userMapper.deleteById(userId);
     }
 }

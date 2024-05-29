@@ -56,7 +56,7 @@ public class LoginController {
     }
     @RequestMapping("/captcha")
     @SentinelResource("captcha")
-    public Result sendCaptcha(@RequestBody String contact, HttpSession session){
+    public ResponseEntity<Result> sendCaptcha(@RequestBody String contact, HttpSession session){
 
         return userService.sendCode(contact,session);
     }
