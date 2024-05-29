@@ -22,9 +22,9 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-@SpringBootTest
 @Slf4j
-public class GlycemiaTestSuites {
+@SpringBootTest
+public class GlycemiaTest {
     @Autowired
     GlycemiaController glycemiaController;
     @Autowired

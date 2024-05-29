@@ -58,7 +58,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
         // 遍历时间点，每15分钟一次，直到当前时间
         while (startDateTime.isBefore(endTime)) {
-            System.out.println(startDateTime);
+            log.debug(startDateTime.toString());
             startDateTime = startDateTime.plus(interval);
             if(!glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))){
                 log.warn("No data found at" + startDateTime.format(formatter));
@@ -100,10 +100,10 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         Integer eu_count=0,hypo_count=0,hyper_count=0;
         // 遍历时间点，每15分钟一次，直到当前时间
         while (startDateTime.isBefore(endTime)) {
-            System.out.println(startDateTime);
+            log.debug(startDateTime.toString());
             startDateTime = startDateTime.plus(interval);
             if(!daily_glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))) {
-                System.out.println("No data found around" + startDateTime.format(formatter));
+                log.debug("No data found around" + startDateTime.format(formatter));
                 continue;
             }
             String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -111,11 +111,11 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             if(StrUtil.isNotBlank(glycemiaJson))
                 glycemiaValue=Double.valueOf(glycemiaJson);
             else {
-                //System.out.println(startDateTime.format(formatter));
+                //log.debug(startDateTime.format(formatter));
 
                 glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
                 if (glycemiaValue == null) {
-                    System.out.println("(Penetration)No data found around" + startDateTime.format(formatter));
+                    log.debug("(Penetration)No data found around" + startDateTime.format(formatter));
                     continue;
                 }
                 daily_glycemia_bf.put(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
@@ -224,9 +224,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         Double eutoll=0.0,hypotoll=0.0,hypertoll=0.0;
         // 遍历时间点，每1天一次，直到当前时间
         while (startDate.isBefore(endTime)) {
-            System.out.println(startDate);
+            log.debug(startDate.toString());
             if(!history_glycemia_bf.mightContain(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter))){
-                System.out.println("No data found at" + startDate.format(formatter));
+                log.debug("No data found at" + startDate.format(formatter));
                 startDate = startDate.plusDays(1);
                 continue;
             }
@@ -238,7 +238,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 glycemiaValue = glycemiaMapper.selectDailyArchive(user_id, startDate.format(formatter));
                 //TODO:月度统计
                 if (glycemiaValue == null) {
-                    System.out.println("(Penetration)No data found at" + startDate.format(formatter));
+                    log.debug("(Penetration)No data found at" + startDate.format(formatter));
                     startDate = startDate.plusDays(1);
                     continue;
                 }
