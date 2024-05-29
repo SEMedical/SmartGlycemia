@@ -97,6 +97,11 @@ public class GlycemiaTest {
         response = glycemiaController.GetRealtimeGlycemia("96");
         response = glycemiaController.GetRealtimeGlycemia("101");
         response = glycemiaController.GetRealtimeGlycemia("24");
+        assertEquals(response.getStatusCode(),HttpStatus.OK);
+        response = glycemiaController.GetRealtimeGlycemia("Apple");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
+        response= glycemiaController.GetRealtimeGlycemia("0");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test

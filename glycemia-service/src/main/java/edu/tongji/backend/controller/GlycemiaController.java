@@ -59,9 +59,6 @@ public class GlycemiaController {
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
             return new ResponseEntity<>(Response.fail("Expected internal business exception:"+e.getMessage().toString()),HttpStatus.BAD_REQUEST);
-        }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
-            return new ResponseEntity<>(Response.fail("Unexpected external business exception or system error!"+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     //Check if the format of date is valid and is in the range of (start,end)
@@ -108,9 +105,6 @@ public class GlycemiaController {
         }catch (GlycemiaException e){
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail("Expected internal business exception:"+e.getMessage()),HttpStatus.BAD_REQUEST);
-        }catch (RuntimeException|Error e){
-            log.error(e.getMessage());
-            return new ResponseEntity<>( Response.fail("Unexpected external business exception or system error!"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @Autowired
@@ -156,9 +150,6 @@ public class GlycemiaController {
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
             return new ResponseEntity<>(Response.fail("Expected internal failure"),HttpStatus.BAD_REQUEST);
-        }catch (Exception|Error e){
-            System.err.println(e.getMessage());
-            return new ResponseEntity<>(Response.fail("Unexpected external failure"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     public ResponseEntity<Response<DailyChart>> GetDailyChart(String user_id, String date) {
@@ -172,9 +163,6 @@ public class GlycemiaController {
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
             return new ResponseEntity<>(Response.fail("Expected internal business exception"+e.getMessage()),HttpStatus.BAD_REQUEST);
-        }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
-            return new ResponseEntity<>(Response.fail("Unexpected external business exception or system error!"+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @GetMapping("/dailyHistory")
@@ -208,9 +196,6 @@ public class GlycemiaController {
         }catch (GlycemiaException e){
                 log.debug(e.getMessage());
                 return Response.fail("Expected internal failure");
-        }catch (Exception|Error e){
-                System.err.println(e.getMessage());
-                return Response.fail("Unexpected external failure");
         }
     }
     @GetMapping("/realTimePrompt")
@@ -228,7 +213,5 @@ public class GlycemiaController {
         }catch (Exception e){
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.SERVICE_UNAVAILABLE);
         }
-
-
     }
 }
