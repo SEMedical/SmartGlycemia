@@ -44,7 +44,7 @@ public class GlycemiaTest {
     }
     @Test
     public void TestChartRenderingSuites(){
-        ResponseEntity<Response<Chart>> response = glycemiaController.LookupChart("105", "Realtime", "2024-01-02");
+        ResponseEntity<Response<Chart>> response = glycemiaController.LookupChart("1", "Realtime", "2024-01-02");
         assertEquals(response.getStatusCode(), HttpStatus.OK);
         if(response.getBody().getResponse().getData().size()>0) {
             Map<LocalDateTime, Double> maps = response.getBody().getResponse().getData().get(0);
@@ -78,6 +78,17 @@ public class GlycemiaTest {
         tipResponse = glycemiaController.GetRealtimeTips("96", 21);
         tipResponse = glycemiaController.GetRealtimeTips("101", 21);
         tipResponse = glycemiaController.GetRealtimeTips("24", 70);
+        //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
+    }
+    @Test
+    public void RealTimeGlycemiaSuites(){
+        //Just enumerate
+        ResponseEntity<Response<Double>> response = glycemiaController.GetRealtimeGlycemia("1");
+        response = glycemiaController.GetRealtimeGlycemia("1");
+        response = glycemiaController.GetRealtimeGlycemia("1");
+        response = glycemiaController.GetRealtimeGlycemia("96");
+        response = glycemiaController.GetRealtimeGlycemia("101");
+        response = glycemiaController.GetRealtimeGlycemia("24");
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test
