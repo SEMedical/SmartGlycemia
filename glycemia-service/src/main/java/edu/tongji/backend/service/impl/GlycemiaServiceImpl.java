@@ -141,15 +141,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         chart.setEntry(res);
         return chart;
     }
-    private static boolean isInSameInterval(LocalDateTime time1, LocalDateTime time2) {
-        long minutesFromMidnight1 = ChronoUnit.MINUTES.between(LocalDateTime.of(time1.toLocalDate(), LocalTime.MIDNIGHT), time1);
-        long minutesFromMidnight2 = ChronoUnit.MINUTES.between(LocalDateTime.of(time2.toLocalDate(), LocalTime.MIDNIGHT), time2);
-
-        int interval1 = (int) (minutesFromMidnight1 / 15);
-        int interval2 = (int) (minutesFromMidnight2 / 15);
-
-        return interval1 == interval2;
-    }
+    @PostConstruct
     public void Init_GlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
@@ -158,6 +150,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 CACHE_GLYCEMIA_KEY+element.getPatientId()+":"+
                         element.getRecordTime().toLocalDateTime().format(formatter)));
     }
+    @PostConstruct
     public void Init_DailyGlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
