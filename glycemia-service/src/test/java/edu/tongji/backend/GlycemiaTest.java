@@ -86,6 +86,7 @@ public class GlycemiaTest {
         tipResponse = glycemiaController.GetRealtimeTips("96", 21);
         tipResponse = glycemiaController.GetRealtimeTips("101", 21);
         tipResponse = glycemiaController.GetRealtimeTips("24", 70);
+        tipResponse = glycemiaController.GetRealtimeTips("102", 21);
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test
