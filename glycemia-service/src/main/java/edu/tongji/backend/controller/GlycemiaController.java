@@ -15,9 +15,7 @@ import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,14 +30,14 @@ public class GlycemiaController {
     @Autowired
     IGlycemiaService glycemiaService;
     @GetMapping("/chart") //对应的api路径
-    public Response<Chart> LookupChart(@RequestParam String type, @RequestParam String date)//把请求中的内容映射到user
+    public ResponseEntity<Response<Chart>> LookupChart(@RequestParam String type, @RequestParam String date)//把请求中的内容映射到user
     {
         //确认用户是否存在，是否是病人
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         return LookupChart(user_id,type,date);
     }
-    public Response<Chart> LookupChart(String user_id,String type,String date){
+    public ResponseEntity<Response<Chart>> LookupChart(String user_id, String type, String date){
         try {
             if(type.equals("realtime"))
                 type="Realtime";
@@ -57,13 +55,13 @@ public class GlycemiaController {
             Chart result = glycemiaService.showGlycemiaDiagram(type, user_id, formattedDate);
             //LOG
             log.debug(result.toString());
-            return Response.success(result,"chart API has passed!");
+            return new ResponseEntity<>(Response.success(result,"chart API has passed!"), HttpStatus.OK);
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
-            return Response.fail("Expected internal business exception");
+            return new ResponseEntity<>(Response.fail("Expected internal business exception:"+e.getMessage().toString()),HttpStatus.BAD_REQUEST);
         }catch (RuntimeException|Error e){
             System.err.println(e.getMessage());
-            return Response.fail("Unexpected external business exception or system error!");
+            return new ResponseEntity<>(Response.fail("Unexpected external business exception or system error!"+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     //Check if the format of date is valid and is in the range of (start,end)
@@ -79,37 +77,40 @@ public class GlycemiaController {
     }
 
     @GetMapping("/weeklyOrMonthlyRecord") //对应的api路径
-    public Response<CompositeChart> LookupChartRecord(@RequestParam String span,@RequestParam String startDate){
+    public ResponseEntity<Response<CompositeChart>> LookupChartRecord(@RequestParam String span,@RequestParam String startDate){
         //确认用户是否存在，是否是病人
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         return LookupChartRecord(user_id,span,startDate);
     }
-    public Response<CompositeChart> LookupChartRecord(String user_id,String span,String startDate)//把请求中的内容映射到user
+    public ResponseEntity<Response<CompositeChart>> LookupChartRecord(String user_id,String span,String startDate)//把请求中的内容映射到user
     {
         try {
+            if(span==null)
+                throw new GlycemiaException("span must be speficied as month/week");
             if(span.equals("week"))
                 span="Week";
             if(span.equals("month"))
                 span="Month";
+            if (startDate == null)
+                throw new GlycemiaException("If you want to loop up the chart record, startTime is required");
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(startDate, LocalDate.of(2023, 12, 1), LocalDate.now());
             //确认类型必须为history或realtime
             if (!span.equals("Week") && !span.equals("Month"))
                 throw new GlycemiaException("span must be week or month");
             //history必须有time
-            if (startDate == null)
-                throw new GlycemiaException("If you want to loop up the chart record, startTime is required");
+
             CompositeChart result = glycemiaService.showGlycemiaHistoryDiagram(span, user_id, formattedDate);
             //LOG
             log.debug(result.toString());
-            return Response.success(result,"Successfully get the glycemia record!");
+            return new ResponseEntity<>(Response.success(result,"Successfully get the glycemia record!"),HttpStatus.OK);
         }catch (GlycemiaException e){
-            log.debug(e.getMessage());
-            return Response.fail("Expected internal business exception");
+            log.error(e.getMessage());
+            return new ResponseEntity<>(Response.fail("Expected internal business exception:"+e.getMessage()),HttpStatus.BAD_REQUEST);
         }catch (RuntimeException|Error e){
-            System.err.println(e.getMessage());
-            return Response.fail("Unexpected external business exception or system error!");
+            log.error(e.getMessage());
+            return new ResponseEntity<>( Response.fail("Unexpected external business exception or system error!"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @Autowired
@@ -142,18 +143,21 @@ public class GlycemiaController {
         }
     }
     @GetMapping("/realTime")
-    public Response<Double> GetRealtimeGlycemia(HttpServletRequest request){
+    public ResponseEntity<Response<Double>> GetRealtimeGlycemia(){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        return GetRealtimeGlycemia(user_id);
+    }
+    public ResponseEntity<Response<Double>> GetRealtimeGlycemia(String user_id){
         try {
-            UserDTO user= UserHolder.getUser();
-            String user_id= user.getUserId();
             Double data=glycemiaService.getLatestGlycemia(user_id);
-            return Response.success(data,"You've get the latest glycemia data!");
+            return new ResponseEntity<>(Response.success(data,"You've get the latest glycemia data!"),HttpStatus.OK);
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
-            return Response.fail("Expected internal failure");
+            return new ResponseEntity<>(Response.fail("Expected internal failure"),HttpStatus.BAD_REQUEST);
         }catch (Exception|Error e){
             System.err.println(e.getMessage());
-            return Response.fail("Unexpected external failure");
+            return new ResponseEntity<>(Response.fail("Unexpected external failure"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @GetMapping("dailyHistory")
