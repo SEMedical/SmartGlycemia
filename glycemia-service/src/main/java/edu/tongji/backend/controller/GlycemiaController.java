@@ -160,24 +160,27 @@ public class GlycemiaController {
             return new ResponseEntity<>(Response.fail("Unexpected external failure"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("dailyHistory")
-    public Response<DailyChart> GetDailyChart(HttpServletRequest request,@RequestParam String date){
+    public ResponseEntity<Response<DailyChart>> GetDailyChart(String user_id, String date) {
         try {
-            UserDTO user= UserHolder.getUser();
-            String user_id= user.getUserId();
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
 
             DailyChart result = glycemiaService.showDailyGlycemiaDiagram(user_id, formattedDate);
             log.debug(result.toString());
-            return Response.success(result,"dailychart API has passed!");
+            return new ResponseEntity<>(Response.success(result,"dailychart API has passed!"),HttpStatus.OK);
         }catch (GlycemiaException e){
             log.debug(e.getMessage());
-            return Response.fail("Expected internal business exception");
+            return new ResponseEntity<>(Response.fail("Expected internal business exception"+e.getMessage()),HttpStatus.BAD_REQUEST);
         }catch (RuntimeException|Error e){
             System.err.println(e.getMessage());
-            return Response.fail("Unexpected external business exception or system error!");
+            return new ResponseEntity<>(Response.fail("Unexpected external business exception or system error!"+e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    @GetMapping("/dailyHistory")
+    public ResponseEntity<Response<DailyChart>> GetDailyChart(@RequestParam String date){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        return GetDailyChart(user_id,date);
     }
     @Autowired
     UserClient userClient;

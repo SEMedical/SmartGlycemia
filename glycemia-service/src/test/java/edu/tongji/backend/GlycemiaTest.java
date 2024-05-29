@@ -92,6 +92,17 @@ public class GlycemiaTest {
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test
+    public void TestGetDailyCharts(){
+        ResponseEntity<Response<DailyChart>> response = glycemiaController.GetDailyChart("1", "2024-01-02");
+        assertEquals(response.getStatusCode(),HttpStatus.OK);
+        DailyChart chart = response.getBody().getResponse();
+        Map<LocalDateTime, Double> map = chart.getEntry().get(0);
+        for (Map.Entry<LocalDateTime, Double> entry : map.entrySet()) {
+            assertEquals(entry.getKey().toLocalDate().equals(LocalDate.of(2024,1,2)),true );
+            break;
+        }
+    }
+    @Test
     public void WeeklyOrMonthlyDataSuites(){
         //#1
         ResponseEntity<Response<CompositeChart>> months = glycemiaController.LookupChartRecord("1", "month", "2023-12-27");
