@@ -141,7 +141,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         chart.setEntry(res);
         return chart;
     }
-    @PostConstruct
+    //@PostConstruct
     public void Init_GlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
@@ -150,7 +150,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 CACHE_GLYCEMIA_KEY+element.getPatientId()+":"+
                         element.getRecordTime().toLocalDateTime().format(formatter)));
     }
-    @PostConstruct
+    //@PostConstruct
     public void Init_DailyGlycemiaDiagram(){
         QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
         List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
