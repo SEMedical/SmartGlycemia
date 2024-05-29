@@ -118,7 +118,7 @@ public class GlycemiaController {
     @Resource
     StringRedisTemplate stringRedisTemplate;
     @GetMapping("/isExercise")
-    public Response<Intervals> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
+    public ResponseEntity<Response<Intervals>> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
         try {
             UserDTO user= UserHolder.getUser();
             String user_id= user.getUserId();
@@ -133,13 +133,14 @@ public class GlycemiaController {
             TokenHolder.saveToken(token);
             Intervals intervals = exerciseClient.getExerciseIntervals(type, formattedDate.toString());
             TokenHolder.removeToken();
-            return Response.success(intervals, "Successfully get all the intervals during a day!");
-        }catch (GlycemiaException|ExerciseException e){
-            log.debug(e.getMessage());
-            return Response.fail("Expected internal business failure");
+            return new ResponseEntity<>(Response.success(intervals, "Successfully get all the intervals during a day!"),HttpStatus.OK);
         }catch (Exception|Error e){
-            System.err.println(e.getMessage());
-            return Response.fail("Unexpected external business exception or system error!");
+            if(!(e instanceof GlycemiaException||e instanceof ExerciseException)) {
+                System.err.println(e.getMessage());
+                return new ResponseEntity<>(Response.fail("Unexpected external business exception or system error!" + e.getMessage()), HttpStatus.NOT_ACCEPTABLE);
+            }
+            log.debug(e.getMessage());
+            return new ResponseEntity<>(Response.fail("Expected internal business failure"),HttpStatus.BAD_REQUEST);
         }
     }
     @GetMapping("/realTime")

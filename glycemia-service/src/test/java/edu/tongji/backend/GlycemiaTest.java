@@ -1,19 +1,26 @@
 package edu.tongji.backend;
 
+import com.alibaba.fastjson.JSONObject;
 import edu.tongji.backend.controller.GlycemiaController;
 import edu.tongji.backend.dto.*;
 import edu.tongji.backend.service.impl.GlycemiaServiceImpl;
 import edu.tongji.backend.util.RegexUtils;
 import edu.tongji.backend.util.Response;
+import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.StatusResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -23,6 +30,7 @@ import java.time.Period;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
 @SpringBootTest
@@ -101,6 +109,37 @@ public class GlycemiaTest {
             assertEquals(entry.getKey().toLocalDate().equals(LocalDate.of(2024,1,2)),true );
             break;
         }
+        response = glycemiaController.GetDailyChart("1", "1024-01-02");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
+        response = glycemiaController.GetDailyChart("1", "3024-01-02");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
+        response = glycemiaController.GetDailyChart("1", "2024.01.02");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
+    }
+    @Test
+    void TestIsExerciseBatch() throws Exception {
+        TestIsExercise("Jogging","2024-01-02",status().isNotAcceptable());
+        TestIsExercise("Swimming","2024-01-02",status().isNotAcceptable());
+        TestIsExercise("jogging","2024-01-02",status().isNotAcceptable());
+        TestIsExercise("Yoga","2024-01-02",status().isNotAcceptable());
+        TestIsExercise("Yoga","2024-01.02",status().isNotAcceptable());
+        TestIsExercise("Yoga","1024-01-02",status().isNotAcceptable());
+        TestIsExercise("Yoga","3024-01-02",status().isNotAcceptable());
+    }
+
+    void TestIsExercise(String type,String date,ResultMatcher matcher) throws Exception {
+
+        UserDTO userDTO=new UserDTO(null,"小帅","1","patient");
+        UserHolder.saveUser(userDTO);
+
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/glycemia/isExercise")
+                .param("type",type)
+                .param("date",date)
+                .header("authorization","rgbtsghnjbzsvjkv14f5154gscscczs5")
+                .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+        ).andExpect(matcher);//Default:status().isOk()
+        UserHolder.removeUser();
     }
     @Test
     public void WeeklyOrMonthlyDataSuites(){
