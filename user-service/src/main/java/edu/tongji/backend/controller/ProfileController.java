@@ -50,7 +50,7 @@ public class ProfileController {
     }
     //RPC for glycemia-service
     @GetMapping("/getUserAge")
-    public Response<Integer> getUserAge(HttpServletRequest request){
+    public Response<Integer> getUserAge(){
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
         Integer age=profileService.getUserAge(userId);
