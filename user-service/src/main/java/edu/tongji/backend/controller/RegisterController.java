@@ -28,11 +28,7 @@ public class RegisterController {
     public ResponseEntity<Response<Boolean>> unregisterPatient(){
         UserDTO user= UserHolder.getUser();
         Boolean unregistered = userService.unregister(Integer.valueOf(user.getUserId()));
-        if(unregistered)
-            return new ResponseEntity<>(Response.success(true,"The unregisterPatient Function haven't been implemented yet"),
-                    HttpStatus.OK);
-        else
-            return new ResponseEntity<>(Response.success(false,"The unregisterPatient Function haven't been implemented yet"),
+            return new ResponseEntity<>(Response.success(unregistered,"The unregisterPatient Function haven't been implemented yet"),
                     HttpStatus.OK);
     }
     @PostMapping("/patient")  //对应的api路径
