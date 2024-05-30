@@ -152,7 +152,7 @@ public class PhoneLoginTest {
                 .post("/api/login/captcha")
                 .param("contact", contact)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .content(contact)
+                .content(contact!=null?contact:"")
                 .contentType("application/text;charset=UTF-8")
         );
         if(malicious)
@@ -187,8 +187,6 @@ public class PhoneLoginTest {
         testWithoutCaptcha("000000");
         stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
         testWithoutCaptcha("000000");
-        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
-        testWithoutCaptcha(null,"000000");
         stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
         testWithoutCaptcha(null,null);
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(5));

@@ -153,6 +153,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
     @Override
     public ResponseEntity<Result> sendCode(String contact, HttpSession session){
+        if(contact==null)
+            return new ResponseEntity<>(Result.fail("contact shouldn't be null"),HttpStatus.BAD_REQUEST);
         //. Check Phone
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
