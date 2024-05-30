@@ -23,6 +23,10 @@ component_management:
       name: Glycemia Service
       paths:
         - glycemia-service/**
+    - component_id: interact-service
+      name: Interact Service
+      paths:
+        - interact-service/**
     - component_id: exercise-service
       name: Exercise Service
       paths:
