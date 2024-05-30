@@ -61,8 +61,6 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
             profileDTO.setDiabetesType("II型糖尿病");
         } else if (Objects.equals(profile.getType(), "gestational")) {
             profileDTO.setDiabetesType("妊娠期糖尿病");
-        } else {
-            profileDTO.setDiabetesType("");
         }
         String date = profile.getDiagnosedYear();
         if (date != null) {
@@ -134,9 +132,6 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
         Profile dummy = profileMapper.getByPatientIdProfile(patientId);
         if (dummy == null) {
-
-           log.info("insert");
-
             return profileMapper.insert(profile) == 1;
         }
 

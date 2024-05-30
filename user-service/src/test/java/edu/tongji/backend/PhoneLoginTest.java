@@ -189,6 +189,7 @@ public class PhoneLoginTest {
         testWithoutCaptcha("000000");
         stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
         testWithoutCaptcha(null,null);
+        testWithoutCaptcha("132 2451 2136",null);//Invalid Phone format
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(5));
         testWithoutCaptcha("123456");
         stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");

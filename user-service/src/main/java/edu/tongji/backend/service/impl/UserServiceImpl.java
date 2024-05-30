@@ -76,7 +76,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return temp;
     }
-    Result createUserWithPhone(String contact,QueryWrapper<User> wrapper){
+    @Transactional
+    public Result createUserWithPhone(String contact, QueryWrapper<User> wrapper){
         User user = new User();
         user.setContact(contact);
         user.setName("momo");
@@ -91,8 +92,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.info("The UID:"+result.getUserId());
         int profileNum = profileMapper.insert(profile);
         log.info("userNum: " + userNum + ", profileNum: " + profileNum);
-        if(userNum==1&&profileNum==0)
-            throw new RuntimeException("Register failed,rollback!");
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
     }
     @Override
