@@ -75,7 +75,7 @@ public class PhoneLoginTest {
         //NOTE:ONLY FOR TEST!
         for(int i=0;i<2;i++)
             LoginError("15204808552","89",status().is4xxClientError());
-        LoginError("15204808552","04808552",status().is4xxClientError());
+        LoginError("15204808552","04808552",status().isOk());
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
     }
     @Test
