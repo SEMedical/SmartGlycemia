@@ -1,8 +1,9 @@
 package edu.tongji.backend;
 
-import edu.tongji.backend.entity.Doctor;
+import edu.tongji.backend.dto.DoctorDTO;
 import edu.tongji.backend.service.DoctorInteractService;
 import edu.tongji.backend.service.PatientInteractService;
+import edu.tongji.backend.service.impl.DoctorInteractImpl;
 import edu.tongji.backend.service.impl.DoctorInteractImpl;
 import edu.tongji.backend.service.impl.PatientInteractServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,8 @@ public class InteractSuiteTest {
         testKeyWordSearch("瑞金");
     }
     void testKeyWordSearch(String keyword){
-        List<Doctor> doctors = patientInteractService.searchAll(keyword);
-        for (Doctor doctor : doctors) {
+        List<DoctorDTO> doctors = patientInteractService.searchAll(keyword);
+        for (DoctorDTO doctor : doctors) {
             Boolean flag1=doctor.getAddress().contains(keyword);
             Boolean flag2=doctor.getDepartment().contains(keyword);
             Boolean flag3=doctor.getContact().contains(keyword);

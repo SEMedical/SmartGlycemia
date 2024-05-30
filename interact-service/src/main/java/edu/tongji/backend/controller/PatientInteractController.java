@@ -1,6 +1,6 @@
 package edu.tongji.backend.controller;
 
-import edu.tongji.backend.entity.Doctor;
+import edu.tongji.backend.dto.DoctorDTO;
 import edu.tongji.backend.service.PatientInteractService;
 import edu.tongji.backend.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +21,10 @@ public class PatientInteractController {
         Since released:2.2.0
      */
     @GetMapping("/getDoctor")
-    public ResponseEntity<Response<List<Doctor>>> SearchDoctor(@RequestParam("keyword") String keyword){
+    public ResponseEntity<Response<List<DoctorDTO>>> SearchDoctor(@RequestParam("keyword") String keyword){
 
         //通过查找医生姓名、医院名称、科室、医生联系方式、医院地址等方式
-        List<Doctor> D =patientInteractService.searchAll(keyword);
+        List<DoctorDTO> D =patientInteractService.searchAll(keyword);
         //查找失败
         if(D.isEmpty())
             return new ResponseEntity<>(Response.fail("查无此人！"), HttpStatus.NOT_FOUND);

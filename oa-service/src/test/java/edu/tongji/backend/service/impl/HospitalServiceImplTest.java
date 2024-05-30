@@ -2,7 +2,9 @@ package edu.tongji.backend.service.impl;
 
 import edu.tongji.backend.controller.AccountController;
 import edu.tongji.backend.entity.Hospital;
+import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -10,7 +12,7 @@ import java.math.BigDecimal;
 import java.sql.SQLIntegrityConstraintViolationException;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@RunWith(JUnit4ClassRunner.class)
 @SpringBootTest
 class HospitalServiceImplTest {
     @Autowired
