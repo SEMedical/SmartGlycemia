@@ -8,38 +8,27 @@ import java.util.List;
 
 public interface IComplicationService extends IService<Complication> {
     static StringBuilder getComplicationStr(List<String> complications) {
+        // 'diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others'
         StringBuilder complicationStr = new StringBuilder();
         for (String complication : complications) {
-            switch (complication) {
-// 'diabetic foot', 'diabetic eye', 'diabetic kidney', 'diabetic cardiovascular disease', ' diabetic neuropathy', 'diabetic skin disease', 'hypertension', 'hyperlipidemia', 'others'
-                case "diabetic foot":
-                    complicationStr.append("糖尿病足、");
-                    break;
-                case "diabetic eye":
-                    complicationStr.append("糖尿病眼、");
-                    break;
-                case "diabetic kidney":
-                    complicationStr.append("糖尿病肾、");
-                    break;
-                case "diabetic cardiovascular disease":
-                    complicationStr.append("糖尿病心血管疾病、");
-                    break;
-                case "diabetic neuropathy":
-                    complicationStr.append("糖尿病神经病变、");
-                    break;
-                case "diabetic skin disease":
-                    complicationStr.append("糖尿病皮肤病、");
-                    break;
-                case "hypertension":
-                    complicationStr.append("高血压、");
-                    break;
-                case "hyperlipidemia":
-                    complicationStr.append("高血脂、");
-                    break;
-                case "others":
-                    complicationStr.append("其他、");
-                    break;
-            }
+            if(complication.contains("diabetic foot"))
+                complicationStr.append("糖尿病足、");
+            if(complication.contains("diabetic eye"))
+                complicationStr.append("糖尿病眼、");
+            if(complication.contains("diabetic kidney"))
+                complicationStr.append("糖尿病肾、");
+            if(complication.contains("diabetic cardiovascular disease"))
+                complicationStr.append("糖尿病心血管疾病、");
+            if(complication.contains("diabetic neuropathy"))
+                complicationStr.append("糖尿病神经病变、");
+            if(complication.contains("diabetic skin disease"))
+                complicationStr.append("糖尿病皮肤病、");
+            if(complication.contains("hypertension"))
+                complicationStr.append("高血压、");
+            if(complication.contains("hyperlipidemia"))
+                complicationStr.append("高血脂、");
+            if(complication.contains("others"))
+                complicationStr.append("其他、");
         }
         return complicationStr;
     }
@@ -70,9 +59,7 @@ public interface IComplicationService extends IService<Complication> {
         if (complicationStr.contains("高血脂")) {
             complications.add("hyperlipidemia");
         }
-        if (complicationStr.contains("其他")) {
-            complications.add("others");
-        }
+        complications.add("others");
         return complications;
     }
 }

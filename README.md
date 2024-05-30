@@ -1,16 +1,20 @@
 # Tangxiaozhi_Sports_Backend
-[![Glycemia SE Huangjie](https://github.com/SoftwareEngineeringMedical/Tangxiaozhi_Sports_Backend/actions/workflows/workflow.yml/badge.svg?branch=docker)](https://github.com/SoftwareEngineeringMedical/Tangxiaozhi_Sports_Backend/actions/workflows/workflow.yml)
+[![Glycemia SE Huangjie](https://github.com/SoftwareEngineeringMedical/Tangxiaozhi_Sports_Backend/actions/workflows/workflow.yml/badge.svg?branch=docker)](https://github.com/SoftwareEngineeringMedical/Tangxiaozhi_Sports_Backend/actions/workflows/workflow.yml) [![codecov](https://codecov.io/gh/SEMedical/Backend/branch/hyt-test/graph/badge.svg?token=ZBBAGREM4F)](https://codecov.io/gh/SEMedical/Backend)
+[![CodeQL](https://github.com/SEMedical/Backend/actions/workflows/codeql.yml/badge.svg)](https://github.com/SEMedical/Backend/actions/workflows/codeql.yml)
+[![Glycemia SE Doc](https://github.com/SEMedical/Backend/actions/workflows/docflow.yml/badge.svg)](https://github.com/SEMedical/Backend/actions/workflows/docflow.yml)
+[![Dependabot Updates](https://github.com/SEMedical/Backend/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/SEMedical/Backend/actions/workflows/dependabot/dependabot-updates)
 
 血糖项目后端
 
 ## 运行方式
 ```shell
+mvn package
+docker compose down --rmi all
 docker compose up -d
-docker run -d backend-glycemia-service --env-file=web-variables.env
-docker run -d backend-user-service --env-file=web-variables.env
-docker run -d backend-exercise-service --env-file=web-variables.env
-docker run -d -p 8080:8080 backend-gateway --env-file=web-variables.env
 ```
+执行以上命令用于版本更新后更新服务。
+
+
 ## Docker镜像
 ```shell
 docker compose up -d
@@ -19,3 +23,7 @@ docker pull victor005/user-service:latest
 docker pull victor005/backend-gateway:latest
 docker pull victor005/glycemia-service:latest
 ```
+以上为不下载仓库远程拉取镜像并运行的方法。
+
+## Test coverage
+<img src="https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F">

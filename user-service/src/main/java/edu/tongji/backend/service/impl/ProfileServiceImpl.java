@@ -34,7 +34,13 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
     @Override
     public Profile getByPatientId(String patient_id) {
-        return profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+        try {
+            Profile profile = profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+            return profile;
+        }catch (Throwable e){
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -42,14 +48,18 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
         ProfileDTO profileDTO = new ProfileDTO();
 
         Profile profile = profileMapper.getByPatientIdProfile(patientId);
-        if (profile.getGender().equals("Male")) {
+        if(profile.getGender()==null)
+            profileDTO.setGender("Unknown");
+        else if (profile.getGender().equals("Male")) {
             profileDTO.setGender("男");
         } else if (profile.getGender().equals("Female")) {
             profileDTO.setGender("女");
         }
         profileDTO.setAge(profile.getAge());
-        profileDTO.setWeight(profile.getWeight().toString() + "kg");
-        profileDTO.setHeight(profile.getHeight().toString() + "cm");
+        if(profile.getWeight()!=null)
+            profileDTO.setWeight(profile.getWeight() + "kg");
+        if(profile.getHeight()!=null)
+            profileDTO.setHeight(profile.getHeight() + "cm");
         if (Objects.equals(profile.getType(), "I")) {
             profileDTO.setDiabetesType("I型糖尿病");
         } else if (Objects.equals(profile.getType(), "II")) {
@@ -92,7 +102,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
             profile.setGender("Male");
         } else if (profileDTO.getGender().equals("女")) {
             profile.setGender("Female");
-        }
+        }else if(profile.getGender()!=null)
+            profile.setGender(profileDTO.getGender());
         profile.setAge(profileDTO.getAge());
         //身高体重前端传来的字符串形式为"xxkg"或"xxcm"，需要去掉单位
         profile.setWeight(Integer.valueOf(profileDTO.getWeight().substring(0, profileDTO.getWeight().length() - 2)));
@@ -103,8 +114,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
             profile.setType("II");
         } else if (Objects.equals(profileDTO.getDiabetesType(), "妊娠期糖尿病")) {
             profile.setType("gestational");
-        } else {
-            profile.setType("");
+        }else{
+            profile.setType(profileDTO.getDiabetesType());
         }
         if (profileDTO.getDiagnosisYear() != null) {
             profile.setDiagnosedYear(profileDTO.getDiagnosisYear().toString());
