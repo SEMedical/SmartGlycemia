@@ -199,9 +199,7 @@ public class PhoneLoginTest {
         //Must be Wrong Captcha
         if(code!=null){
             realcode = sendCaptcha(contact, false);
-            if(code.equals(realcode)){
-                code= code.substring(0, 4);
-            }
+            code= code.substring(0, 3);
         }
         boolean verbose=false;
         LoginFormDTO user=new LoginFormDTO(contact,code,null);

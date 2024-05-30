@@ -77,15 +77,10 @@ public class LoginController {
         wrapper.select("user_id")
                 .eq("contact", contact);
         User result = userMapper.selectOne(wrapper);
-        try {
-            if (result != null) {
-                return Response.success(true, "The phone number has been registered");  // 手机号已被注册
-            }
-            return Response.success(false, "The phone number is available");
-        }catch (Exception e){
-            e.printStackTrace();
+        if (result != null) {
+            return Response.success(true, "The phone number has been registered");  // 手机号已被注册
         }
-        return Response.fail("Service 's crashed down!");
+        return Response.success(false, "The phone number is available");
     }
     @GetMapping("/me")
     public Result me(){

@@ -63,10 +63,6 @@ public class RegisterController {
         {
             return new ResponseEntity<>(Response.fail("手机号已被注册"),HttpStatus.BAD_REQUEST);  //返回错误信息
         }
-        else if (result == 0)
-        {
-            return new ResponseEntity<>(Response.fail("注册失败"),HttpStatus.BAD_REQUEST);  //返回错误信息
-        }
         return new ResponseEntity<>(Response.success(true, "注册成功"),HttpStatus.OK);
     }
     @PostMapping("/addUser")

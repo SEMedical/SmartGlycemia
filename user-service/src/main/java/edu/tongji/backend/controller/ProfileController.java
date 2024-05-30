@@ -29,9 +29,9 @@ public class ProfileController {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
         ProfileDTO profileDTO = profileService.getCompleteProfile(userId);
-        if (profileDTO == null) {
-            return Response.fail("查询健康档案失败");
-        }
+//        if (profileDTO == null) {
+//            return Response.fail("查询健康档案失败");
+//        }
         return Response.success(profileDTO, "查询健康档案成功");
     }
 
@@ -42,11 +42,8 @@ public class ProfileController {
 
         log.info(profileDTO.toString());
 
-        if (profileService.updateProfile(userId, profileDTO)) {
-            return Response.success(true, "更新健康档案成功");
-        } else {
-            return Response.fail("更新健康档案失败");
-        }
+        Boolean flag=profileService.updateProfile(userId, profileDTO);
+        return Response.success(flag, "更新健康档案成功");
     }
     //RPC for glycemia-service
     @GetMapping("/getUserAge")
