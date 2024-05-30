@@ -174,8 +174,11 @@ public class PhoneLoginTest {
     }
     @Test
     void testWithoutCaptchaBatch() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(-1));
         testWithoutCaptcha("000000");
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(5));
         testWithoutCaptcha("123456");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
         testWithoutCaptcha();
     }
     void testWithoutCaptcha(String code) throws Exception {
