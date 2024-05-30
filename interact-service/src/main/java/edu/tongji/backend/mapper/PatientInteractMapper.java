@@ -15,5 +15,5 @@ public interface PatientInteractMapper {
     List<Doctor> searchAll(String keyword);
 
     //按科室预约医生
-    void appointDoctor(String department, String datetime, int hospitalId);
+    //void appointDoctor(String department, String datetime, int hospitalId);
 }

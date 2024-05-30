@@ -17,4 +17,5 @@ public class Doctor {
     private int doctor_id;
     private String hospital_name;
     private String address;
+    private String introduction;
 }

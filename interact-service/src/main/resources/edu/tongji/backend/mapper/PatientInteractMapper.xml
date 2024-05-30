@@ -12,6 +12,7 @@
     <result property="department" column="department"/>
     <result property="hospital_name" column="hospital_name"/>
     <result property="address" column="address"/>
+    <result property="introduction" column="introduction"/>
 </resultMap>
     <!--TODO-->
     <select id="searchName" resultMap="DoctorResultMap">
@@ -22,7 +23,7 @@
 
     <select id="searchAll" resultMap="DoctorResultMap">
         select name,contact,'/data/1.jpg' as avatar,title,department,doctor.hospital_id,doctor_id,hospital.hospital_name as hospital_name,
-               hospital.address as address
+               hospital.address as address,hospital.introduction as introduction
         from hospital join doctor join user
                  where (hospital_name like CONCAT('%',#{ keyword },'%')
                             or user.name like CONCAT('%',#{ keyword },'%')

@@ -1,6 +1,8 @@
 package edu.tongji.backend.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.entity.Doctor;
+import edu.tongji.backend.entity.Glycemia;
 import edu.tongji.backend.mapper.PatientInteractMapper;
 import edu.tongji.backend.service.PatientInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ public class PatientInteractServiceImpl implements PatientInteractService {
 
     @Override
     public void appointDoctor(String department, String datetime, int hospitalId) {
-        patientInteractMapper.appointDoctor(department,datetime,hospitalId);
+       // patientInteractMapper.appointDoctor(department,datetime,hospitalId);
     }
+
 }
