@@ -25,7 +25,7 @@ public class ProfileController {
     IProfileService profileService;
 
     @GetMapping("/health-record") //对应的api路径
-    public Response<ProfileDTO> getHealthRecord(HttpServletRequest request) throws ParseException {
+    public Response<ProfileDTO> getHealthRecord() throws ParseException {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
         ProfileDTO profileDTO = profileService.getCompleteProfile(userId);
@@ -36,7 +36,7 @@ public class ProfileController {
     }
 
     @PostMapping("/update-health-record") //对应的api路径
-    public Response<Boolean> updateHealthRecord(HttpServletRequest request, @RequestBody ProfileDTO profileDTO) throws ParseException {
+    public Response<Boolean> updateHealthRecord(@RequestBody ProfileDTO profileDTO) throws ParseException {
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
 
@@ -50,7 +50,7 @@ public class ProfileController {
     }
     //RPC for glycemia-service
     @GetMapping("/getUserAge")
-    public Response<Integer> getUserAge(HttpServletRequest request){
+    public Response<Integer> getUserAge(){
         UserDTO user= UserHolder.getUser();
         Integer userId= Integer.valueOf(user.getUserId());
         Integer age=profileService.getUserAge(userId);
@@ -66,7 +66,7 @@ public class ProfileController {
         return profileService.getByPatientId(patient_id);
     }
     @GetMapping("/getUserName")
-    public Response<String> test(HttpServletRequest request){
+    public Response<String> getUserName(HttpServletRequest request){
         UserDTO user= UserHolder.getUser();
         Integer userId=Integer.valueOf(user.getUserId());
         String name=profileService.getUserName(userId);

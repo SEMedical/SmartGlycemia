@@ -16,4 +16,7 @@ public interface UserMapper extends BaseMapper<User> {
     int changePassword(@Param("userId") int user_id, @Param("new_password") String new_password, @Param("old_password") String old_password);
     @Select("select name from user where user_id= #{id};")
     String getUserName(int id);
+    @Select("SELECT MAX(user_id) FROM user;")
+    Integer getMaxUserId();
+    static Integer UserIdLock = 1;
 }

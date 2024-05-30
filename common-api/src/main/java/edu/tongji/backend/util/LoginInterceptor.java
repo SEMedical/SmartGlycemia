@@ -9,6 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +24,16 @@ public class LoginInterceptor implements HandlerInterceptor {
         //TODO get token in the header
         if(UserHolder.getUser()==null) {
             response.setStatus(401);
+            return false;
+        }
+        if(!UserHolder.getUser().getRole().equals("patient")) {
+            response.setStatus(418);
+            PrintWriter out = response.getWriter();
+            String message="Only administrator account can access this method!";
+            String success="false";
+            String jsonResponse = "{ \"message\": \"" + message + "\", \"success\": \"" + success + "\" }";
+            out.write(jsonResponse);
+            out.flush();
             return false;
         }
         return true;

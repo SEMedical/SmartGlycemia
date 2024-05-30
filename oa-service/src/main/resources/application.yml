@@ -1,0 +1,20 @@
+server:
+  port: 84
+spring:
+  config:
+    location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
+  jackson:
+    default-property-inclusion: non-null
+mybatis-plus:
+  mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+    table-prefix: tbl_
+    id-type: auto
+management:
+  metrics:
+    tags:
+      application: jmx-oa-service

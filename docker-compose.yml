@@ -30,6 +30,16 @@ services:
     volumes:
       - /tmp/logs/gateway:/logs
       - /tmp/logs/gateway/csp:/root/logs
+  oa-service:
+    build: ./oa-service
+    ports:
+      - "84:84"
+      - "8723:8723"
+    env_file:
+      - ./web-variables.env
+    volumes:
+      - /tmp/logs/oa-service:/logs
+      - /tmp/logs/oa-service/csp:/root/logs
   exercise-service:
     build: ./exercise-service
     ports:
