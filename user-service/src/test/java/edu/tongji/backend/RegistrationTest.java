@@ -77,6 +77,8 @@ public class RegistrationTest {
         testRegister(null,"Serpent!1234","13101000002","Female",2024,true);
         //#7,repeated contact
         testRegister("Eve","Serpent!1234","13745678909","Female",2024,true);
+        //#8
+        testRegister("Eve","Serpent!1234",null,"Female",2024,true);
     }
     void testRegister(String name,String password,String contact,String gender,Integer age) throws Exception {
         testRegister(name,password,contact,gender,age,false);

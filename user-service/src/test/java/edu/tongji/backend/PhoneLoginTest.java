@@ -88,6 +88,15 @@ public class PhoneLoginTest {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
     }
     @Test
+    void LoginFrozenBatchIV() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(-1));
+        //NOTE:ONLY FOR TEST!
+        for(int i=0;i<2;i++)
+            LoginError(null,"89",status().is4xxClientError());
+        LoginError(null,null,status().is4xxClientError());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+    }
+    @Test
     void LoginPassBatch() throws Exception {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
         LoginError("15204808552","04808552",status().isOk());
@@ -176,6 +185,12 @@ public class PhoneLoginTest {
     void testWithoutCaptchaBatch() throws Exception {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(-1));
         testWithoutCaptcha("000000");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithoutCaptcha("000000");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithoutCaptcha(null,"000000");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithoutCaptcha(null,null);
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(5));
         testWithoutCaptcha("123456");
         stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
