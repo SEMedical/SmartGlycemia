@@ -26,7 +26,7 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
             hospitalMapper.insert(hospital);
         }catch (Exception e){
             System.err.println(e.getMessage());
-            return -1;
+            throw e;
         }
         return id;
     }
