@@ -80,7 +80,7 @@ jobs:
       - name: Run User&Exercise Service
         run: |
           echo "Starting task in foreground for 60 seconds..."
-          java -jar user-service/target/app.jar -Dserver.port=10082 &
+          java -jar user-service/target/app.jar -Dserver.port=10081 &
           java -jar exercise-service/target/app.jar -Dserver.port=10083 &
           FG_PID=$!
           sleep 60
