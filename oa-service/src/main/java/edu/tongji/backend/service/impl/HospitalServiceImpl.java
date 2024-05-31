@@ -17,7 +17,7 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
     HospitalMapper hospitalMapper;
     static Integer id;
     @Override
-    public void addHospital(Hospital hospital) {
+    public Integer addHospital(Hospital hospital) {
         try {
             id=hospitalMapper.getMaxId();
             synchronized (id) {
@@ -26,9 +26,9 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
             hospitalMapper.insert(hospital);
         }catch (Exception e){
             System.err.println(e.getMessage());
-            throw e;
+            return -1;
         }
-        return;
+        return id;
     }
 
     @Override

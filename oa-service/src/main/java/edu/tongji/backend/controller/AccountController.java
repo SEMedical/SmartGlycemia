@@ -119,7 +119,10 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
         try {
-            hospitalService.addHospital(hospital);
+            Integer id = hospitalService.addHospital(hospital);
+            String msg="The "+hospital_name+" has been registered successfully!";
+            log.info(msg);
+            return new ResponseEntity<>(Response.success(id.toString(),msg),HttpStatus.OK);
         }catch (Exception e){
             log.error(e.getMessage());
             if(e instanceof SQLIntegrityConstraintViolationException)
@@ -127,9 +130,6 @@ public class AccountController {
             else
                 return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
-        String msg="The "+hospital_name+" has been registered successfully!";
-        log.info(msg);
-        return new ResponseEntity<>(Response.success(null,msg),HttpStatus.NOT_FOUND);
     }
 
     /**
