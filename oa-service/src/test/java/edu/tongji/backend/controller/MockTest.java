@@ -59,7 +59,7 @@ public class MockTest {
                 new BigDecimal("120"),"200062","120001",
                 "8:00-17:00","测试重复的hospitalName",true);
         Integer id = addHospitalTest("瑞金医院"+ timestamp, "三甲", "嘉定区曹安公路1"+timestamp, new BigDecimal("30"),
-                new BigDecimal("120"), "200062", timestamp.toString().substring(0,7),
+                new BigDecimal("120"), "200062", timestamp.toString().substring(3,10),
                 "8:00-17:00", "测试重复的hospitalName", false);
         TestUnregisterHospital(id,false);
     }
