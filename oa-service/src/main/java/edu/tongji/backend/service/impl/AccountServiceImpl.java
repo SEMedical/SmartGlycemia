@@ -86,6 +86,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         }catch (Exception e){
             e.printStackTrace();
             System.err.println(e.getMessage());
+            throw e;
         }
         return;
     }
