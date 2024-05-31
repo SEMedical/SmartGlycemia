@@ -80,7 +80,7 @@ jobs:
       - name: Run User Service
         run: |
           echo "Starting task in foreground for 30 seconds..."
-          java -jar user-service/target/app.jar -Dserver.port=91 &
+          java -jar user-service/target/app.jar -Dserver.port=1025 &
           FG_PID=$!
           sleep 60
           echo "Moving task to background..."
