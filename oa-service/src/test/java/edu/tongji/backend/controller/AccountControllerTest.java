@@ -346,7 +346,7 @@ class AccountControllerTest {
 
         ResponseEntity<Response<String>> response = accountController.deleteAccount(doctorId);
 
-        Assertions.assertEquals("com.netflix.client.ClientException: Load balancer does not have available server for client: user-service",
+        Assertions.assertEquals("The doctor account 999 has been removed",
                 Objects.requireNonNull(response.getBody()).getMessage());
 //        Assertions.assertEquals("The doctor account "+ doctorId +" has been removed",
 //                Objects.requireNonNull(response.getBody()).getMessage());
