@@ -1,5 +1,5 @@
 server:
-  port: 81
+  port: 1025
 spring:
   config:
     location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
