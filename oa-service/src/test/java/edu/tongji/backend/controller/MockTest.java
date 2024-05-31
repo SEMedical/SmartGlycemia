@@ -77,6 +77,78 @@ public class MockTest {
         return temp;
     }
     @Test
+    void addDoctorBatch() throws Exception {
+        addDoctorTest(2,"32072120020908421","Ear,Nose,Throat","director","/data/0001.jpg","02165990001",true);
+        //OK
+        Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990001", false);
+        removeDoctorTest(i,false);
+
+    }
+    void removeDoctorTest(int userId,Boolean malicious) throws Exception {
+        String token="srtbm,glb15vx15vz0cs15v15v1";
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+        Map<String,String> maps=new HashMap<>();
+        maps.put("name","momo");
+        maps.put("id","0");
+        maps.put("role","admin");
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/oa/deleteAccount")
+                .param("doctor_id", String.valueOf(userId))
+                .header("authorization",token)
+                .content("application/text;charset=UTF-8")
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        );
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+        if(malicious)
+            result.andExpect(status().isBadRequest());
+        else
+            result.andExpect(status().isOk());
+    }
+    Integer addDoctorTest(int hospitalId,String idCard,String department,String title,String photoPath,String contact,Boolean malicious) throws Exception {
+        String token="srtbm,glb15vx15vz0cs15v15v1";
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+        Map<String,String> maps=new HashMap<>();
+        maps.put("name","momo");
+        maps.put("id","0");
+        maps.put("role","admin");
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/oa/addAccount")
+                .param("hospital_id", String.valueOf(hospitalId))
+                .param("id_card",idCard)
+                .param("department",department)
+                .param("title",title)
+                .param("photo_path",photoPath)
+                .param("contact",contact)
+                .header("authorization",token)
+                .content("application/text;charset=UTF-8")
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        );
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+
+        if(malicious)
+            result.andExpect(status().isBadRequest());
+        else
+            result.andExpect(status().isOk());
+
+        String contentAsString = result.andReturn().getResponse().getContentAsString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(contentAsString);
+        String message = jsonNode.get("message").toString();
+        if(!malicious) {
+            String response = jsonNode.get("response").toString();
+            response = removeFirstAndLastChar(response);
+            Integer i = Integer.valueOf(response);
+            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.OK.value());
+            return i;
+        }else{
+            assertEquals(message, "\"the length of ID must be 18 or 15\"");
+            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
+            return -1;
+        }
+    }
+    @Test
     void addHospitalBatch() throws Exception {
         //Repeated Hospital Name
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
