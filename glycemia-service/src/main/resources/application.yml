@@ -6,6 +6,11 @@ spring:
   jackson:
     default-property-inclusion: non-null
     #type: com.alibaba.druid.pool.DruidDataSource
+feign:
+  client:
+    config:
+      defaultTimeout: 600000
+      readTimeout: 600000
 mybatis-plus:
   mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml
   global-config:

@@ -5,6 +5,11 @@ spring:
     location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
   jackson:
     default-property-inclusion: non-null
+feign:
+  client:
+    config:
+      defaultTimeout: 600000
+      readTimeout: 600000
 mybatis-plus:
   mapper-locations: classpath:edu/tongji/backend/mapper/*Mapper.xml
   global-config:
