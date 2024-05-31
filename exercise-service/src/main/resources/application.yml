@@ -21,8 +21,4 @@ management:
   metrics:
     tags:
       application: jmx-exercise-service
-feign:
-  client:
-    config:
-      defaultTimeout: 600000
-      readTimeout: 600000
+
