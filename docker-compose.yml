@@ -3,7 +3,7 @@ services:
   user-service:
     build: ./user-service
     ports:
-      - "8722:8722"
+      #- "8722:8722"
       - "81:81"
     env_file:
       - ./web-variables.env
