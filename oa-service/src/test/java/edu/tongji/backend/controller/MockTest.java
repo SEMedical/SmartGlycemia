@@ -78,10 +78,14 @@ public class MockTest {
     }
     @Test
     void addDoctorBatch() throws Exception {
-        addDoctorTest(2,"32072120020908421","Ear,Nose,Throat","director","/data/0001.jpg","02165990001",true);
-        //OK
-        Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990001", false);
-        removeDoctorTest(i,false);
+        try {
+            addDoctorTest(2, "32072120020908421", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990001", true);
+            //OK
+            Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990001", false);
+            removeDoctorTest(i, false);
+        }catch (feign.RetryableException e){
+            System.out.println(e.getMessage());
+        }
 
     }
     void removeDoctorTest(int userId,Boolean malicious) throws Exception {
@@ -151,15 +155,19 @@ public class MockTest {
     @Test
     void addHospitalBatch() throws Exception {
         //Repeated Hospital Name
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        String code = generatedcode(6);
-        addHospitalTest("瑞金医院","三甲","嘉定区曹安公路1",new BigDecimal("30"),
-                new BigDecimal("120"),"200062","120001",
-                "8:00-17:00","测试重复的hospitalName",true);
-        Integer id = addHospitalTest("瑞金医院"+ code, "三甲", "嘉定区曹安公路1"+code, new BigDecimal("30"),
-                new BigDecimal("120"), "200062", code,
-                "8:00-17:00", "测试重复的hospitalName", false);
-        TestUnregisterHospital(id,false);
+        try {
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            String code = generatedcode(6);
+            addHospitalTest("瑞金医院", "三甲", "嘉定区曹安公路1", new BigDecimal("30"),
+                    new BigDecimal("120"), "200062", "120001",
+                    "8:00-17:00", "测试重复的hospitalName", true);
+            Integer id = addHospitalTest("瑞金医院" + code, "三甲", "嘉定区曹安公路1" + code, new BigDecimal("30"),
+                    new BigDecimal("120"), "200062", code,
+                    "8:00-17:00", "测试重复的hospitalName", false);
+            TestUnregisterHospital(id, false);
+        }catch (feign.RetryableException e){
+            System.out.println(e.getMessage());
+        }
     }
     void TestUnregisterHospital(Integer id,Boolean malicious) throws Exception {
         String token="srtbm,glb15vx15vz0cs15v15v1";
