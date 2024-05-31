@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -53,11 +54,12 @@ public class MockTest {
     @Test
     void addHospitalBatch() throws Exception {
         //Repeated Hospital Name
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         addHospitalTest("瑞金医院","三甲","嘉定区曹安公路1",new BigDecimal("30"),
                 new BigDecimal("120"),"200062","120001",
                 "8:00-17:00","测试重复的hospitalName",true);
-        Integer id = addHospitalTest("瑞金医院"+ LocalDateTime.now().toString(), "三甲", "嘉定区曹安公路1"+ LocalDateTime.now().toString(), new BigDecimal("30"),
-                new BigDecimal("120"), "200062", LocalDateTime.now().toString().substring(7,17),
+        Integer id = addHospitalTest("瑞金医院"+ timestamp, "三甲", "嘉定区曹安公路1"+timestamp, new BigDecimal("30"),
+                new BigDecimal("120"), "200062", timestamp.toString().substring(0,7),
                 "8:00-17:00", "测试重复的hospitalName", false);
         TestUnregisterHospital(id,false);
     }
