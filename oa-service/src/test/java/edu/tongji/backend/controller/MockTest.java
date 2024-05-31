@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import cn.hutool.captcha.generator.RandomGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
 import static org.junit.Assert.assertEquals;
@@ -51,15 +51,41 @@ public class MockTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
     }
+    private static List<Integer> getRandomNumber(int count) {
+        // 使用SET以此保证写入的数据不重复
+        List<Integer> set = new ArrayList<Integer>();
+        // 随机数
+        Random random = new Random();
+
+        while (set.size() < count) {
+            // nextInt返回一个伪随机数，它是取自此随机数生成器序列的、在 0（包括）
+            // 和指定值（不包括）之间均匀分布的 int 值。
+            set.add(random.nextInt(10));
+        }
+        return set;
+    }
+    private static String generatedcode(int count) {
+        List<Integer> set = getRandomNumber(count);
+        // 使用迭代器
+        Iterator<Integer> iterator = set.iterator();
+        // 临时记录数据
+        String temp = "";
+        while (iterator.hasNext()) {
+            temp += iterator.next();
+
+        }
+        return temp;
+    }
     @Test
     void addHospitalBatch() throws Exception {
         //Repeated Hospital Name
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String code = generatedcode(6);
         addHospitalTest("瑞金医院","三甲","嘉定区曹安公路1",new BigDecimal("30"),
                 new BigDecimal("120"),"200062","120001",
                 "8:00-17:00","测试重复的hospitalName",true);
-        Integer id = addHospitalTest("瑞金医院"+ timestamp, "三甲", "嘉定区曹安公路1"+timestamp, new BigDecimal("30"),
-                new BigDecimal("120"), "200062", timestamp.toString().substring(3,10),
+        Integer id = addHospitalTest("瑞金医院"+ code, "三甲", "嘉定区曹安公路1"+code, new BigDecimal("30"),
+                new BigDecimal("120"), "200062", code,
                 "8:00-17:00", "测试重复的hospitalName", false);
         TestUnregisterHospital(id,false);
     }
