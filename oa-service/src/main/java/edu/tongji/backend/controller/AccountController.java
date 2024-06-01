@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -86,7 +85,6 @@ public class AccountController {
      *
      *
      */
-    @PostMapping("/_addHospital")
     public ResponseEntity<Response<String>> addHospital(@RequestParam String hospital_name, @RequestParam String level,
                             @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
                             @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
@@ -159,7 +157,6 @@ public class AccountController {
      *
      *
      */
-    @PostMapping("/_removeHospital")
     public ResponseEntity<Response<String>> deleteHospital(@RequestParam("hospital_id") Integer hospital_id) {
 //        医生对医院有外键依赖
         try {
@@ -175,11 +172,11 @@ public class AccountController {
         log.info(msg);
         return new ResponseEntity<>(Response.success(null,msg),HttpStatus.OK);
     }
+
     @GetMapping("/getAccountList")
     public ResponseEntity<Response<List<DoctorInfoDTO>>> getAccountList2(){
         return new ResponseEntity<>(getAccountList(),HttpStatus.OK);
     }
-    @GetMapping("/_getAccountList")
     public Response<List<DoctorInfoDTO>> getAccountList() {
         List<DoctorInfoDTO> accountList=new ArrayList<>();
         try {
@@ -196,13 +193,6 @@ public class AccountController {
     UserClient2 userClient2;
     @Autowired
     HospitalMapper hospitalMapper;
-    @PostMapping("/addAccount")
-    public ResponseEntity<Response<String>> addAccount2(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
-                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
-            throws IOException, JSONException{
-        return addAccount(hospital_id,id_card,department,title,photo_path,
-                contact);
-    }
     /**
      * TODO:automatically incremental doctor id
      * <p>Description:the addAccount Method is used for the addition of the account for a doctor by adminisrator</p>
@@ -220,7 +210,14 @@ public class AccountController {
      *
      *
      */
-    @PostMapping("/_addAccount")
+    @PostMapping("/addAccount")
+    public ResponseEntity<Response<String>> addAccount2(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
+                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+            throws IOException, JSONException{
+        return addAccount(hospital_id,id_card,department,title,photo_path,
+                contact);
+    }
+
     public ResponseEntity<Response<String>> addAccount(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
             throws IOException, JSONException {
@@ -228,7 +225,12 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
         String addr;
         try {
-            File jsonFile = ResourceUtils.getFile("classpath:region.json");
+            File jsonFile;
+            try {
+                jsonFile= ResourceUtils.getFile("classpath:region.json");
+            }catch (FileNotFoundException e){
+                jsonFile=new File("/tmp/region.json");
+            }
             String json = FileUtils.readFileToString(jsonFile);
             com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(json);
             com.alibaba.fastjson.JSONObject codes = jsonObject.getJSONObject("code");
@@ -306,7 +308,6 @@ public class AccountController {
      * @since 2.2.0
      * @author <a href="https://github.com/rmEleven">rmEleven</a>
      */
-    @PostMapping("/_deleteAccount")
     public ResponseEntity<Response<String>> deleteAccount(@RequestParam int doctor_id) {
         try {
             accountService.deleteAccount(doctor_id);
