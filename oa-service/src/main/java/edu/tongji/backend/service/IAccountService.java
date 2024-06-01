@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface IAccountService {
     public List<DoctorInfoDTO> getAccountList();
-    public void addAccount(Doctor doctor, String contact,String address) throws NoSuchAlgorithmException;
+    public Integer addAccount(Doctor doctor, String contact, String address) throws NoSuchAlgorithmException;
     public void deleteAccount(int doctorId);
 
     Boolean repeatedIdCard(String idCard);

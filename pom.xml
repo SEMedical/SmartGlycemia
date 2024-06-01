@@ -9,12 +9,12 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <modules>
+        <module>oa-service</module>
         <module>user-service</module>
         <module>glycemia-service</module>
         <module>exercise-service</module>
         <module>common-api</module>
         <module>gateway</module>
-        <module>oa-service</module>
     </modules>
     <properties>
         <project.version>1.0</project.version>

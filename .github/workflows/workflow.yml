@@ -77,6 +77,19 @@ jobs:
             exercise-service/target/${{ env.JAR_NAME }}
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
+      - name: Run User Service
+        run: |
+          echo "Starting task in foreground for 30 seconds..."
+          java -jar user-service/target/app.jar &
+          FG_PID=$!
+          sleep 60
+          echo "Moving task to background..."
+          disown $FG_PID
+          echo "Continuing task in background for up to 20 minutes..."
+          timeout 15m wait $FG_PID || echo "Background task completed or timed out."
+        env:
+          NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
+          NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: Run tests
         run: mvn -B test jacoco:report
         env:

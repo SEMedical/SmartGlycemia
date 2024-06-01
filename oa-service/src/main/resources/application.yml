@@ -1,5 +1,5 @@
 server:
-  port: 84
+  port: 10084
 spring:
   config:
     location: http://${spring.cloud.nacos.server-addr}/nacos/v1/cs/configs?group=SECURITY&tenant=${spring.cloud.nacos.discovery.namespace}&dataId=security.xml
@@ -18,3 +18,9 @@ management:
   metrics:
     tags:
       application: jmx-oa-service
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 10000
+        read-timeout: 10000
