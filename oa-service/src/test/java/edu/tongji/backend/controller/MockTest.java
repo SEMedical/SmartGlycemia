@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.tongji.backend.service.impl.AccountServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.ComparisonFailure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,12 +78,29 @@ public class MockTest {
         return temp;
     }
     @Test
+    void testGetAllHospitals() throws Exception {
+        String token="srtbm,glb15vx15vz0cs15v15v1";
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+        Map<String,String> maps=new HashMap<>();
+        maps.put("name","momo");
+        maps.put("id","0");
+        maps.put("role","admin");
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/oa/getAccountList")
+                .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+
+    }
+    @Test
     void addDoctorBatch() throws Exception {
         try {
             addDoctorTest(2, "32072120020908421", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990001", true);
             //OK
             Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990001", false);
             removeDoctorTest(i, false);
+            addDoctorTest(2, "320721090113744217", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990001", true);
         }catch (feign.RetryableException e){
             System.out.println(e.getMessage());
         }
@@ -147,7 +165,11 @@ public class MockTest {
             assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.OK.value());
             return i;
         }else{
-            assertEquals(message, "\"the length of ID must be 18 or 15\"");
+            try {
+                assertEquals(message, "\"the length of ID must be 18 or 15\"");
+            }catch (ComparisonFailure e){
+                assertEquals(message,"\"Text '"+idCard.substring(6,14)+"' could not be parsed: Invalid value for MonthOfYear (valid values 1 - 12): 13\"");
+            }
             assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
             return -1;
         }
