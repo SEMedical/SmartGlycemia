@@ -32,6 +32,7 @@ import java.time.Period;
 import java.util.HashMap;
 import java.util.Map;
 
+import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -148,12 +149,12 @@ public class GlycemiaTest {
         UserDTO userDTO=new UserDTO(null,"小帅","1","patient");
         UserHolder.saveUser(userDTO);
         String token="rgbtsghnjbzsvjkv14f5154gscscczs5";
-        stringRedisTemplate.delete(token);
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
         Map<String,String> maps=new HashMap<>();
         maps.put("name","小帅");
         maps.put("role","patient");
         maps.put("userId","1");
-        stringRedisTemplate.opsForHash().putAll(token,maps);
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/glycemia/isExercise")
                 .param("type",type)
@@ -163,6 +164,7 @@ public class GlycemiaTest {
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(matcher);//Default:status().isOk()
         UserHolder.removeUser();
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
     }
     @Test
     public void WeeklyOrMonthlyDataSuites(){
