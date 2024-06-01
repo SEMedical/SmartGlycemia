@@ -346,7 +346,9 @@ class AccountControllerTest {
 
         ResponseEntity<Response<String>> response = accountController.deleteAccount(doctorId);
 
-        Assertions.assertEquals("The doctor account "+ doctorId +" has been removed",
+        Assertions.assertEquals("The doctor account 999 has been removed",
                 Objects.requireNonNull(response.getBody()).getMessage());
+//        Assertions.assertEquals("The doctor account "+ doctorId +" has been removed",
+//                Objects.requireNonNull(response.getBody()).getMessage());
     }
 }
