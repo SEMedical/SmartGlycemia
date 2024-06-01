@@ -1,5 +1,5 @@
 server:
-  port: 83
+  port: 10083
 spring:
   main:
     allow-bean-definition-overriding: true
@@ -21,4 +21,9 @@ management:
   metrics:
     tags:
       application: jmx-exercise-service
-
+feign:
+  client:
+    config:
+      default:
+        read-timeout: 10000
+        connect-timeout: 10000
