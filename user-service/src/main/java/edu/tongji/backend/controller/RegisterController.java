@@ -24,6 +24,14 @@ import java.security.NoSuchAlgorithmException;
 public class RegisterController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
+
+    /**
+     * @apiNote
+     * <li>the user can only unregister the account him/herself</li>
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v2.0.0">2.0.0</a>
+     * @return unregistration succeeded or not
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
     @PostMapping("/unregister")
     public ResponseEntity<Response<Boolean>> unregisterPatient(){
         UserDTO user= UserHolder.getUser();
@@ -31,6 +39,24 @@ public class RegisterController {
             return new ResponseEntity<>(Response.success(unregistered,"The unregisterPatient Function haven't been implemented yet"),
                     HttpStatus.OK);
     }
+
+    /**
+     * @apiNote
+     * <ol>
+     * <li>After 2024/1/7,register rules are updated!The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16</li>
+     * <li>After 2024/1/7,register rules are updated!The phone number must be 11 digits and it's the valid phone number in China mainland.</li>
+     * <li>After 2024/1/7,register rules are updated!The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.</li>
+     * </ol>
+     * @param info consists of name,password,contact,gender,age,among which the password and contact is required.
+     * @return <p>register as a patient succeeds or not</p>
+     * <p>the failure cause:
+     * <ol>
+     *     <li>don't obey the rules above</li>
+     *     <li>the contact has been registered</li>
+     * </ol>
+     * </p>
+     * @throws NoSuchAlgorithmException
+     */
     @PostMapping("/patient")  //对应的api路径
     public ResponseEntity<Response<Boolean>> registerPatient(@RequestBody RegisterDTO info) throws NoSuchAlgorithmException {
 //        log.info(info);
@@ -65,6 +91,25 @@ public class RegisterController {
         }
         return new ResponseEntity<>(Response.success(true, "注册成功"),HttpStatus.OK);
     }
+
+    /**
+     *
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @deprecated please refer to OA Service:<em>/api/oa/addDoctor</em>
+     * @see edu.tongji.backend.controller.RegisterController#registerPatient(RegisterDTO)
+     * @author <a href="https://github.com/UltraTempest10">UltraTempest10</a>
+     */
+    @PostMapping("/doctor")  //对应的api路径
+    public ResponseEntity<Response<Boolean>> registerDoctor(@RequestBody RegisterDTO info){
+        return new ResponseEntity<>(Response.fail("The api has been out of date,please refer to the OA Service"),HttpStatus.MOVED_PERMANENTLY);
+    }
+
+    /**
+     * @apiNote Only can be called by OA Service
+     * @param user consists of user id,name,address,contact,password,role
+     * @since 2.2.0
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
+     */
     @PostMapping("/addUser")
     public void addUser(@RequestBody User user) {
         userService.addUser(user);
@@ -73,7 +118,7 @@ public class RegisterController {
      *
      * <p>Description:remove a user ,<b>only can be called by oa service</b></p>
      * @since 2.2.0
-     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
      */
     @PostMapping ("/rmUser")
     public void rmUser(@RequestParam("userId") Integer userId){

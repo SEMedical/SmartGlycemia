@@ -3,13 +3,10 @@ package edu.tongji.backend.controller;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import edu.tongji.backend.dto.LoginFormDTO;
-import edu.tongji.backend.dto.Result;
-import edu.tongji.backend.dto.UserDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.UserMapper;
 import edu.tongji.backend.util.Response;
-import edu.tongji.backend.dto.LoginDTO;
 import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +31,30 @@ public class LoginController {
     IUserService userService;
     @Autowired
     UserMapper userMapper;
+
+    /**
+     *
+     * @param loginForm
+     *          contact-Phone number,must adhere to the format that 1[3-9]xxxxxxxxx,the length is fixed and 11
+     *          code-captcha code,which consists of 6 digits and if the first digit is 0,it can't be ommitted.
+     *          password- unused in this api
+     * @param session unused
+     * @apiNote
+     * <ul>
+     * <li>User have 5 chances to login before successfully login,if successfully log in,the retries time limit will be reset to 5</li>
+     * <li>If failed more than 5 times consecutively,the account will be frozen for 12 hours</li>
+     * </ul>
+     * @return ResponseEntity which consists of LoginDTO,in which there're
+     * <ol>
+     * <li>token(JWT)</li>
+     * <li>Role(Admin/Doctor/Patient),</li>
+     * <li>Name</li>
+     * <li>Captcha</li>
+     * </ol>
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.2.0">1.2.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @see edu.tongji.backend.controller.LoginController#sendCaptcha(String, HttpSession)
+     */
     @PostMapping("/phone")
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
         if (loginForm.getContact() == null || loginForm.getCode() == null)  //如果请求中的内容不完整
@@ -54,12 +75,29 @@ public class LoginController {
         }
         return userService.loginByPhone(loginForm,session);
     }
+
+    /**
+     *
+     * @param contact the requirement is the same as above function loginByPhone
+     * @param session
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.2.0">1.2.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @return captcha code,which consists of 6 digits,and the expiration is 1 minute.
+     * @see edu.tongji.backend.controller.LoginController#loginByPhone(LoginFormDTO, HttpSession) 
+     */
     @RequestMapping("/captcha")
     @SentinelResource("captcha")
     public ResponseEntity<Result> sendCaptcha(@RequestBody String contact, HttpSession session){
 
         return userService.sendCode(contact,session);
     }
+
+    /**
+     * @apiNote Only can be called by OA Service
+     * @return the maximum ids of user so far.
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v2.0.0">2.0.0</a>
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
+     */
     @GetMapping("/getMaxUserId")
     public Integer getMaxUserId(){
         return userMapper.getMaxUserId();
@@ -68,8 +106,8 @@ public class LoginController {
      * NOTE:only can be called by oa service
      * <p>Description:check whether the contact is available ,</p>
      * @return http status code along with a bool response:<b>true</b> for unavailability,vice versa.
-     * @since 2.2.0
-     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v2.0.0">2.0.0</a>
+     * @author <a href="https://github.com/rmEleven">rmEleven</a>
      */
     @GetMapping("/repeatedContact")
     public Response<Boolean> repeatedContact(@RequestParam("contact") String contact){
@@ -90,6 +128,25 @@ public class LoginController {
     }
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * @apiNote
+     * <ul>
+     * <li>it's by password to login,not captcha</li>
+     * <li>During frozen period,the user can't login.</li>
+     * </ul>
+     * @param user must consists of contact and password
+     *  contact 
+     *  password- must adhere to the principle that there must be at least one capital,one small letter,one special character and one digit.
+     *             The length must be between 8 and 16.
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @since  <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @author <a href="https://github.com/a-little-dust">a-little-dust</a>,<a href="https://github.com/VictorHuu">Victor Hu</a>
+     * ,<a href="https://github.com/UltraTempest10">UltraTempest10</a>
+     * @see edu.tongji.backend.controller.LoginController#loginByPhone(LoginFormDTO, HttpSession) 
+     * @see edu.tongji.backend.controller.RegisterController#registerPatient(RegisterDTO) 
+     */
     @PostMapping("/pass")//对应的api路径
     public ResponseEntity<Response<LoginDTO>> login(@RequestBody User user) throws NoSuchAlgorithmException  //把请求中的内容映射到user
     {
