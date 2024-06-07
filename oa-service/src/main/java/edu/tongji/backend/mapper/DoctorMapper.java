@@ -12,7 +12,7 @@ import java.util.List;
 
 @Mapper
 public interface DoctorMapper extends BaseMapper<Doctor> {
-    @Select("SELECT d.doctor_id, d.hospital_id, d.id_card, d.department, d.title, d.photo_path, u.address, u.name, u.contact, u.height " +
+    @Select("SELECT d.doctor_id, d.id_card, d.department, d.title, d.photo_path,, u.name, u.contact, d.state " +
             "FROM doctor d " +
             "JOIN user u ON d.doctor_id = u.user_id;")
     List<DoctorInfoDTO> getAccountList();
