@@ -48,7 +48,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     }
     static Integer doctorId;
     @Override
-    public Integer addAccount(Doctor doctor, String contact, String address) throws NoSuchAlgorithmException {
+    public Integer addAccount(Doctor doctor, String contact, String address, String name) throws NoSuchAlgorithmException {
 //        加拦截器后：请求头保存管理员useId，身份是admin
 //        错误处理：log4j 接口 sl4j 实现，低耦合
         try {
@@ -70,7 +70,7 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
                 defaultPassword=convertToSHA256(idCard.substring(idCard.length() - 6));
         }
 
-        User user = new User(doctorId, address, "Alice", contact, defaultPassword, "doctor");
+        User user = new User(doctorId, address, name, contact, defaultPassword, "doctor");
         userClient2.addUser(user);
         doctorMapper.insert(doctor);
         return doctorId;

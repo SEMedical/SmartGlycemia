@@ -194,9 +194,8 @@ public class AccountController {
     @Autowired
     HospitalMapper hospitalMapper;
     /**
-     * TODO:automatically incremental doctor id
      * <p>Description:the addAccount Method is used for the addition of the account for a doctor by adminisrator</p>
-     * @param photo_path which must be a valid linux relative path,usually under an absolute path /data/www/
+     * @param photoPath which must be a valid linux relative path,usually under an absolute path /data/www/
      * @return 200 for normal functioning,404/400 for client error ,usually paramter error
      * @throws IllegalArgumentException check the validity of IDCard,the requirements are as follows:
      * <ol>
@@ -211,17 +210,16 @@ public class AccountController {
      *
      */
     @PostMapping("/addAccount")
-    public ResponseEntity<Response<String>> addAccount2(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
-                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount2(@RequestParam String name, @RequestParam String idCard, @RequestParam String department,
+                                                        @RequestParam String title, @RequestParam String contact, @RequestParam String photoPath)
             throws IOException, JSONException{
-        return addAccount(hospital_id,id_card,department,title,photo_path,
-                contact);
+        return addAccount(name, idCard, department, title, contact, photoPath);
     }
 
-    public ResponseEntity<Response<String>> addAccount(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
-                                                       @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount(@RequestParam String name, @RequestParam String idCard, @RequestParam String department,
+                                                       @RequestParam String title, @RequestParam String contact, @RequestParam String photoPath)
             throws IOException, JSONException {
-        if(id_card.length()!=18&& id_card.length()!=15)
+        if(idCard.length()!=18&& idCard.length()!=15)
             return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
         String addr;
         try {
@@ -234,7 +232,7 @@ public class AccountController {
             String json = FileUtils.readFileToString(jsonFile);
             com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(json);
             com.alibaba.fastjson.JSONObject codes = jsonObject.getJSONObject("code");
-            String region_candidate=id_card.substring(0,6);
+            String region_candidate=idCard.substring(0,6);
             addr= String.valueOf(codes.get(region_candidate));
             //Check 0~6
             if(addr.isEmpty()||addr.equals("null")) {
@@ -245,21 +243,21 @@ public class AccountController {
             //Check 7~14
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                LocalDate parsed = LocalDate.parse(id_card.substring(6, 14), formatter);
+                LocalDate parsed = LocalDate.parse(idCard.substring(6, 14), formatter);
                 if(parsed.isAfter(LocalDate.now()))
                     throw new DateTimeException("The date must reside before today!");
                 Period period = Period.between(parsed, LocalDate.now());
             }catch (Exception e){
 
                 if(!(e instanceof DateTimeException)) {
-                    String msg = id_card.substring(6, 14) + " doesn't adhere to the format of a valid birth date";
+                    String msg = idCard.substring(6, 14) + " doesn't adhere to the format of a valid birth date";
                     log.error(msg);
                     throw new IllegalArgumentException(msg);
                 }else{
                     throw e;
                 }
             }
-            boolean validate = IDCardValidator.validate(id_card);
+            boolean validate = IDCardValidator.validate(idCard);
             if(!validate){
                 throw new IllegalArgumentException("The ID is invalid though the region code and birth date is valid!");
             }
@@ -267,14 +265,14 @@ public class AccountController {
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        Doctor doctor = new Doctor(null, hospital_id, id_card, department, title, photo_path);
+        Doctor doctor = new Doctor(null, hospital_id, idCard, department, title, photoPath, "正常");
         Boolean res=userClient2.repeatedContact(contact).getResponse();
         if (res) {  // 判断contact是否已经存在
             String msg="repeated contact is not allowed";
             log.error(msg);
             return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
         }
-        Boolean res2=accountService.repeatedIdCard(id_card);
+        Boolean res2=accountService.repeatedIdCard(idCard);
         if (res2) {  // 判断id card是否已经存在
             String msg="repeated ID card is not allowed";
             log.error(msg);
@@ -289,7 +287,7 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(msg),HttpStatus.NOT_FOUND);
         }
         try {
-            Integer id = accountService.addAccount(doctor, contact, addr);
+            Integer id = accountService.addAccount(doctor, contact, addr, name);
             return new ResponseEntity<>(Response.success(id.toString(),"The account has been added successfully!"), HttpStatus.OK);
         }catch (Exception e){
             log.error(e.getMessage());

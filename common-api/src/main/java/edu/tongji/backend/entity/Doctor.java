@@ -17,4 +17,5 @@ public class Doctor {
     private String department;
     private String title;
     private String photoPath;
+    private String state;
 }
