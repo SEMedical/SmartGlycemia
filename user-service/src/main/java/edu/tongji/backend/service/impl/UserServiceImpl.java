@@ -336,4 +336,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void rmUser(Integer userId) {
         userMapper.deleteById(userId);
     }
+
+    @Override
+    public Boolean registerAdmin(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.select("user_id")
+                .eq("contact", contact);
+        User result = userMapper.selectOne(wrapper);
+        if (result != null) {
+            return false;
+        }
+        String hexString=convertToSHA256(password);
+        User user = new User();
+        user.setName(name);
+        user.setContact(contact);
+        user.setPassword(hexString);
+        user.setRole("patient");
+        synchronized (GlobalLock.UserIDLock) {
+            user.setUserId(userMapper.getMaxUserId() + 1);
+        }
+        int userNum = userMapper.insert(user);
+        return userNum == 1;
+    }
 }

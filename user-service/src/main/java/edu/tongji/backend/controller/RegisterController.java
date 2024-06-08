@@ -8,6 +8,7 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,10 @@ import edu.tongji.backend.util.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
+
+import static edu.tongji.backend.util.RedisConstants.ADMIN_PERM_CODE;
 
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -24,7 +28,21 @@ import java.security.NoSuchAlgorithmException;
 public class RegisterController {
     @Autowired  //自动装填接口的实现类
     IUserService userService;
-
+    @PostMapping("/refresh")
+    public ResponseEntity<Response<Boolean>> BrandNewUserProfile(@RequestBody User user){
+//        UserDTO user1 = UserHolder.getUser();
+//        user1.getUserId()
+        if(user.getUserId()==null||user.getName()==null||user.getContact()==null){
+            return new ResponseEntity<>(Response.fail("user id,name and contact should be all non-empty!"),HttpStatus.BAD_REQUEST);
+        }
+        User oldUser = userService.getById(user.getUserId());
+        if(oldUser==null)
+            return new ResponseEntity<>(Response.fail("The user id for administrator is invalid"),HttpStatus.NOT_FOUND);
+        oldUser.setContact(user.getContact());
+        oldUser.setName(user.getName());
+        Boolean result = userService.updateById(oldUser);
+        return new ResponseEntity<>(Response.success(result,"The user "+user.getUserId()+"'s profile has been updated successfully"),HttpStatus.OK);
+    }
     /**
      * @apiNote
      * <li>the user can only unregister the account him/herself</li>
@@ -39,6 +57,7 @@ public class RegisterController {
             return new ResponseEntity<>(Response.success(unregistered,"The unregisterPatient Function haven't been implemented yet"),
                     HttpStatus.OK);
     }
+
 
     /**
      * @apiNote
@@ -124,5 +143,8 @@ public class RegisterController {
     public void rmUser(@RequestParam("userId") Integer userId){
         userService.rmUser(userId);
     }
-
+    @PostMapping ("/registerHelper")
+    public Boolean registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException {
+        return userService.registerAdmin(registerDTO.getName(),registerDTO.getPassword(),registerDTO.getContact(),registerDTO.getGender(),registerDTO.getAge());
+    }
 }

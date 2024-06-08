@@ -19,19 +19,22 @@ public class MvcConfig implements WebMvcConfigurer {
         //Admin Login
         registry.addInterceptor(new AdminInterceptor())
                 .excludePathPatterns("/api/login/*","/api/register/*","/api/interaction/*","/api/health/*","/api/login/sign/*",
-                        "/api/glycemia/*","/api/exercise/*","/api/sports/*","/api/oa/_*","/api/login/getMaxUserId")
+                        "/api/glycemia/*","/api/exercise/*","/api/sports/*","/api/oa/_*","/api/login/getMaxUserId","/api/oa/register",
+                        "/api/oa/GenInviteCode","/api/oa/editAccount","/api/register/refresh")
                 .order(1);
         //Login
         registry.addInterceptor(new LoginInterceptor())
                 .excludePathPatterns("/error","/api/login/captcha","/api/login/phone","/api/register/doctor",
                 "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
-                "/api/login/repeatedContact","/api/login/getMaxUserId")
+                "/api/login/repeatedContact","/api/login/getMaxUserId","/api/oa/register","/api/oa/GenInviteCode",
+                        "/api/oa/editAccount","/api/register/refresh")
                 .order(1);
         //Token Refresh
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).
                 excludePathPatterns("/error","/api/login/captcha","/api/login/phone","/api/register/doctor",
                         "/api/register/patient","/api/login/pass","/api/register/addUser","/api/register/rmUser",
-                        "/api/login/repeatedContact","/api/login/getMaxUserId")
+                        "/api/login/repeatedContact","/api/login/getMaxUserId","/api/oa/register","/api/oa/GenInviteCode",
+                        "/api/oa/editAccount","/api/register/refresh")
                 .order(0);
     }
 }

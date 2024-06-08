@@ -1,11 +1,13 @@
 package edu.tongji.backend.controller;
 
+import cn.hutool.captcha.generator.RandomGenerator;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.netflix.ribbon.proxy.annotation.Http;
 import edu.tongji.backend.clients.UserClient2;
 import edu.tongji.backend.dto.DoctorInfoDTO;
+import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.entity.Doctor;
 import edu.tongji.backend.entity.Hospital;
@@ -21,16 +23,19 @@ import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.rmi.server.ExportException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -40,8 +45,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static edu.tongji.backend.util.RedisConstants.ADMIN_PERM_CODE;
+import static edu.tongji.backend.util.RedisConstants.ADMIN_PERM_CODE_TIMEOUT;
 
 @Slf4j
 @RestController
@@ -318,5 +327,65 @@ public class AccountController {
         String msg="The doctor account "+doctor_id+" has been removed";
         log.info(msg);
         return new ResponseEntity<>(Response.success(null,msg),HttpStatus.OK);
+    }
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
+    @PostMapping("/GenInviteCode")
+    public ResponseEntity<Response<String>> GenerateInvitationCode(@RequestParam String hospitalId){
+        RandomGenerator randomGenerator = new RandomGenerator(40);
+        String substring = randomGenerator.generate().substring(0, 25);
+        stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId);
+        stringRedisTemplate.expire(ADMIN_PERM_CODE + substring,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
+        return new ResponseEntity<>(Response.success(substring,"The Invitation Code has been generated successfully!"), HttpStatus.OK);
+    }
+    @PostMapping("/editAccount")
+    public ResponseEntity<Response<Boolean>> editAccount(@RequestParam Integer doctorId,@RequestParam String name,
+                                                         @RequestParam String idCard,@RequestParam String department,
+                                                         @RequestParam String title,@RequestParam String contact,
+                                                         @RequestParam String photoPath,@RequestParam String state){
+        User user=new User(doctorId,null,contact,name,null,null);
+        userClient2.BrandNewUserProfile(user);
+        return new ResponseEntity<>(Response.fail("Not implemented"),HttpStatus.NOT_IMPLEMENTED);
+    }
+    @PostMapping("/register")  //对应的api路径
+    public ResponseEntity<Response<Boolean>> registerAdmin(@RequestParam String inviteCode,@RequestParam String name,
+                                                           @RequestParam String contact,@RequestParam String password) throws NoSuchAlgorithmException {
+        RegisterDTO info=new RegisterDTO(name,password,contact,null,null);
+        String hospitalId = stringRedisTemplate.opsForValue().get(ADMIN_PERM_CODE + inviteCode);
+        if(hospitalId==null){
+            return new ResponseEntity<>(Response.fail("邀请码已被使用或无效验证码"), HttpStatus.IM_USED);
+        }else{
+            stringRedisTemplate.delete(ADMIN_PERM_CODE + inviteCode);
+            if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
+            {
+                return new ResponseEntity<>(Response.fail("手机号或密码为空"),HttpStatus.BAD_REQUEST);  //返回错误信息
+            }
+            //The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16.
+            if (!info.getPassword().matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,16}$")) {
+                return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!" +
+                        "The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16"),
+                        HttpStatus.BAD_REQUEST);
+            }
+            //The phone number must be 11 digits and it's the valid phone number in China mainland.
+            if (!info.getContact().matches("^[1][3,4,5,7,8][0-9]{9}$")) {
+                return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!"+
+                        "The phone number must be 11 digits and it's the valid phone number in China mainland."),
+                        HttpStatus.BAD_REQUEST);
+            }
+            //The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.
+            if (info.getName()==null||(!info.getName().matches("^[\\u4e00-\\u9fa5]{2,15}$") && !info.getName().matches("^[a-zA-Z]{2,50}$"))) {
+                return new ResponseEntity<>(Response.fail("After 2024/1/7,register rules are updated!"+
+                        "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters."),
+                        HttpStatus.BAD_REQUEST);
+            }
+            log.info(info.toString());
+
+            Boolean result = userClient2.registerHelper(info);  //调用接口的register函数
+            if (!result)  //如果返回的result为false
+            {
+                return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.BAD_REQUEST);  //返回错误信息
+            }
+            return new ResponseEntity<>(Response.success(true, "管理员注册成功"),HttpStatus.OK);
+        }
     }
 }
