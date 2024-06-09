@@ -122,7 +122,7 @@ public class AccountController {
                 throw new IllegalArgumentException("The zipcode(CN) must contain 6 digits!");
             }
         }catch (IllegalArgumentException e){
-            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.OK);
         }
         try {
             Integer id = hospitalService.addHospital(hospital);
@@ -132,9 +132,9 @@ public class AccountController {
         }catch (Exception e){
             log.error(e.getMessage());
             if(e instanceof SQLIntegrityConstraintViolationException)
-                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.CONFLICT);
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
             else
-                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
     }
 
@@ -172,9 +172,9 @@ public class AccountController {
         }catch (Exception e){
             log.error(e.getMessage());
             if(e instanceof NoSuchElementException){
-                return new ResponseEntity<>(Response.success(null,e.getMessage()),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(Response.success(null,e.getMessage()),HttpStatus.OK);
             }else
-                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
         String msg="The hospital"+hospital_id+" has been removed successfully!";
         log.info(msg);
@@ -230,7 +230,7 @@ public class AccountController {
                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
             throws IOException, JSONException {
         if(id_card.length()!=18&& id_card.length()!=15)
-            return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.OK);
         String addr;
         try {
             File jsonFile;
@@ -248,7 +248,7 @@ public class AccountController {
             if(addr.isEmpty()||addr.equals("null")) {
                 String msg="There's no region code"+region_candidate;
                 log.error(msg);
-                return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(Response.fail(msg),HttpStatus.OK);
             }
             //Check 7~14
             try {
@@ -273,20 +273,20 @@ public class AccountController {
             }
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.OK);
         }
         Doctor doctor = new Doctor(null, hospital_id, id_card, department, title, photo_path);
         Boolean res=userClient2.repeatedContact(contact).getResponse();
         if (res) {  // 判断contact是否已经存在
             String msg="repeated contact is not allowed";
             log.error(msg);
-            return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(msg), HttpStatus.OK);
         }
         Boolean res2=accountService.repeatedIdCard(id_card);
         if (res2) {  // 判断id card是否已经存在
             String msg="repeated ID card is not allowed";
             log.error(msg);
-            return new ResponseEntity<>(Response.fail(msg), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(msg), HttpStatus.OK);
         }
         System.out.println(doctor.getHospitalId());
         QueryWrapper<Hospital> wrapper = new QueryWrapper<>();
@@ -294,14 +294,14 @@ public class AccountController {
         Hospital result = hospitalMapper.selectOne(wrapper);
         if (result == null) {  // hospital_id不存在
             String msg="hospital does not exist";
-            return new ResponseEntity<>(Response.fail(msg),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Response.fail(msg),HttpStatus.OK);
         }
         try {
             Integer id = accountService.addAccount(doctor, contact, addr);
             return new ResponseEntity<>(Response.success(id.toString(),"The account has been added successfully!"), HttpStatus.OK);
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
     }
     @DeleteMapping("/deleteAccount")
@@ -321,7 +321,7 @@ public class AccountController {
             accountService.deleteAccount(doctor_id);
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
         String msg="The doctor account "+doctor_id+" has been removed";
         log.info(msg);
@@ -332,10 +332,10 @@ public class AccountController {
     @PostMapping("/GenInviteCode")
     public ResponseEntity<Response<String>> GenerateInvitationCode(@RequestParam String hospitalId){
         if(hospitalId==null||hospitalId.length()==0||hospitalId.equals("")){
-            return new ResponseEntity<>(Response.fail("The Hospital Code can't be empty"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail("The Hospital Code can't be empty"), HttpStatus.OK);
         }
         if(hospitalMapper.havaAdministrator(hospitalId)!=null){
-            return new ResponseEntity<>(Response.fail("The hospital has administrator already!"),HttpStatus.CONFLICT);
+            return new ResponseEntity<>(Response.fail("The hospital has administrator already!"),HttpStatus.OK);
         }
         RandomGenerator randomGenerator = new RandomGenerator(40);
         String substring = randomGenerator.generate().substring(0, 25);
@@ -347,7 +347,7 @@ public class AccountController {
     public ResponseEntity<Response<Boolean>> editAccount(@RequestBody DoctorEditDTO doctoredit){
         String idCard=doctoredit.getIdCard();
         if(idCard.length()!=18&& idCard.length()!=15)
-            return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.OK);
         String addr;
         try {
             File jsonFile;
@@ -365,7 +365,7 @@ public class AccountController {
             if(addr.isEmpty()||addr.equals("null")) {
                 String msg="There's no region code"+region_candidate;
                 log.error(msg);
-                return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(Response.fail(msg),HttpStatus.OK);
             }
             //Check 7~14
             try {
@@ -390,23 +390,23 @@ public class AccountController {
             }
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.OK);
         }
         try {
             Doctor doctor = new Doctor(doctoredit.getDoctorId(), 0, idCard, doctoredit.getDepartment(),doctoredit.getTitle(), doctoredit.getPhotoPath());
             accountService.updateAccount(doctor);
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.OK);
         }
         try {
             User user = new User(doctoredit.getDoctorId(), null, doctoredit.getName(),doctoredit.getContact(),  null, null);
             userClient2.BrandNewUserProfile(user);
         }catch (Exception e){
             log.error(e.getMessage());
-            return new ResponseEntity<>(Response.fail("Error encountered when updating the basic profile for the doctor"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail("Error encountered when updating the basic profile for the doctor"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(Response.success(true,"The profile of doctor "+doctoredit.getDoctorId()+" has been updated!"),HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<>(Response.success(true,"The profile of doctor "+doctoredit.getDoctorId()+" has been updated!"),HttpStatus.OK);
     }
     @PostMapping("/register")  //对应的api路径
     public ResponseEntity<Response<Boolean>> registerAdmin(@RequestParam String inviteCode,@RequestParam String name,
@@ -414,37 +414,37 @@ public class AccountController {
         RegisterDTO info=new RegisterDTO(name,password,contact,null,null);
         String hospitalId = stringRedisTemplate.opsForValue().get(ADMIN_PERM_CODE + inviteCode);
         if(hospitalId==null){
-            return new ResponseEntity<>(Response.fail("邀请码已被使用或无效验证码"), HttpStatus.IM_USED);
+            return new ResponseEntity<>(Response.fail("邀请码已被使用或无效验证码"), HttpStatus.OK);
         }else{
             stringRedisTemplate.delete(ADMIN_PERM_CODE + inviteCode);
             if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
             {
-                return new ResponseEntity<>(Response.fail("手机号或密码为空"),HttpStatus.BAD_REQUEST);  //返回错误信息
+                return new ResponseEntity<>(Response.fail("手机号或密码为空"),HttpStatus.OK);
             }
             //The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16.
             if (!info.getPassword().matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,16}$")) {
                 return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!" +
                         "The password must contain at least one digit, one lowercase, one uppercase and one special character,the length should be between 8 and 16"),
-                        HttpStatus.BAD_REQUEST);
+                        HttpStatus.OK);
             }
             //The phone number must be 11 digits and it's the valid phone number in China mainland.
             if (!info.getContact().matches("^[1][3,4,5,7,8][0-9]{9}$")) {
                 return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!"+
                         "The phone number must be 11 digits and it's the valid phone number in China mainland."),
-                        HttpStatus.BAD_REQUEST);
+                        HttpStatus.OK);
             }
             //The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.
             if (info.getName()==null||(!info.getName().matches("^[\\u4e00-\\u9fa5]{2,15}$") && !info.getName().matches("^[a-zA-Z]{2,50}$"))) {
                 return new ResponseEntity<>(Response.fail("After 2024/1/7,register rules are updated!"+
                         "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters."),
-                        HttpStatus.BAD_REQUEST);
+                        HttpStatus.OK);
             }
             log.info(info.toString());
 
             Integer result = userClient2.registerHelper(info);  //调用接口的register函数
             if (result==-1)  //如果返回的result为false
             {
-                return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.BAD_REQUEST);  //返回错误信息
+                return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.OK);
             }
             hospitalMapper.setAdministrator(hospitalId,result.toString());
             return new ResponseEntity<>(Response.success(true, "管理员注册成功"),HttpStatus.OK);
