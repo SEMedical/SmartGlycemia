@@ -42,8 +42,9 @@ public class AdminController {
         return new ResponseEntity<>(Response.success(admin,"The information of the adminstrator has been returnded"), HttpStatus.OK);
     }
     @PutMapping("/editAdminInfo")
-    ResponseEntity<Response<Boolean>> updateAdminInfo(AdminDTO admin){
+    ResponseEntity<Response<Boolean>> updateAdminInfo(@RequestParam String name,@RequestParam String contact){
         try {
+            AdminDTO admin=new AdminDTO(null,name,contact);
             admin.setAdminId(UserHolder.getUser().getUserId());
             Boolean result = userClient2.updateAdminInfo(admin);
             UserDTO user = UserHolder.getUser();
