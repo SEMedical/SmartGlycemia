@@ -6,9 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.netflix.ribbon.proxy.annotation.Http;
 import edu.tongji.backend.clients.UserClient2;
-import edu.tongji.backend.dto.DoctorInfoDTO;
-import edu.tongji.backend.dto.RegisterDTO;
-import edu.tongji.backend.dto.UserDTO;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.entity.Doctor;
 import edu.tongji.backend.entity.Hospital;
 import edu.tongji.backend.entity.User;
@@ -206,7 +204,7 @@ public class AccountController {
     /**
      * TODO:automatically incremental doctor id
      * <p>Description:the addAccount Method is used for the addition of the account for a doctor by adminisrator</p>
-     * @param photo_path which must be a valid linux relative path,usually under an absolute path /data/www/
+     * @param doctor which must be a valid linux relative path,usually under an absolute path /data/www/
      * @return 200 for normal functioning,404/400 for client error ,usually paramter error
      * @throws IllegalArgumentException check the validity of IDCard,the requirements are as follows:
      * <ol>
@@ -221,11 +219,11 @@ public class AccountController {
      *
      */
     @PostMapping("/addAccount")
-    public ResponseEntity<Response<String>> addAccount2(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
-                                                        @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount2(@RequestBody DoctorDTO doctor)
             throws IOException, JSONException{
-        return addAccount(hospital_id,id_card,department,title,photo_path,
-                contact);
+        return addAccount(doctor.getHospital_id(), doctor.getId_card(), doctor.getDepartment(),
+                doctor.getTitle(),doctor.getPhoto_path(),
+                doctor.getContact());
     }
 
     public ResponseEntity<Response<String>> addAccount(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
@@ -346,10 +344,8 @@ public class AccountController {
         return new ResponseEntity<>(Response.success(substring,"The Invitation Code has been generated successfully!"), HttpStatus.OK);
     }
     @PutMapping("/editAccount")
-    public ResponseEntity<Response<Boolean>> editAccount(@RequestParam Integer doctorId,@RequestParam String name,
-                                                         @RequestParam String idCard,@RequestParam String department,
-                                                         @RequestParam String title,@RequestParam String contact,
-                                                         @RequestParam String photoPath,@RequestParam String state){
+    public ResponseEntity<Response<Boolean>> editAccount(@RequestBody DoctorEditDTO doctoredit){
+        String idCard=doctoredit.getIdCard();
         if(idCard.length()!=18&& idCard.length()!=15)
             return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
         String addr;
@@ -397,20 +393,20 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
         try {
-            Doctor doctor = new Doctor(doctorId, 0, idCard, department, title, photoPath);
+            Doctor doctor = new Doctor(doctoredit.getDoctorId(), 0, idCard, doctoredit.getDepartment(),doctoredit.getTitle(), doctoredit.getPhotoPath());
             accountService.updateAccount(doctor);
         }catch (Exception e){
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
         try {
-            User user = new User(doctorId, null, name,contact,  null, null);
+            User user = new User(doctoredit.getDoctorId(), null, doctoredit.getName(),doctoredit.getContact(),  null, null);
             userClient2.BrandNewUserProfile(user);
         }catch (Exception e){
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail("Error encountered when updating the basic profile for the doctor"), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(Response.success(true,"The profile of doctor "+doctorId+" has been updated!"),HttpStatus.NOT_IMPLEMENTED);
+        return new ResponseEntity<>(Response.success(true,"The profile of doctor "+doctoredit.getDoctorId()+" has been updated!"),HttpStatus.NOT_IMPLEMENTED);
     }
     @PostMapping("/register")  //对应的api路径
     public ResponseEntity<Response<Boolean>> registerAdmin(@RequestParam String inviteCode,@RequestParam String name,
