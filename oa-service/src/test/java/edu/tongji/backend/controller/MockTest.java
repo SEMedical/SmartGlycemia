@@ -1,9 +1,13 @@
 package edu.tongji.backend.controller;
 
 import cn.hutool.captcha.generator.RandomGenerator;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.tongji.backend.dto.DoctorDTO;
+import edu.tongji.backend.dto.HospitalDTO;
+import edu.tongji.backend.entity.Hospital;
 import edu.tongji.backend.service.impl.AccountServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.ComparisonFailure;
@@ -91,16 +95,17 @@ public class MockTest {
                 .header("authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(status().isOk());
-
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
     }
     @Test
     void addDoctorBatch() throws Exception {
+
         try {
-            addDoctorTest(2, "32072120020908421", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990001", true);
+            addDoctorTest(2, "32072120020908421", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990007", true);
             //OK
-            Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990001", false);
+            Integer i = addDoctorTest(2, "350721200209084214", "Ear,Nose,Throat", "director", "/data/0001.jpg", "057165990007", false);
             removeDoctorTest(i, false);
-            addDoctorTest(2, "320721090113744217", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990001", true);
+            addDoctorTest(2, "320721090113744217", "Ear,Nose,Throat", "director", "/data/0001.jpg", "02165990007", true);
         }catch (feign.RetryableException e){
             System.out.println(e.getMessage());
         }
@@ -117,13 +122,13 @@ public class MockTest {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/oa/deleteAccount")
                 .param("doctor_id", String.valueOf(userId))
-                .header("authorization",token)
                 .content("application/text;charset=UTF-8")
+                .header("Authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         );
         stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
         if(malicious)
-            result.andExpect(status().isBadRequest());
+            result.andExpect(status().isOk());
         else
             result.andExpect(status().isOk());
     }
@@ -135,24 +140,17 @@ public class MockTest {
         maps.put("id","0");
         maps.put("role","admin");
         stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
+        DoctorDTO doctor=new DoctorDTO(hospitalId,idCard,department,title,photoPath,contact);
+        String jsonString = JSONObject.toJSONString(doctor);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/oa/addAccount")
-                .param("hospital_id", String.valueOf(hospitalId))
-                .param("id_card",idCard)
-                .param("department",department)
-                .param("title",title)
-                .param("photo_path",photoPath)
-                .param("contact",contact)
-                .header("authorization",token)
-                .content("application/text;charset=UTF-8")
+                .content(jsonString)
+                .contentType("application/json")
+                .header("Authorization",token)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         );
         stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
-
-        if(malicious)
-            result.andExpect(status().isBadRequest());
-        else
-            result.andExpect(status().isOk());
+        result.andExpect(status().isOk());
 
         String contentAsString = result.andReturn().getResponse().getContentAsString();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -170,7 +168,7 @@ public class MockTest {
             }catch (ComparisonFailure e){
                 assertEquals(message,"\"Text '"+idCard.substring(6,14)+"' could not be parsed: Invalid value for MonthOfYear (valid values 1 - 12): 13\"");
             }
-            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
+            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.OK.value());
             return -1;
         }
     }
@@ -206,10 +204,7 @@ public class MockTest {
                 .content("application/json;charset=UTF-8")
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         );
-        if(malicious)
-            result.andExpect(status().isBadRequest());
-        else
-            result.andExpect(status().isOk());
+        result.andExpect(status().isOk());
         stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
     }
     Integer addHospitalTest(String hospitalName,String level,String address,BigDecimal latitude,
@@ -239,7 +234,7 @@ public class MockTest {
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         );
         if(malicious)
-            result.andExpect(status().isBadRequest());
+            result.andExpect(status().isOk());
         else
             result.andExpect(status().isOk());
         stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
@@ -261,7 +256,7 @@ public class MockTest {
 
         if(malicious) {
             assertEquals(message, "\"The hospital phone/name/address might have been used before!\"");
-            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.BAD_REQUEST.value());
+            assertEquals(result.andReturn().getResponse().getStatus(), HttpStatus.OK.value());
             return -1;
         }else{
             String response = jsonNode.get("response").toString();

@@ -304,7 +304,7 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
     }
-    @DeleteMapping("/deleteAccount")
+    @PostMapping("/deleteAccount")
     public ResponseEntity<Response<String>> deleteAccount2(@RequestParam int doctor_id){
         return deleteAccount(doctor_id);
     }

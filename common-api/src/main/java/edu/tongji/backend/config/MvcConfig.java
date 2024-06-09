@@ -21,7 +21,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/error","/api/login/*","/api/register/*","/api/interaction/*","/api/health/*","/api/login/sign/*",
                         "/api/glycemia/*","/api/exercise/*","/api/sports/*","/api/login/getMaxUserId","/api/oa/register",
                         "/api/register/refresh",
-                        "/api/login/getContactForAdmin","/api/login/updateAdminInfo")
+                        "/api/login/getContactForAdmin","/api/login/updateAdminInfo","/api/register/registerHelper")
                 .order(1);
         //Login
         registry.addInterceptor(new LoginInterceptor())
@@ -29,7 +29,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                 "/api/login/repeatedContact","/api/login/getMaxUserId"
                         ,"/api/register/refresh","/api/login/getContactForAdmin"
-                        ,"/api/login/updateAdminInfo")
+                        ,"/api/login/updateAdminInfo","/api/register/registerHelper")
                 .order(1);
         //Token Refresh
         registry.addInterceptor(new RefreshTokenInterceptor(stringRedisTemplate)).
@@ -37,7 +37,7 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/api/register/patient","/api/login/pass","/api/register/addUser","/api/register/rmUser",
                         "/api/login/repeatedContact","/api/login/getMaxUserId",
                         "/api/register/refresh","/api/login/getContactForAdmin"
-                        ,"/api/login/updateAdminInfo","/api/oa/register")
+                        ,"/api/login/updateAdminInfo","/api/oa/register","/api/register/registerHelper")
                 .order(0);
     }
 }

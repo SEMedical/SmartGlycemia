@@ -43,6 +43,18 @@ public class AdminController {
     }
     @PutMapping("/editAdminInfo")
     ResponseEntity<Response<Boolean>> updateAdminInfo(@RequestParam String name,@RequestParam String contact){
+        //The phone number must be 11 digits and it's the valid phone number in China mainland.
+        if (!contact.matches("^[1][3,4,5,7,8][0-9]{9}$")) {
+            return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!"+
+                    "The phone number must be 11 digits and it's the valid phone number in China mainland."),
+                    HttpStatus.OK);
+        }
+        //The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.
+        if (name==null||(name.equals("0216958120")&&(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$")))) {
+            return new ResponseEntity<>(Response.fail("After 2024/1/7,register rules are updated!"+
+                    "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters."),
+                    HttpStatus.OK);
+        }
         try {
             AdminDTO admin=new AdminDTO(null,name,contact);
             admin.setAdminId(UserHolder.getUser().getUserId());

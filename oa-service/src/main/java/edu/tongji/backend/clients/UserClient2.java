@@ -22,7 +22,7 @@ public interface UserClient2 {
     @GetMapping(value="/api/login/getMaxUserId")
     Integer getMaxUserId();
     @PostMapping (value="/api/register/registerHelper")
-    Integer registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException;
+    Integer registerHelper(@RequestBody RegisterDTO registerDTO) throws NoSuchAlgorithmException;
     @PostMapping(value="/api/register/refresh")
     ResponseEntity<Response<Boolean>> BrandNewUserProfile(@RequestBody User user);
     @GetMapping(value="/api/login/getContactForAdmin")
