@@ -33,5 +33,8 @@ public interface IUserService extends IService<User> {
 
     void rmUser(Integer userId);
 
-    Boolean registerAdmin(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException;
+    Integer registerAdmin(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException;
+
+    String getContact(String userId);
+    Boolean updateAdminInfo(String adminId,String name,String contact);
 }

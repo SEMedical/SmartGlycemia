@@ -1,6 +1,7 @@
 package edu.tongji.backend.clients;
 
 import edu.tongji.backend.config.FeignConfig;
+import edu.tongji.backend.dto.AdminDTO;
 import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.entity.User;
 import edu.tongji.backend.util.Response;
@@ -21,7 +22,11 @@ public interface UserClient2 {
     @GetMapping(value="/api/login/getMaxUserId")
     Integer getMaxUserId();
     @PostMapping (value="/api/register/registerHelper")
-    Boolean registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException;
+    Integer registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException;
     @PostMapping(value="/api/register/refresh")
     ResponseEntity<Response<Boolean>> BrandNewUserProfile(@RequestBody User user);
+    @GetMapping(value="/api/login/getContactForAdmin")
+    String getContactForAdmin(@RequestParam("userId") String userId);
+    @PostMapping("/api/login/updateAdminInfo")
+    Boolean updateAdminInfo(@RequestBody AdminDTO admin);
 }

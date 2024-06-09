@@ -144,7 +144,7 @@ public class RegisterController {
         userService.rmUser(userId);
     }
     @PostMapping ("/registerHelper")
-    public Boolean registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException {
+    public Integer registerHelper(RegisterDTO registerDTO) throws NoSuchAlgorithmException {
         return userService.registerAdmin(registerDTO.getName(),registerDTO.getPassword(),registerDTO.getContact(),registerDTO.getGender(),registerDTO.getAge());
     }
 }

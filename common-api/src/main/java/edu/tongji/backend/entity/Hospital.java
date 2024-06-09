@@ -23,4 +23,5 @@ public class Hospital {
     private String hospitalPhone;
     private String outpatientHours;
     private String introduction;
+    private String adminId;
 }

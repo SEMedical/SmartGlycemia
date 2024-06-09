@@ -15,6 +15,7 @@ import edu.tongji.backend.entity.User;
 import edu.tongji.backend.mapper.HospitalMapper;
 import edu.tongji.backend.service.IAccountService;
 import edu.tongji.backend.service.IHospitalService;
+import edu.tongji.backend.service.impl.AccountServiceImpl;
 import edu.tongji.backend.util.IDCardValidator;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
@@ -99,7 +100,7 @@ public class AccountController {
                             @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
                             @RequestParam String introduction) {
         Hospital hospital = new Hospital(null, hospital_name, level, address, latitude, longitude,
-                                         zipcode, hospital_phone, outpatient_hour, introduction);
+                                         zipcode, hospital_phone, outpatient_hour, introduction,null);
         try {
             if (hospitalMapper.InfoRepeated(hospital_phone,hospital_name,address))
                 throw new IllegalArgumentException("The hospital phone/name/address might have been used before!");
@@ -305,7 +306,7 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }
-    @PostMapping("/deleteAccount")
+    @DeleteMapping("/deleteAccount")
     public ResponseEntity<Response<String>> deleteAccount2(@RequestParam int doctor_id){
         return deleteAccount(doctor_id);
     }
@@ -332,20 +333,84 @@ public class AccountController {
     StringRedisTemplate stringRedisTemplate;
     @PostMapping("/GenInviteCode")
     public ResponseEntity<Response<String>> GenerateInvitationCode(@RequestParam String hospitalId){
+        if(hospitalId==null||hospitalId.length()==0||hospitalId.equals("")){
+            return new ResponseEntity<>(Response.fail("The Hospital Code can't be empty"), HttpStatus.BAD_REQUEST);
+        }
+        if(hospitalMapper.havaAdministrator(hospitalId)!=null){
+            return new ResponseEntity<>(Response.fail("The hospital has administrator already!"),HttpStatus.CONFLICT);
+        }
         RandomGenerator randomGenerator = new RandomGenerator(40);
         String substring = randomGenerator.generate().substring(0, 25);
         stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId);
         stringRedisTemplate.expire(ADMIN_PERM_CODE + substring,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
         return new ResponseEntity<>(Response.success(substring,"The Invitation Code has been generated successfully!"), HttpStatus.OK);
     }
-    @PostMapping("/editAccount")
+    @PutMapping("/editAccount")
     public ResponseEntity<Response<Boolean>> editAccount(@RequestParam Integer doctorId,@RequestParam String name,
                                                          @RequestParam String idCard,@RequestParam String department,
                                                          @RequestParam String title,@RequestParam String contact,
                                                          @RequestParam String photoPath,@RequestParam String state){
-        User user=new User(doctorId,null,contact,name,null,null);
-        userClient2.BrandNewUserProfile(user);
-        return new ResponseEntity<>(Response.fail("Not implemented"),HttpStatus.NOT_IMPLEMENTED);
+        if(idCard.length()!=18&& idCard.length()!=15)
+            return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.BAD_REQUEST);
+        String addr;
+        try {
+            File jsonFile;
+            try {
+                jsonFile= ResourceUtils.getFile("classpath:region.json");
+            }catch (FileNotFoundException e){
+                jsonFile=new File("/tmp/region.json");
+            }
+            String json = FileUtils.readFileToString(jsonFile);
+            com.alibaba.fastjson.JSONObject jsonObject = JSON.parseObject(json);
+            com.alibaba.fastjson.JSONObject codes = jsonObject.getJSONObject("code");
+            String region_candidate=idCard.substring(0,6);
+            addr= String.valueOf(codes.get(region_candidate));
+            //Check 0~6
+            if(addr.isEmpty()||addr.equals("null")) {
+                String msg="There's no region code"+region_candidate;
+                log.error(msg);
+                return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);
+            }
+            //Check 7~14
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                LocalDate parsed = LocalDate.parse(idCard.substring(6, 14), formatter);
+                if(parsed.isAfter(LocalDate.now()))
+                    throw new DateTimeException("The date must reside before today!");
+                Period period = Period.between(parsed, LocalDate.now());
+            }catch (Exception e){
+
+                if(!(e instanceof DateTimeException)) {
+                    String msg = idCard.substring(6, 14) + " doesn't adhere to the format of a valid birth date";
+                    log.error(msg);
+                    throw new IllegalArgumentException(msg);
+                }else{
+                    throw e;
+                }
+            }
+            boolean validate = IDCardValidator.validate(idCard);
+            if(!validate){
+                throw new IllegalArgumentException("The ID is invalid though the region code and birth date is valid!");
+            }
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            Doctor doctor = new Doctor(doctorId, 0, idCard, department, title, photoPath);
+            accountService.updateAccount(doctor);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(Response.fail(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            User user = new User(doctorId, null, name,contact,  null, null);
+            userClient2.BrandNewUserProfile(user);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return new ResponseEntity<>(Response.fail("Error encountered when updating the basic profile for the doctor"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(Response.success(true,"The profile of doctor "+doctorId+" has been updated!"),HttpStatus.NOT_IMPLEMENTED);
     }
     @PostMapping("/register")  //对应的api路径
     public ResponseEntity<Response<Boolean>> registerAdmin(@RequestParam String inviteCode,@RequestParam String name,
@@ -380,11 +445,12 @@ public class AccountController {
             }
             log.info(info.toString());
 
-            Boolean result = userClient2.registerHelper(info);  //调用接口的register函数
-            if (!result)  //如果返回的result为false
+            Integer result = userClient2.registerHelper(info);  //调用接口的register函数
+            if (result==-1)  //如果返回的result为false
             {
                 return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.BAD_REQUEST);  //返回错误信息
             }
+            hospitalMapper.setAdministrator(hospitalId,result.toString());
             return new ResponseEntity<>(Response.success(true, "管理员注册成功"),HttpStatus.OK);
         }
     }

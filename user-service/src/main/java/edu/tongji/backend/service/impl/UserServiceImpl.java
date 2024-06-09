@@ -338,13 +338,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Boolean registerAdmin(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException {
+    public Integer registerAdmin(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.select("user_id")
                 .eq("contact", contact);
         User result = userMapper.selectOne(wrapper);
         if (result != null) {
-            return false;
+            return -1;
         }
         String hexString=convertToSHA256(password);
         User user = new User();
@@ -356,6 +356,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setUserId(userMapper.getMaxUserId() + 1);
         }
         int userNum = userMapper.insert(user);
-        return userNum == 1;
+        return userMapper.getMaxUserId() + 1;
+    }
+
+    @Override
+    public String getContact(String userId) {
+        String contact = userMapper.getContact(userId);
+        return contact;
+    }
+
+    @Override
+    public Boolean updateAdminInfo(String adminId,String name, String contact) {
+        return userMapper.updateAdmin(adminId,name,contact);
     }
 }
