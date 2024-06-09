@@ -69,9 +69,9 @@ public class AccountController {
     * */
     @PostMapping("/addHospital")
     public ResponseEntity<Response<String>> addHospital2(@RequestParam String hospital_name, @RequestParam String level,
-                                                        @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
-                                                        @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
-                                                        @RequestParam String introduction){
+                                                         @RequestParam String address, @RequestParam BigDecimal latitude, @RequestParam BigDecimal longitude,
+                                                         @RequestParam String zipcode, @RequestParam String hospital_phone, @RequestParam String outpatient_hour,
+                                                         @RequestParam String introduction){
         return addHospital(hospital_name,level,address,latitude,longitude,zipcode,hospital_phone,outpatient_hour,introduction);
     }
     /**
