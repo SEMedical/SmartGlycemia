@@ -93,4 +93,10 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
     public Boolean repeatedIdCard(String idCard) {
         return doctorMapper.repeatedIdCard(idCard);
     }
+
+    @Override
+    public Boolean updateAccount(Doctor doctor) {
+        Boolean res=doctorMapper.updateDoctor(doctor.getDoctorId(),doctor.getIdCard(),doctor.getDepartment(),doctor.getTitle(),doctor.getPhotoPath());
+        return res;
+    }
 }
