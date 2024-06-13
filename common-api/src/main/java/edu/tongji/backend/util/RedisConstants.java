@@ -6,6 +6,8 @@ public class RedisConstants {
     public static final Integer LOGIN_TOKEN_TTL=30;//Unit:Minute
     public static final String LOGIN_LIMIT="login:limit:";
     public static final Integer LOGIN_LIMIT_TIMEOUT=12;
+    public static final String ADMIN_PERM_CODE="admin:permission:code:";
+    public static Integer ADMIN_PERM_CODE_TIMEOUT=7;
     public static final Integer LOGIN_CODE_TIMEOUT=1;
     public static final Long CACHE_NULL_TTL=2L;
     public static final String CACHE_GLYCEMIA_KEY="cache:glycemia:";

@@ -12,4 +12,6 @@ public interface IAccountService {
     public void deleteAccount(int doctorId);
 
     Boolean repeatedIdCard(String idCard);
+
+    Boolean updateAccount(Doctor doctor);
 }

@@ -29,6 +29,18 @@ import java.time.LocalDateTime;
 public class GlycemiaController {
     @Autowired
     IGlycemiaService glycemiaService;
+
+    /**
+     * @apiNote
+     *
+     * @param type 2 Options:Realtime,History
+     * @param date must after 2023/12/01 and can't precede today.
+     * @return Chart
+     * a list of mappings between datetime(x) and glycemia value(y),according to which the app can draw a plot.
+     * @see edu.tongji.backend.controller.GlycemiaController#LookupChart(String,String,String)
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>,<a href="https://github.com/UltraTempest10">UltraTempest10</a>
+     */
     @GetMapping("/chart") //对应的api路径
     public ResponseEntity<Response<Chart>> LookupChart(@RequestParam String type, @RequestParam String date)//把请求中的内容映射到user
     {
@@ -37,6 +49,7 @@ public class GlycemiaController {
         String user_id= user.getUserId();
         return LookupChart(user_id,type,date);
     }
+
     public ResponseEntity<Response<Chart>> LookupChart(String user_id, String type, String date){
         try {
             if(type.equals("realtime"))
@@ -73,6 +86,15 @@ public class GlycemiaController {
         return formattedDate;
     }
 
+    /**
+     *
+     * @param span Options:week/month
+     * @param startDate the beginning of time period.
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @return CompositeChart in the chart,x is the date(per day),y is average glycemia value of one day
+     * along with which,there're percentages of hyperglycemia/euglycemia/hypoglycemia(高/正常/低血压)
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
     @GetMapping("/weeklyOrMonthlyRecord") //对应的api路径
     public ResponseEntity<Response<CompositeChart>> LookupChartRecord(@RequestParam String span,@RequestParam String startDate){
         //确认用户是否存在，是否是病人
@@ -111,6 +133,16 @@ public class GlycemiaController {
     ExerciseClient exerciseClient;
     @Resource
     StringRedisTemplate stringRedisTemplate;
+
+    /**
+     *
+     * @param request which is required to get the age of the patient
+     * @param type 2 Options Available:Jogging/Yoga
+     * @param date used to check during when the user is exercise or not
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @return a series of date ,every item consists of the beginning and ending of the interval.
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>,<a href="https://github.com/UltraTempest10">UltraTempest10</a>
+     */
     @GetMapping("/isExercise")
     public ResponseEntity<Response<Intervals>> GetExerciseIntervals(HttpServletRequest request,@RequestParam String type,@RequestParam String date){
         try {
@@ -137,6 +169,13 @@ public class GlycemiaController {
             return new ResponseEntity<>(Response.fail("Expected internal business failure"),HttpStatus.BAD_REQUEST);
         }
     }
+
+    /**
+     * @apiNote get the realtime glycemia value of a user.
+     * @return the glycemia value of the current user.
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     */
     @GetMapping("/realTime")
     public ResponseEntity<Response<Double>> GetRealtimeGlycemia(){
         UserDTO user= UserHolder.getUser();
@@ -165,6 +204,15 @@ public class GlycemiaController {
             return new ResponseEntity<>(Response.fail("Expected internal business exception"+e.getMessage()),HttpStatus.BAD_REQUEST);
         }
     }
+
+    /**
+     * @apiNote the api is used to fetch the details of one's glycemia data.
+     * @param date the very date
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @return DailyChart in the chart,x is the datetime,y is the glycemia value of the time
+     *      * along with which,there're percentages of hyperglycemia/euglycemia/hypoglycemia(高/正常/低血压)
+     */
     @GetMapping("/dailyHistory")
     public ResponseEntity<Response<DailyChart>> GetDailyChart(@RequestParam String date){
         UserDTO user= UserHolder.getUser();
@@ -198,6 +246,23 @@ public class GlycemiaController {
                 return Response.fail("Expected internal failure");
         }
     }
+
+    /**
+     *
+     * @param request which is used to get the <b>age</b> of the user
+     * @since <a href="https://github.com/SEMedical/Backend/releases/tag/v1.0.0">1.0.0</a>
+     * @author <a href="https://github.com/VictorHuu">Victor Hu</a>
+     * @return tips,which corresponds to the glycemia value that GetRealtimeGlycemia() returns
+     * <ul>
+     *     <li><b>低血糖</b>:哎呀！血糖怎么有点低了呢？请吃点东西吧</li>
+     *     <li><b>正常血糖</b>:当前血糖处于正常水平，真是令人高兴呐！</li>
+     *     <li><b>午饭后高血糖</b>:当前血糖水平已经高于正常值了哦，注意饮食，然后请去做一点运动吧！</li>
+     *     <li><b>晚饭后高血糖</b>:当前血糖水平已经高于正常值了哦，之后要注意不要吃太多含糖含碳水量高的食物</li>
+     *     <li><b>饭后正常血糖升高</b>:饭后血糖上升，不必要过度担心，要时刻注重饮食哦</li>
+     *     <li><b>高血糖</b>:当前血糖水平已经高于正常值了哦，然后请去做一点运动吧！</li>
+     * </ul>
+     * @see GlycemiaController#GetRealtimeGlycemia()
+     */
     @GetMapping("/realTimePrompt")
     public ResponseEntity<Response<Tip>> GetRealtimeTips(HttpServletRequest request){
         //glycemiaService.Init_LatestGlycemiaDiagram();

@@ -1,7 +1,7 @@
 package edu.tongji.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import edu.tongji.backend.dto.DoctorDTO;
+import edu.tongji.backend.dto.DoctorDTO2;
 import edu.tongji.backend.entity.Glycemia;
 import edu.tongji.backend.mapper.PatientInteractMapper;
 import edu.tongji.backend.service.PatientInteractService;
@@ -24,8 +24,8 @@ public class PatientInteractServiceImpl implements PatientInteractService {
     private PatientInteractMapper patientInteractMapper;
 
     @Override
-    public List<DoctorDTO> searchAll(String keyword) {
-        List<DoctorDTO> D=patientInteractMapper.searchAll(keyword);
+    public List<DoctorDTO2> searchAll(String keyword) {
+        List<DoctorDTO2> D=patientInteractMapper.searchAll(keyword);
         return D;
     }
 

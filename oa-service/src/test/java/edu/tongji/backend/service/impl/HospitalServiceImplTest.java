@@ -2,9 +2,14 @@ package edu.tongji.backend.service.impl;
 
 import edu.tongji.backend.controller.AccountController;
 import edu.tongji.backend.entity.Hospital;
+import edu.tongji.backend.mapper.HospitalMapper;
 import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -13,6 +18,8 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 @RunWith(JUnit4ClassRunner.class)
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
