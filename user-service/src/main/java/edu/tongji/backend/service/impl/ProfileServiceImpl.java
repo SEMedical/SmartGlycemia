@@ -34,13 +34,8 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
     @Override
     public Profile getByPatientId(String patient_id) {
-        try {
-            Profile profile = profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
-            return profile;
-        }catch (Throwable e){
-            System.out.println(e.getMessage());
-            return null;
-        }
+        Profile profile = profileMapper.getByPatientIdProfile(Integer.valueOf(patient_id));
+        return profile;
     }
 
     @Override
@@ -66,8 +61,6 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
             profileDTO.setDiabetesType("II型糖尿病");
         } else if (Objects.equals(profile.getType(), "gestational")) {
             profileDTO.setDiabetesType("妊娠期糖尿病");
-        } else {
-            profileDTO.setDiabetesType("");
         }
         String date = profile.getDiagnosedYear();
         if (date != null) {
@@ -139,9 +132,6 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
 
         Profile dummy = profileMapper.getByPatientIdProfile(patientId);
         if (dummy == null) {
-
-           log.info("insert");
-
             return profileMapper.insert(profile) == 1;
         }
 

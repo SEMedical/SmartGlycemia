@@ -76,7 +76,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return temp;
     }
-    Result createUserWithPhone(String contact,QueryWrapper<User> wrapper){
+    @Transactional
+    public Result createUserWithPhone(String contact, QueryWrapper<User> wrapper){
         User user = new User();
         user.setContact(contact);
         user.setName("momo");
@@ -91,8 +92,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         log.info("The UID:"+result.getUserId());
         int profileNum = profileMapper.insert(profile);
         log.info("userNum: " + userNum + ", profileNum: " + profileNum);
-        if(userNum==1&&profileNum==0)
-            throw new RuntimeException("Register failed,rollback!");
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
     }
     @Override
@@ -153,6 +152,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
     @Override
     public ResponseEntity<Result> sendCode(String contact, HttpSession session){
+        if(contact==null)
+            return new ResponseEntity<>(Result.fail("contact shouldn't be null"),HttpStatus.BAD_REQUEST);
         //. Check Phone
         if(RegexUtils.isPhoneInvaild(contact)) {
             //. return error msg
@@ -268,7 +269,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //write to the Redis
         if(stringRedisTemplate.opsForValue().getBit(key,dayOfMonth)) {
             stringRedisTemplate.opsForValue().
-                    setBit(key, dayOfMonth - 1, true);
+                    setBit(key, dayOfMonth, true);
             return new ResponseEntity<>(Response.success(1,"Signed successfully!"),HttpStatus.OK);
         }else{
             return new ResponseEntity<>(Response.success(2,"Had signed today before!"),HttpStatus.OK);
@@ -288,7 +289,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<Long> result = stringRedisTemplate.opsForValue().bitField(
                 key, BitFieldSubCommands.create().get(
                         BitFieldSubCommands.BitFieldType.unsigned(
-                                dayOfMonth-1
+                                dayOfMonth
                         )
                 ).valueAt(0)
         );//Because there might be many subcommands ,so the return type is list

@@ -118,7 +118,10 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
         try {
-            hospitalService.addHospital(hospital);
+            Integer id = hospitalService.addHospital(hospital);
+            String msg="The "+hospital_name+" has been registered successfully!";
+            log.info(msg);
+            return new ResponseEntity<>(Response.success(id.toString(),msg),HttpStatus.OK);
         }catch (Exception e){
             log.error(e.getMessage());
             if(e instanceof SQLIntegrityConstraintViolationException)
@@ -126,9 +129,6 @@ public class AccountController {
             else
                 return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
-        String msg="The "+hospital_name+" has been registered successfully!";
-        log.info(msg);
-        return new ResponseEntity<>(Response.success(null,msg),HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -286,12 +286,12 @@ public class AccountController {
             return new ResponseEntity<>(Response.fail(msg),HttpStatus.NOT_FOUND);
         }
         try {
-            accountService.addAccount(doctor, contact,addr);
+            Integer id = accountService.addAccount(doctor, contact, addr);
+            return new ResponseEntity<>(Response.success(id.toString(),"The account has been added successfully!"), HttpStatus.OK);
         }catch (Exception e){
             log.error(e.getMessage());
             return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(Response.success(null,"The account has been added successfully!"), HttpStatus.OK);
     }
     @PostMapping("/deleteAccount")
     public ResponseEntity<Response<String>> deleteAccount2(@RequestParam int doctor_id){

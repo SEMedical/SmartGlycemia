@@ -1,8 +1,7 @@
 # ... previous config options...
 
 comment:
-  layout: "header, diff, flags, components"  # show component info in the PR comment
-
+  layout: "header,reach, diff, flags, components,tree,betaprofiling"  # show component info in the PR comment
 component_management:
   default_rules:
     statuses:

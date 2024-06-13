@@ -28,11 +28,7 @@ public class RegisterController {
     public ResponseEntity<Response<Boolean>> unregisterPatient(){
         UserDTO user= UserHolder.getUser();
         Boolean unregistered = userService.unregister(Integer.valueOf(user.getUserId()));
-        if(unregistered)
-            return new ResponseEntity<>(Response.success(true,"The unregisterPatient Function haven't been implemented yet"),
-                    HttpStatus.OK);
-        else
-            return new ResponseEntity<>(Response.success(false,"The unregisterPatient Function haven't been implemented yet"),
+            return new ResponseEntity<>(Response.success(unregistered,"The unregisterPatient Function haven't been implemented yet"),
                     HttpStatus.OK);
     }
     @PostMapping("/patient")  //对应的api路径
@@ -66,10 +62,6 @@ public class RegisterController {
         if (result == -1)  //如果返回的result为false
         {
             return new ResponseEntity<>(Response.fail("手机号已被注册"),HttpStatus.BAD_REQUEST);  //返回错误信息
-        }
-        else if (result == 0)
-        {
-            return new ResponseEntity<>(Response.fail("注册失败"),HttpStatus.BAD_REQUEST);  //返回错误信息
         }
         return new ResponseEntity<>(Response.success(true, "注册成功"),HttpStatus.OK);
     }

@@ -70,6 +70,33 @@ public class PhoneLoginTest {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
     }
     @Test
+    void LoginFrozenBatchIII() throws Exception {
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15204808552");
+        //NOTE:ONLY FOR TEST!
+        for(int i=0;i<2;i++)
+            LoginError("15204808552","89",status().is4xxClientError());
+        LoginError("15204808552","04808552",status().isOk());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+    }
+    @Test
+    void LoginFrozenBatchII() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(-1));
+        //NOTE:ONLY FOR TEST!
+        for(int i=0;i<2;i++)
+            LoginError("15204808552","89",status().is4xxClientError());
+        LoginError("15204808552","04808552",status().is4xxClientError());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+    }
+    @Test
+    void LoginFrozenBatchIV() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(-1));
+        //NOTE:ONLY FOR TEST!
+        for(int i=0;i<2;i++)
+            LoginError(null,"89",status().is4xxClientError());
+        LoginError(null,null,status().is4xxClientError());
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
+    }
+    @Test
     void LoginPassBatch() throws Exception {
         stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15204808552", String.valueOf(5));
         LoginError("15204808552","04808552",status().isOk());
@@ -125,7 +152,7 @@ public class PhoneLoginTest {
                 .post("/api/login/captcha")
                 .param("contact", contact)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .content(contact)
+                .content(contact!=null?contact:"")
                 .contentType("application/text;charset=UTF-8")
         );
         if(malicious)
@@ -156,8 +183,16 @@ public class PhoneLoginTest {
     }
     @Test
     void testWithoutCaptchaBatch() throws Exception {
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(-1));
         testWithoutCaptcha("000000");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithoutCaptcha("000000");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
+        testWithoutCaptcha(null,null);
+        testWithoutCaptcha("132 2451 2136",null);//Invalid Phone format
+        stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + "15555555555", String.valueOf(5));
         testWithoutCaptcha("123456");
+        stringRedisTemplate.delete(LOGIN_LIMIT + "15555555555");
         testWithoutCaptcha();
     }
     void testWithoutCaptcha(String code) throws Exception {
@@ -181,9 +216,7 @@ public class PhoneLoginTest {
         //Must be Wrong Captcha
         if(code!=null){
             realcode = sendCaptcha(contact, false);
-            if(code.equals(realcode)){
-                code= code.substring(0, 4);
-            }
+            code= code.substring(0, 3);
         }
         boolean verbose=false;
         LoginFormDTO user=new LoginFormDTO(contact,code,null);
