@@ -61,6 +61,10 @@ public class RegistrationTest {
         testUnregister("13101000002");
     }
     @Test
+    void testRegistrationDoctorNotImplementedBatch() throws Exception {
+        testRegisterForDoctor("Eve","Serpent","13101000002","Female",2024);
+    }
+    @Test
     void testRegistrationErrorBatch() throws Exception{
         //name,password,contact,gender,age
         //#1: Wrong format password
@@ -87,6 +91,10 @@ public class RegistrationTest {
         RegisterDTO registerDTO=new RegisterDTO(name,password,contact,gender,age);
         testRegister(registerDTO,malicious);
     }
+    void testRegisterForDoctor(String name,String password,String contact,String gender,Integer age) throws Exception {
+        RegisterDTO registerDTO=new RegisterDTO(name,password,contact,gender,age);
+        testRegisterForDoctor(registerDTO);
+    }
     void testRegister(RegisterDTO registerDTO) throws Exception {
         testRegister(registerDTO,false);
     }
@@ -104,7 +112,17 @@ public class RegistrationTest {
         else
             result.andExpect(status().is4xxClientError());
     }
-
+    void testRegisterForDoctor(RegisterDTO registerDTO) throws Exception{
+        String jsonResult= JSONObject.toJSONString(registerDTO);
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/register/doctor")
+                .param("info",jsonResult)
+                .content(jsonResult)
+                .contentType("application/json;charset=UTF-8")
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        );
+        result.andExpect(status().isMovedPermanently());
+    }
     void testUnregister(String contact) throws Exception {
         String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result2 = mockMvc.perform(MockMvcRequestBuilders
