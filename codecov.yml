@@ -34,3 +34,7 @@ component_management:
       name: OA Service
       paths:
         - oa-service/**
+    - component_id: interact-service
+      name: Interact Service
+      paths:
+        - interact-service/**
