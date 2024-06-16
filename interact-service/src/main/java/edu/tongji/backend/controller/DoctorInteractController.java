@@ -29,13 +29,6 @@ public class DoctorInteractController {
         PatientList[] p_list = doctorInteractService.getPatientList();
         return Response.success(p_list, "success");
     }
-
-//    医生获取单个患者信息
-    @GetMapping("/getPatientInfo")
-    public Response<SinglePatientInfo> doctorGetSinglePatientInfo(String patientId) {
-        SinglePatientInfo p_info= doctorInteractService.getSinglePatientInfo(patientId);
-        return Response.success(p_info, "success");
-    }
 //  医生确认患者申请
     @PostMapping("/confirmPatient")
     public ResponseEntity<Response<String>> doctorConfirmPatient(@RequestParam("messageId") String messageId){
