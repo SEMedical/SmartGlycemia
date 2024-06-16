@@ -105,6 +105,7 @@ public class GlycemiaMockTest {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/glycemia/realTimePrompt")
                 .content("application/text;charset=UTF-8")
+                .header("authorization","nsnvrb4vr511vs18v84se8s1ve8")//RANDOM NUMBER
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(matcher);//Default:status().isOk()
         UserHolder.removeUser();

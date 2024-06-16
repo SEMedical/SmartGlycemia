@@ -5,7 +5,7 @@ on:
   push:
     branches: [ "main" ]
 jobs:
-   cleanup:
+  cleanup:
     runs-on: ubuntu-latest
     permissions: write-all
 
@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: SERVER_WITH_PUBLIC_IP
           onlyRemoveDeployments: true
-   project-build:
+  project-build:
     runs-on: ubuntu-latest
     environment: SERVER_WITH_PUBLIC_IP
     steps:
@@ -64,19 +64,33 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          script: | 
+          script: |
             docker compose stop
       - name: Upload JARs as Artifact
         if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v2
         with:
           name: Maven Jar File
-          path: | 
+          path: |
             user-service/target/${{ env.JAR_NAME }}
             glycemia-service/target/${{ env.JAR_NAME }}
             exercise-service/target/${{ env.JAR_NAME }}
             gateway/target/${{ env.JAR_NAME }}
             oa-service/target/${{ env.JAR_NAME }}
+      - name: Run User&Exercise Service
+        run: |
+          echo "Starting task in foreground for 60 seconds..."
+          java -jar user-service/target/app.jar -Dserver.port=10081 &
+          java -jar exercise-service/target/app.jar -Dserver.port=10083 &
+          FG_PID=$!
+          sleep 60
+          echo "Moving task to background..."
+          disown $FG_PID
+          echo "Continuing task in background for up to 20 minutes..."
+          timeout 15m wait $FG_PID || echo "Background task completed or timed out."
+        env:
+          NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
+          NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: Run tests
         run: mvn -B test jacoco:report
         env:
@@ -99,4 +113,3 @@ jobs:
           docker run -d backend-user-service --env-file=web-variables.env
           docker run -d backend-exercise-service --env-file=web-variables.env
           docker run -d backend-gateway --env-file=web-variables.env
-      

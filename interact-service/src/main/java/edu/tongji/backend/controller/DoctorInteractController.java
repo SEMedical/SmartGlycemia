@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import org.springframework.web.bind.annotation.*;
+
+
 
 
 @RestController
@@ -55,5 +58,11 @@ public class DoctorInteractController {
         applyList[] p_list = doctorInteractService.doctorGetApplicationList(doctorId);
         return Response.success(p_list, "success");
     }
+    @GetMapping("/getPatientInfo")
+    public Response<SinglePatientInfo> doctorGetSinglePatientInfo(String patientId) {
+        SinglePatientInfo p_info=doctorInteractService.getSinglePatientInfo(patientId);
+        return Response.success(p_info, "success");
+    }
+
 
 }

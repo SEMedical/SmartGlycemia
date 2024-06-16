@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +25,14 @@ import org.springframework.test.web.servlet.result.StatusResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.HashMap;
 import java.util.Map;
 
+import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,12 +47,19 @@ public class GlycemiaTest {
     private GlycemiaServiceImpl glycemiaService;
     private MockMvc mockMvc;
     private MockHttpSession session;
-
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
     //在每个测试方法执行之前都初始化MockMvc对象
     @BeforeEach
     public void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         this.session = new MockHttpSession();
+        stringRedisTemplate.delete("cache:history:glycemia:1:2023-12-09");
+        stringRedisTemplate.delete("cache:glycemia:1:2024-01-02 09:45:00");
+        stringRedisTemplate.delete("cache:user:last:exercise:1");
+        stringRedisTemplate.delete("cache:running:3275");
+        stringRedisTemplate.delete("cache:daily:glycemia:1:2024-01-02 11:00:00");
+        stringRedisTemplate.delete("cache:glycemia:1:2024-01-01 02:45:00");
     }
     @Test
     public void TestChartRenderingSuites(){
@@ -86,6 +97,7 @@ public class GlycemiaTest {
         tipResponse = glycemiaController.GetRealtimeTips("96", 21);
         tipResponse = glycemiaController.GetRealtimeTips("101", 21);
         tipResponse = glycemiaController.GetRealtimeTips("24", 70);
+        tipResponse = glycemiaController.GetRealtimeTips("102", 21);
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test
@@ -97,6 +109,11 @@ public class GlycemiaTest {
         response = glycemiaController.GetRealtimeGlycemia("96");
         response = glycemiaController.GetRealtimeGlycemia("101");
         response = glycemiaController.GetRealtimeGlycemia("24");
+        assertEquals(response.getStatusCode(),HttpStatus.OK);
+        response = glycemiaController.GetRealtimeGlycemia("Apple");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
+        response= glycemiaController.GetRealtimeGlycemia("0");
+        assertEquals(response.getStatusCode(),HttpStatus.BAD_REQUEST);
         //assertEquals(tipResponse.getResponse().getColor(),MyColor.RED);
     }
     @Test
@@ -118,28 +135,36 @@ public class GlycemiaTest {
     }
     @Test
     void TestIsExerciseBatch() throws Exception {
-        TestIsExercise("Jogging","2024-01-02",status().isNotAcceptable());
-        TestIsExercise("Swimming","2024-01-02",status().isNotAcceptable());
-        TestIsExercise("jogging","2024-01-02",status().isNotAcceptable());
-        TestIsExercise("Yoga","2024-01-02",status().isNotAcceptable());
-        TestIsExercise("Yoga","2024-01.02",status().isNotAcceptable());
-        TestIsExercise("Yoga","1024-01-02",status().isNotAcceptable());
-        TestIsExercise("Yoga","3024-01-02",status().isNotAcceptable());
+        TestIsExercise("Jogging","2024-01-02",status().isOk());
+        TestIsExercise("Swimming","2024-01-02",status().isBadRequest());
+        TestIsExercise("jogging","2024-01-02",status().isBadRequest());
+        TestIsExercise("Yoga","2024-01-02",status().isOk());
+        TestIsExercise("Yoga","2024-01.02",status().isBadRequest());
+        TestIsExercise("Yoga","1024-01-02",status().isBadRequest());
+        TestIsExercise("Yoga","3024-01-02",status().isBadRequest());
     }
 
     void TestIsExercise(String type,String date,ResultMatcher matcher) throws Exception {
 
         UserDTO userDTO=new UserDTO(null,"小帅","1","patient");
         UserHolder.saveUser(userDTO);
-
+        String token="rgbtsghnjbzsvjkv14f5154gscscczs5";
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
+        Map<String,String> maps=new HashMap<>();
+        maps.put("name","小帅");
+        maps.put("role","patient");
+        maps.put("userId","1");
+        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .get("/api/glycemia/isExercise")
                 .param("type",type)
                 .param("date",date)
-                .header("authorization","rgbtsghnjbzsvjkv14f5154gscscczs5")
-                .accept(MediaType.parseMediaType("application/text;charset=UTF-8"))
+                .content("application/text;charset=UTF-8")
+                .header("authorization",token)
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
         ).andExpect(matcher);//Default:status().isOk()
         UserHolder.removeUser();
+        stringRedisTemplate.delete(LOGIN_TOKEN_KEY+token);
     }
     @Test
     public void WeeklyOrMonthlyDataSuites(){

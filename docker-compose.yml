@@ -3,7 +3,7 @@ services:
   user-service:
     build: ./user-service
     ports:
-      - "8722:8722"
+    #  - "8722:8722"
       - "81:81"
     env_file:
       - ./web-variables.env
@@ -53,7 +53,7 @@ services:
   exercise-service:
     build: ./exercise-service
     ports:
-      - "8720:8720"
+    #  - "8720:8720"
       - "83:83"
     env_file:
       - ./web-variables.env

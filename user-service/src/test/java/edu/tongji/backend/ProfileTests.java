@@ -158,6 +158,18 @@ class ProfileTests {
         TestGetUserName("15555555555");
         TestGetUserName("15411111111");//FIXME: suffer when name is null
     }
+    @Test
+    public void TestMaxUserIdBatch() throws Exception {
+        TestMaxUserId();
+    }
+    public void TestMaxUserId() throws Exception {
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/api/login/getMaxUserId")
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8"))
+        ).andExpect(status().isOk());
+        MockHttpServletResponse response = result.andReturn().getResponse();
+        System.out.println(response.getContentAsString());
+    }
     public void TestGetUserName(String contact) throws Exception {
         String token = phoneLoginTest.testWithCaptcha(stringRedisTemplate,mockMvc,false, false,contact);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders

@@ -17,8 +17,8 @@
     </resultMap>
     <select id="selectByIdAndTime" resultType="java.lang.Double">
         SELECT glycemia FROM glycemia WHERE patient_id = #{id}
-        and record_time BETWEEN DATE( #{time} ) -INTERVAL(MINUTE( #{time} )%15) MINUTE
-                                      AND DATE( #{time} ) -INTERVAL(MINUTE( #{time} )%15-15) MINUTE
+        and record_time BETWEEN #{time} -INTERVAL(MINUTE( #{time} )%15) MINUTE
+                                      AND  #{time}  -INTERVAL(MINUTE( #{time} )%15-15) MINUTE
         limit 1;
     </select>
     <select id="selectDailyArchive" resultMap="statisticsResultMap">

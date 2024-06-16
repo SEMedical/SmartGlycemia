@@ -12,6 +12,10 @@ import edu.tongji.backend.mapper.SubscriptionMapper;
 
 import java.util.List;
 import java.util.Map;
+import edu.tongji.backend.mapper.DoctorInteractMapper;
+import edu.tongji.backend.service.DoctorInteractService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DoctorInteractImpl implements DoctorInteractService {
@@ -65,6 +69,5 @@ public class DoctorInteractImpl implements DoctorInteractService {
         }
         return applyList;
     }
-
 
 }

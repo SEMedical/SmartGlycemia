@@ -1,8 +1,7 @@
 # ... previous config options...
 
 comment:
-  layout: "header, diff, flags, components"  # show component info in the PR comment
-
+  layout: "header,reach, diff, flags, components,tree,betaprofiling"  # show component info in the PR comment
 component_management:
   default_rules:
     statuses:
@@ -23,6 +22,10 @@ component_management:
       name: Glycemia Service
       paths:
         - glycemia-service/**
+    - component_id: interact-service
+      name: Interact Service
+      paths:
+        - interact-service/**
     - component_id: exercise-service
       name: Exercise Service
       paths:
