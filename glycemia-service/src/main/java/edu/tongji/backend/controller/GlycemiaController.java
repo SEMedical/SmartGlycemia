@@ -102,6 +102,11 @@ public class GlycemiaController {
         String user_id= user.getUserId();
         return LookupChartRecord(user_id,span,startDate);
     }
+    @GetMapping("/doctor/weeklyOrMonthlyRecord") //对应的api路径
+    public ResponseEntity<Response<CompositeChart>> LookupChartRecordForDoctor(@RequestParam String span,@RequestParam String startDate,@RequestParam Integer patient_id){
+        //确认用户是否存在，是否是病人
+        return LookupChartRecord(patient_id.toString(),span,startDate);
+    }
     public ResponseEntity<Response<CompositeChart>> LookupChartRecord(String user_id,String span,String startDate)//把请求中的内容映射到user
     {
         try {
@@ -218,6 +223,10 @@ public class GlycemiaController {
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         return GetDailyChart(user_id,date);
+    }
+    @GetMapping("/doctor/dailyHistory")
+    public ResponseEntity<Response<DailyChart>> GetDailyChartForDoctor(@RequestParam String date,@RequestParam Integer patient_id){
+        return GetDailyChart(patient_id.toString(),date);
     }
     @Autowired
     UserClient userClient;

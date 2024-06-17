@@ -35,6 +35,19 @@ public class ProfileController {
         return Response.success(profileDTO, "查询健康档案成功");
     }
 
+    /**
+     * @apiNote only for Enterprise Version
+     * @param patient_id For doctor to look up the health record of patient
+     * @throws ParseException
+     */
+    @GetMapping("/doctor/health-record") //对应的api路径
+    public Response<ProfileDTO> getHealthRecordForDoctor(Integer patient_id) throws ParseException {
+        ProfileDTO profileDTO = profileService.getCompleteProfile(patient_id);
+//        if (profileDTO == null) {
+//            return Response.fail("查询健康档案失败");
+//        }
+        return Response.success(profileDTO, "查询健康档案成功");
+    }
     @PostMapping("/update-health-record") //对应的api路径
     public Response<Boolean> updateHealthRecord(@RequestBody ProfileDTO profileDTO) throws ParseException {
         UserDTO user= UserHolder.getUser();
