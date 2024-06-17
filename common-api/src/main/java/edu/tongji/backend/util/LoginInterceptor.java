@@ -32,7 +32,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         if(!UserHolder.getUser().getRole().equals("patient")) {
             response.setStatus(418);
             PrintWriter out = response.getWriter();
-            String message="Only administrator account can access this method!";
+            String message="Only patient account can access this method!";
             String success="false";
             String jsonResponse = "{ \"message\": \"" + message + "\", \"success\": \"" + success + "\" }";
             out.write(jsonResponse);
