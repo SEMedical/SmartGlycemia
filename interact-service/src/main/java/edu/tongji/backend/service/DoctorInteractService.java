@@ -10,8 +10,12 @@ public interface DoctorInteractService {
 //    医生获取单个患者信息
     SinglePatientInfo getSinglePatientInfo(String patientId);
 //   医生确认患者申请
-    Boolean confirmPatient(String messageId, String doctor_id) throws NullPointerException;
+    Boolean confirmPatient(String messageId, String doctor_id) throws NullPointerException,IllegalArgumentException;
 
     //   医生获取申请列表
     applyList[] doctorGetApplicationList(String doctorId);
+
+    Integer getFollowersNum(String doctor_id);
+
+    Integer getFolloweesNum(String userId);
 }

@@ -5,6 +5,7 @@ import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.dto.applyList;
 import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.service.DoctorInteractService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,9 @@ import edu.tongji.backend.service.DoctorInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static edu.tongji.backend.util.RedisConstants.SUBSRIBE_DOCTOR_KEY;
+import static edu.tongji.backend.util.RedisConstants.*;
 
+@Slf4j
 @Service
 public class DoctorInteractImpl implements DoctorInteractService {
     @Autowired
@@ -41,15 +43,21 @@ public class DoctorInteractImpl implements DoctorInteractService {
     }
 
     @Override
-    public Boolean confirmPatient(String messageId, String doctor_id) throws NullPointerException {
-        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries("message:fromPatient:key:" + messageId);
+    public Boolean confirmPatient(String messageId, String doctor_id) throws NullPointerException,IllegalArgumentException {
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(FOLLOWER_KEY + messageId);
         if(entries.size()==0){
             throw new NullPointerException("The message you found doesn't exist!");
         }
         String id = entries.get("id").toString();
-        System.out.println(id);
-        stringRedisTemplate.delete("message:from:patient:"+messageId);
-        stringRedisTemplate.opsForList().remove("message:fromPatient:key:"+messageId,1,"message:from:patient:"+messageId);
+        log.info("The doctor"+doctor_id+" wants to confirm "+id);
+        Integer subscribed = subscriptionMapper.Subscribed(doctor_id, id);
+        stringRedisTemplate.delete(FOLLOWER_KEY+messageId);
+        stringRedisTemplate.opsForList().remove(SUBSRIBE_DOCTOR_KEY+doctor_id,0,FOLLOWER_KEY+messageId);
+        if(subscribed>0){
+            throw new IllegalArgumentException("The patient "+id+" has followed you!");
+        }
+        stringRedisTemplate.opsForValue().increment(FOLLOWEES_NUM_KEY + id);
+        stringRedisTemplate.opsForValue().increment(FOLLOWERS_NUM_KEY + doctor_id);
         return subscriptionMapper.addSubscription(doctor_id,id);
     }
 
@@ -79,4 +87,20 @@ public class DoctorInteractImpl implements DoctorInteractService {
         return applyList;
     }
 
+    @Override
+    public Integer getFollowersNum(String doctor_id) {
+        String s = stringRedisTemplate.opsForValue().get(FOLLOWERS_NUM_KEY + doctor_id);
+        if(s!=null&&s.length()!=0&&(!s.equals(""))){
+            return Integer.valueOf(s);
+        }
+        return subscriptionMapper.FollowerNum(doctor_id);
+    }
+    @Override
+    public Integer getFolloweesNum(String user_id) {
+        String s = stringRedisTemplate.opsForValue().get(FOLLOWEES_NUM_KEY + user_id);
+        if(s!=null&&s.length()!=0&&(!s.equals(""))){
+            return Integer.valueOf(s);
+        }
+        return subscriptionMapper.FolloweeNum(user_id);
+    }
 }

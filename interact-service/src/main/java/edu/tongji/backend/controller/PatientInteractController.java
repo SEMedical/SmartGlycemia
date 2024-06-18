@@ -5,6 +5,7 @@ import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.service.PatientInteractService;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,40 @@ public class PatientInteractController {
             return new ResponseEntity<>(Response.success(D,"查找成功！"),HttpStatus.OK);
 
     }
-
+    @CrossOrigin(origins = "*")
+    @DeleteMapping("/patient/unsubscribeDoctor")
+    //患者向医生提交好友申请
+    public ResponseEntity<Response<Void>> UnsubscribeDoctor(@RequestParam("doctor_id") int doctor_id){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        try {
+            patientInteractService.unsubscribeDoctor( doctor_id,Integer.valueOf(user_id));
+        }catch (Exception e){
+            e.printStackTrace();
+            if(e instanceof IllegalArgumentException){
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
+            }else
+                return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(Response.success(null,"unsubscribed successfully"),HttpStatus.NO_CONTENT);
+    }
+    @CrossOrigin(origins = "*")
+    @DeleteMapping("/firePatient")
+    //患者向医生提交好友申请
+    public ResponseEntity<Response<Void>> FirePatient(@RequestParam("patient_id") int patient_id){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        try {
+            patientInteractService.unsubscribeDoctor(Integer.valueOf(user_id), patient_id);
+        }catch (Exception e){
+            e.printStackTrace();
+            if(e instanceof IllegalArgumentException){
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
+            }else
+                return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(Response.success(null,"Kicked successfully"),HttpStatus.NO_CONTENT);
+    }
     @PostMapping("/patient/subscribeDoctor")
     //患者向医生提交好友申请
     public ResponseEntity<Response<Void>> SubscribeDoctor(@RequestParam("doctor_id") int doctor_id){
@@ -44,7 +78,10 @@ public class PatientInteractController {
             patientInteractService.subscribeDoctor(Integer.valueOf(user_id), doctor_id);
         }catch (Exception e){
             e.printStackTrace();
-            return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
+            if(e instanceof IllegalArgumentException){
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
+            }else
+                return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(Response.success(null,"subscribed successfully"),HttpStatus.NO_CONTENT);
     }

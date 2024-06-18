@@ -1,9 +1,7 @@
 package edu.tongji.backend.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import edu.tongji.backend.dto.DoctorDTO2;
 
-import javax.print.Doc;
 import java.util.List;
 
 public interface PatientInteractService
@@ -15,4 +13,6 @@ public interface PatientInteractService
     void subscribeDoctor(int userId,int doctorId);
 
     void appointDoctor(String department, String datetime, int hospitalId);
+
+    Boolean unsubscribeDoctor(Integer user_id, int doctorId);
 }

@@ -1,11 +1,10 @@
 package edu.tongji.backend.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import edu.tongji.backend.dto.DoctorDTO2;
 import edu.tongji.backend.dto.PatientList;
-import edu.tongji.backend.entity.Glycemia;
 import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.mapper.PatientInteractMapper;
+import edu.tongji.backend.mapper.SubscriptionMapper;
 import edu.tongji.backend.service.PatientInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -29,6 +28,8 @@ public class PatientInteractServiceImpl implements PatientInteractService {
     private PatientInteractMapper patientInteractMapper;
     @Autowired
     private DoctorInteractMapper doctorInteractMapper;
+    @Autowired
+    private SubscriptionMapper subscriptionMapper;
     @Override
     public List<DoctorDTO2> searchAll(String keyword) {
         List<DoctorDTO2> D=patientInteractMapper.searchAll(keyword);
@@ -36,7 +37,11 @@ public class PatientInteractServiceImpl implements PatientInteractService {
     }
 
     @Override
-    public void subscribeDoctor(int userId,int doctorId) {
+    public void subscribeDoctor(int userId,int doctorId) throws IllegalArgumentException {
+        Integer subscribed = subscriptionMapper.Subscribed(String.valueOf(doctorId), String.valueOf(userId));
+        if(subscribed>0){
+            throw new IllegalArgumentException("You've followed the Dr. "+doctorId);
+        }
         SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
         Date date = new Date(System.currentTimeMillis());
         String format = formatter.format(date);
@@ -56,6 +61,17 @@ public class PatientInteractServiceImpl implements PatientInteractService {
     @Override
     public void appointDoctor(String department, String datetime, int hospitalId) {
        // patientInteractMapper.appointDoctor(department,datetime,hospitalId);
+    }
+
+    @Override
+    public Boolean unsubscribeDoctor(Integer user_id, int doctorId) {
+        Integer subscribed = subscriptionMapper.Subscribed(String.valueOf(doctorId), String.valueOf(user_id));
+        if(subscribed==0){
+            throw new IllegalArgumentException("You don't follow the "+doctorId);
+        }
+        stringRedisTemplate.opsForValue().decrement(FOLLOWEES_NUM_KEY + user_id.toString());
+        stringRedisTemplate.opsForValue().decrement(FOLLOWERS_NUM_KEY + doctorId);
+        return subscriptionMapper.removeSubscription(user_id.toString(),String.valueOf(doctorId));
     }
 
 }

@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/interaction")
-@CrossOrigin
 public class DoctorInteractController {
     @Autowired
     private DoctorInteractService doctorInteractService;
@@ -31,17 +30,34 @@ public class DoctorInteractController {
         PatientList[] p_list = doctorInteractService.getPatientList();
         return Response.success(p_list, "success");
     }
+    @GetMapping("/followerNum")
+    public Response<Integer> followerTotal(){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        Integer followersNum = doctorInteractService.getFollowersNum(user_id);
+        return Response.success(followersNum,"The total followers of "+user_id+" has returned!");
+    }
+    @GetMapping("/patient/followeeNum")
+    public Response<Integer> followeeTotal(){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        Integer followeesNum = doctorInteractService.getFolloweesNum(user_id);
+        return Response.success(followeesNum,"The total followees of "+user_id+" has returned!");
+    }
 //  医生确认患者申请
     @PostMapping("/confirmPatient")
     public ResponseEntity<Response<String>> doctorConfirmPatient(@RequestParam("messageId") String messageId){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         String result="confirm";
-        //UserDTO user =new UserDTO(null,"SHJ","121","doctor");
         try {
-            doctorInteractService.confirmPatient(messageId, "121");
+            doctorInteractService.confirmPatient(messageId, user_id);
         }catch (DuplicateKeyException e){
-            return new ResponseEntity<>(Response.fail(e.getMessage().substring(0,100)),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
         } catch (NullPointerException e) {
-            return new ResponseEntity<>(Response.fail(e.getMessage().substring(0,100)),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
+        }catch (IllegalArgumentException e){
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
         }
         return new ResponseEntity<>(Response.success(result, "success"),HttpStatus.OK);
     }

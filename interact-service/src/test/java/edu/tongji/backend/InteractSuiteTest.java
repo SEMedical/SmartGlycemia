@@ -39,6 +39,10 @@ public class InteractSuiteTest {
     public void testSubscription(){
         patientInteractService.subscribeDoctor(1,108);
     }
+    @Test
+    public void testConfirmPatient(){
+        doctorInteractService.confirmPatient("2024-06-18 at 08:52:55 UTC","108");
+    }
     void testKeyWordSearch(String keyword){
         List<DoctorDTO2> doctors = patientInteractService.searchAll(keyword);
         for (DoctorDTO2 doctor : doctors) {
