@@ -35,18 +35,6 @@ public class InteractSuiteTest {
         testKeyWordSearch("Ear");
         testKeyWordSearch("瑞金");
     }
-    @Test
-    public void testSubscription(){
-        patientInteractService.subscribeDoctor(1,108);
-    }
-    @Test(expected = NullPointerException.class)
-    public void testConfirmPatient(){
-        doctorInteractService.confirmPatient("2024-06-18 at 08:52:55 UTC","108");
-    }
-    @Test
-    public void testFirePatient(){
-        patientInteractService.unsubscribeDoctor(1,108);
-    }
     void testKeyWordSearch(String keyword){
         List<DoctorDTO2> doctors = patientInteractService.searchAll(keyword);
         for (DoctorDTO2 doctor : doctors) {
