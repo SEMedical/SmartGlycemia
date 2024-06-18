@@ -21,6 +21,10 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/health/**,/api/login/**,/api/register/**
+        - id: interact-service
+          uri: lb://interact-service
+          predicates:
+            - Path=/api/interaction/**
         - id: oa-service
           uri: lb://oa-service
           predicates:
@@ -37,7 +41,7 @@ spring:
       server-addr: ${NACOS_ADDR}
       discovery:
         cluster-name: Shanghai
-        namespace: ${NACOS_NAMESPACE}
+        namespace: ${NACOS_PRO_NAMESPACE}
         ephemeral: false
         group: PATIENT
         ip: ${SELF_IP:localhost}
