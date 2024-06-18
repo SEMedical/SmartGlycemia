@@ -35,6 +35,10 @@ public class InteractSuiteTest {
         testKeyWordSearch("Ear");
         testKeyWordSearch("瑞金");
     }
+    @Test
+    public void testSubscription(){
+        patientInteractService.subscribeDoctor(1,108);
+    }
     void testKeyWordSearch(String keyword){
         List<DoctorDTO2> doctors = patientInteractService.searchAll(keyword);
         for (DoctorDTO2 doctor : doctors) {

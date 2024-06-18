@@ -25,7 +25,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/error","/api/login/*","/api/register/*","/api/interaction/*","/api/health/*","/api/login/sign/*",
                         "/api/glycemia/*","/api/exercise/*","/api/sports/*","/api/login/getMaxUserId","/api/oa/register",
                         "/api/register/refresh",
-                        "/api/interaction/*",
+                        "/api/interaction/*","/api/interaction/patient/*",
                         "/api/health/doctor/*","/api/glycemia/doctor/*",
                         "/api/login/getContactForAdmin","/api/login/updateAdminInfo","/api/register/registerHelper")
                 .order(1);

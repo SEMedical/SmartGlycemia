@@ -44,8 +44,11 @@ public class PatientInteractServiceImpl implements PatientInteractService {
         Map<String,String> maps=new TreeMap<>();
         maps.put("id", String.valueOf(userId));//Scalability can't change it to KV
         PatientList patientInfo = doctorInteractMapper.getPatientInfo(String.valueOf(userId));
-        maps.put("name",patientInfo.getPatientName());
-        maps.put("age",patientInfo.getPatientAge().toString());
+        if(patientInfo!=null) {
+            maps.put("name", patientInfo.getPatientName());
+            if (patientInfo.getPatientAge() != null)
+                maps.put("age", patientInfo.getPatientAge().toString());
+        }
         stringRedisTemplate.expire(FOLLOWER_KEY+format,FOLLOWER_KEY_TTL, TimeUnit.DAYS);
         stringRedisTemplate.opsForHash().putAll(FOLLOWER_KEY+format,maps);
     }

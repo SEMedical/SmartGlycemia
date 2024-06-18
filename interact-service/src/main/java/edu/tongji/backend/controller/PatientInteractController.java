@@ -35,7 +35,7 @@ public class PatientInteractController {
 
     }
 
-    @PostMapping("/subscribeDoctor")
+    @PostMapping("/patient/subscribeDoctor")
     //患者向医生提交好友申请
     public ResponseEntity<Response<Void>> SubscribeDoctor(@RequestParam("doctor_id") int doctor_id){
         UserDTO user= UserHolder.getUser();

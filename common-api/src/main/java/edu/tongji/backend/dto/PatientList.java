@@ -5,6 +5,9 @@ public class PatientList {
     String patientName;
     String patientAvatar = "none";
 
+    public PatientList() {
+    }
+
     public Integer getPatientAge() {
         return patientAge;
     }
