@@ -1,6 +1,5 @@
 package edu.tongji.backend.controller;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.tongji.backend.clients.UserClient2;
 import edu.tongji.backend.dto.AdminDTO;
 import edu.tongji.backend.dto.UserDTO;

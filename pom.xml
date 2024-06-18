@@ -9,6 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <modules>
+        <module>interact-service</module>
         <module>oa-service</module>
         <module>user-service</module>
         <module>glycemia-service</module>

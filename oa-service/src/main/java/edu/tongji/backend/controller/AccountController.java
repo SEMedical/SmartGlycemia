@@ -219,7 +219,7 @@ public class AccountController {
      *
      */
     @PostMapping("/addAccount")
-    public ResponseEntity<Response<String>> addAccount2(@RequestBody DoctorDTO doctor)
+    public ResponseEntity<Response<String>> addAccount2(@RequestBody DoctorDTO1 doctor)
             throws IOException, JSONException{
         return addAccount(doctor.getHospital_id(), doctor.getId_card(), doctor.getDepartment(),
                 doctor.getTitle(),doctor.getPhoto_path(),

@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.tongji.backend.dto.DoctorDTO;
+import edu.tongji.backend.dto.DoctorDTO1;
 import edu.tongji.backend.dto.HospitalDTO;
 import edu.tongji.backend.entity.Hospital;
 import edu.tongji.backend.service.impl.AccountServiceImpl;
@@ -140,7 +140,7 @@ public class MockTest {
         maps.put("id","0");
         maps.put("role","admin");
         stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
-        DoctorDTO doctor=new DoctorDTO(hospitalId,idCard,department,title,photoPath,contact);
+        DoctorDTO1 doctor=new DoctorDTO1(hospitalId,idCard,department,title,photoPath,contact);
         String jsonString = JSONObject.toJSONString(doctor);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/oa/addAccount")

@@ -1,0 +1,38 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.tongji.backend.mapper.PatientInteractMapper">
+<resultMap id="DoctorResultMap" type="edu.tongji.backend.dto.DoctorDTO2">
+    <result property="name" column="name"/>
+    <result property="avatar" column="avatar" />
+    <result property="contact" column="contact" />
+    <result property="hospital_id" column="hospital_id" />
+    <result property="doctor_id" column="doctor_id" />
+    <result property="title" column="title" />
+    <result property="department" column="department"/>
+    <result property="hospital_name" column="hospital_name"/>
+    <result property="address" column="address"/>
+    <result property="introduction" column="introduction"/>
+</resultMap>
+    <!--TODO-->
+    <select id="searchName" resultMap="DoctorResultMap">
+        select name,contact,'/data/1.jpg' as avatar,title,department,hospital_id,doctor_id from user join doctor where user.name like CONCAT('%',#{ keyword },'%')
+                                         and user.role='doctor'
+                                         and user_id=doctor_id;
+    </select>
+
+    <select id="searchAll" resultMap="DoctorResultMap">
+        select name,contact,'/data/1.jpg' as avatar,title,department,doctor.hospital_id,doctor_id,hospital.hospital_name as hospital_name,
+               hospital.address as address,hospital.introduction as introduction
+        from hospital join doctor join user
+                 where (hospital_name like CONCAT('%',#{ keyword },'%')
+                            or user.name like CONCAT('%',#{ keyword },'%')
+                            or doctor.department like  CONCAT('%',#{ keyword },'%')
+                            or doctor.title =#{ keyword }
+                            or user.contact =#{ keyword }
+                            or hospital.address like  CONCAT('%',#{ keyword },'%')
+                            or hospital.introduction like  CONCAT('%',#{ keyword },'%'))
+                   and doctor.hospital_id=hospital.hospital_id
+                   and doctor_id=user_id
+    </select>
+</mapper>
