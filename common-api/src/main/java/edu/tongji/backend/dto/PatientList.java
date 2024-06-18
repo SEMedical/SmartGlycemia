@@ -5,10 +5,22 @@ public class PatientList {
     String patientName;
     String patientAvatar = "none";
 
+    public Integer getPatientAge() {
+        return patientAge;
+    }
+
+    public void setPatientAge(Integer patientAge) {
+        this.patientAge = patientAge;
+    }
+
+    Integer patientAge;
     // 构造方法
-    public PatientList(String patientId, String patientName) {
+
+    public PatientList(String patientId, String patientName, String patientAvatar, Integer patientAge) {
         this.patientId = patientId;
         this.patientName = patientName;
+        this.patientAvatar = patientAvatar;
+        this.patientAge = patientAge;
     }
 
     // 可选：添加getter和setter方法

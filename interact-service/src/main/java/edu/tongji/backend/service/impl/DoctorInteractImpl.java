@@ -17,6 +17,8 @@ import edu.tongji.backend.service.DoctorInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static edu.tongji.backend.util.RedisConstants.SUBSRIBE_DOCTOR_KEY;
+
 @Service
 public class DoctorInteractImpl implements DoctorInteractService {
     @Autowired
@@ -53,7 +55,7 @@ public class DoctorInteractImpl implements DoctorInteractService {
 
     @Override
     public applyList[] doctorGetApplicationList(String doctorId) {
-        List<String> messages = stringRedisTemplate.opsForList().range("subscription:toDoctor:key:" + doctorId, 0, 1);
+        List<String> messages = stringRedisTemplate.opsForList().range(SUBSRIBE_DOCTOR_KEY + doctorId, 0, -1);
 
         applyList[] applyList = new applyList[messages.size()];
         System.out.println(messages);
@@ -62,9 +64,16 @@ public class DoctorInteractImpl implements DoctorInteractService {
             String message = messages.get(i);
             // 获取 message 对应的数据
             Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(message);
-            String id = entries.get("id").toString();
-            message=message.substring("subscription:toDoctor:key:".length()-2);
-            applyList[i]=new applyList(message,id);
+            try {
+                String id = entries.get("id").toString();
+                String name = entries.get("name").toString();
+                String age = entries.get("age").toString();
+                message = message.substring(SUBSRIBE_DOCTOR_KEY.length() - 2);
+                applyList[i] = new applyList(message, id, name, age);
+            }catch (Exception e){
+                stringRedisTemplate.opsForList().remove(SUBSRIBE_DOCTOR_KEY+doctorId,0,message);
+                applyList[i]=null;
+            }
 
         }
         return applyList;

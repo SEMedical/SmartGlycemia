@@ -12,4 +12,6 @@ public interface DoctorInteractMapper {
 
     @Select("select gender,type,age,p.height AS height,weight,diagnosed_year from user u RIGHT JOIN profile p  ON  u.user_id = p.patient_id where patient_id=#{patientId}")
     SinglePatientInfo getSinglePatientInfo(String patientId);
+    @Select("select patient_id,name,age from user u RIGHT JOIN profile p  ON  u.user_id = p.patient_id where u.user_id=#{user_id}")
+    PatientList getPatientInfo(String user_id);
 }
