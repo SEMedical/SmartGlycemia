@@ -42,7 +42,7 @@ public class PatientInteractController {
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         try {
-            patientInteractService.unsubscribeDoctor( doctor_id,Integer.valueOf(user_id));
+            patientInteractService.unsubscribeDoctor( Integer.valueOf(user_id),doctor_id);
         }catch (Exception e){
             e.printStackTrace();
             if(e instanceof IllegalArgumentException){
@@ -59,7 +59,7 @@ public class PatientInteractController {
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
         try {
-            patientInteractService.unsubscribeDoctor(Integer.valueOf(user_id), patient_id);
+            patientInteractService.unsubscribeDoctor(patient_id,Integer.valueOf(user_id));
         }catch (Exception e){
             e.printStackTrace();
             if(e instanceof IllegalArgumentException){

@@ -71,7 +71,7 @@ public class PatientInteractServiceImpl implements PatientInteractService {
         }
         stringRedisTemplate.opsForValue().decrement(FOLLOWEES_NUM_KEY + user_id.toString());
         stringRedisTemplate.opsForValue().decrement(FOLLOWERS_NUM_KEY + doctorId);
-        return subscriptionMapper.removeSubscription(user_id.toString(),String.valueOf(doctorId));
+        return subscriptionMapper.removeSubscription(String.valueOf(doctorId),user_id.toString());
     }
 
 }
