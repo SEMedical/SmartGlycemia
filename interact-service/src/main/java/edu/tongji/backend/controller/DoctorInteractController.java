@@ -1,10 +1,12 @@
 package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.PatientList;
+import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.dto.applyList;
 import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.service.DoctorInteractService;
+import edu.tongji.backend.util.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -47,8 +49,10 @@ public class DoctorInteractController {
 
 //    医生获取申请列表
     @GetMapping("/getApplicationList")
-    public  Response<applyList[]> doctorGetApplicationList(String doctorId){
-        applyList[] p_list = doctorInteractService.doctorGetApplicationList(doctorId);
+    public  Response<applyList[]> doctorGetApplicationList(){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        applyList[] p_list = doctorInteractService.doctorGetApplicationList(user_id);
         return Response.success(p_list, "success");
     }
     @GetMapping("/getPatientInfo")

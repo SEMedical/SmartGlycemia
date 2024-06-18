@@ -1,8 +1,10 @@
 package edu.tongji.backend.controller;
 
 import edu.tongji.backend.dto.DoctorDTO2;
+import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.service.PatientInteractService;
 import edu.tongji.backend.util.Response;
+import edu.tongji.backend.util.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +38,10 @@ public class PatientInteractController {
     @PostMapping("/subscribeDoctor")
     //患者向医生提交好友申请
     public ResponseEntity<Response<Void>> SubscribeDoctor(@RequestParam("doctor_id") int doctor_id){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
         try {
-            patientInteractService.subscribeDoctor(1, doctor_id);
+            patientInteractService.subscribeDoctor(Integer.valueOf(user_id), doctor_id);
         }catch (Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
