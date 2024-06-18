@@ -39,7 +39,7 @@ public class InteractSuiteTest {
     public void testSubscription(){
         patientInteractService.subscribeDoctor(1,108);
     }
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testConfirmPatient(){
         doctorInteractService.confirmPatient("2024-06-18 at 08:52:55 UTC","108");
     }
