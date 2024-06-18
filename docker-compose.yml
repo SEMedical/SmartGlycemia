@@ -30,6 +30,16 @@ services:
     volumes:
       - /tmp/logs/gateway:/logs
       - /tmp/logs/gateway/csp:/root/logs
+  interact-service:
+    build: ./interact-service
+    ports:
+      - "85:85"
+      - "8724:8724"
+    env_file:
+      - ./web-variables.env
+    volumes:
+      - /tmp/logs/oa-service:/logs
+      - /tmp/logs/oa-service/csp:/root/logs
   oa-service:
     build: ./oa-service
     ports:

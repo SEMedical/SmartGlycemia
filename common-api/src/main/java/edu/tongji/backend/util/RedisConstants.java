@@ -6,6 +6,8 @@ public class RedisConstants {
     public static final Integer LOGIN_TOKEN_TTL=30;//Unit:Minute
     public static final String LOGIN_LIMIT="login:limit:";
     public static final Integer LOGIN_LIMIT_TIMEOUT=12;
+    public static final String ADMIN_PERM_CODE="admin:permission:code:";
+    public static Integer ADMIN_PERM_CODE_TIMEOUT=7;
     public static final Integer LOGIN_CODE_TIMEOUT=1;
     public static final Long CACHE_NULL_TTL=2L;
     public static final String CACHE_GLYCEMIA_KEY="cache:glycemia:";
@@ -28,4 +30,9 @@ public class RedisConstants {
     public static final String USER_PROFILE_KEY="user:profile:";
     public static final Long USER_PROFILE_TTL=30L;
     public static final String EMPHERAL_TOKEN_HEADER="empheral_token_header:";
+    public static final String SUBSRIBE_DOCTOR_KEY="subscription:toDoctor:key:";
+    public static final String FOLLOWER_KEY="message:fromPatient:key:";
+    public static final Long FOLLOWER_KEY_TTL=7L;
+    public static final String FOLLOWERS_NUM_KEY="follower:num:";
+    public static final String FOLLOWEES_NUM_KEY="followee:num:";
 }

@@ -180,15 +180,23 @@ public class LoginController {
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
     }
+    @GetMapping("/getContactForAdmin")
+    String getContactForAdmin(@RequestParam("userId") String userId){
+        String contact=userService.getContact(userId);
+        return contact;
+    }
     @PostMapping("/sign")
     public ResponseEntity<Response<Integer>> sign(){
         UserDTO user= UserHolder.getUser();
         return userService.sign(user);
     }
-    @GetMapping("sign/count")
+    @GetMapping("/sign/count")
     public ResponseEntity<Response<Integer>> signCount(){
         UserDTO user= UserHolder.getUser();
        return userService.signCount(user);
-
+    }
+    @PostMapping("/updateAdminInfo")
+    public Boolean updateAdmin(@RequestBody AdminDTO admin){
+        return userService.updateAdminInfo(admin.getAdminId(),admin.getName(),admin.getContact());
     }
 }

@@ -23,6 +23,9 @@ public class AdminInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //TODO get token in the header
+        if (request.getMethod().equals("OPTIONS")) {
+            return true;
+        }
         if(UserHolder.getUser()==null) {
             response.setStatus(401);
             return false;
