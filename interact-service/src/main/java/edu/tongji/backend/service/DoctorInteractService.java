@@ -1,8 +1,11 @@
 package edu.tongji.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.tongji.backend.dto.PatientList;
 import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.dto.applyList;
+
+import java.util.List;
 
 public interface DoctorInteractService {
 //    获取患者列表
@@ -18,4 +21,6 @@ public interface DoctorInteractService {
     Integer getFollowersNum(String doctor_id);
 
     Integer getFolloweesNum(String userId);
+
+    List<PatientList> getFollowerList(String doctor_id) throws JsonProcessingException;
 }

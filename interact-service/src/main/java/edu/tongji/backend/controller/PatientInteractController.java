@@ -5,6 +5,7 @@ import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.service.PatientInteractService;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.util.UserHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,16 +13,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController//用于处理 HTTP 请求并返回 JSON 格式的数据
 @RequestMapping("/api/interaction")//对应的api路径
 public class PatientInteractController {
     @Autowired
     PatientInteractService patientInteractService;
 
-    /*
-        @Description:查找医生
-        Since released:2.2.0
+    /**
+     *
+     * @param keyword
+     * @return
+     * @since 2.1.0
      */
     @GetMapping("/getDoctor")
     public ResponseEntity<Response<List<DoctorDTO2>>> SearchDoctor(@RequestParam("keyword") String keyword){

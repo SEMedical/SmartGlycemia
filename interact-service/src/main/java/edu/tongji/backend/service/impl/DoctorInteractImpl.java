@@ -1,18 +1,24 @@
 package edu.tongji.backend.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.tongji.backend.dto.PatientList;
 import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.dto.applyList;
 import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.service.DoctorInteractService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.list.TreeList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import edu.tongji.backend.mapper.SubscriptionMapper;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.service.DoctorInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,5 +108,27 @@ public class DoctorInteractImpl implements DoctorInteractService {
             return Integer.valueOf(s);
         }
         return subscriptionMapper.FolloweeNum(user_id);
+    }
+
+    @Override
+    public List<PatientList> getFollowerList(String doctor_id) throws JsonProcessingException {
+        Long l = stringRedisTemplate.opsForZSet().zCard(FOLLOWER_LIST_KEY + doctor_id);
+        String s = stringRedisTemplate.opsForValue().get(FOLLOWEES_NUM_KEY + doctor_id);
+        List<PatientList> res=new ArrayList<>();
+        if(s!=null&&Long.valueOf(s).equals(l)) {
+            Set<String> followers = stringRedisTemplate.opsForZSet().range(FOLLOWER_LIST_KEY + doctor_id, 0, -1);
+            for (String follower : followers) {
+                PatientList patientList = new PatientList(follower);
+                res.add(patientList);
+            }
+            return res;
+        }else{
+            List<PatientList> followerList = doctorInteractMapper.getFollowerList(doctor_id);
+            stringRedisTemplate.delete(FOLLOWER_LIST_KEY+doctor_id);
+            for (PatientList patientList : followerList) {
+                stringRedisTemplate.opsForZSet().add(FOLLOWER_LIST_KEY+doctor_id,patientList.toString(), Timestamp.valueOf(patientList.getTimestamp()).getTime());
+            }
+            return followerList;
+        }
     }
 }

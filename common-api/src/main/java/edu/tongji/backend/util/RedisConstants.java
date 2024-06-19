@@ -35,4 +35,5 @@ public class RedisConstants {
     public static final Long FOLLOWER_KEY_TTL=7L;
     public static final String FOLLOWERS_NUM_KEY="follower:num:";
     public static final String FOLLOWEES_NUM_KEY="followee:num:";
+    public static final String FOLLOWER_LIST_KEY="follower:list:";
 }
