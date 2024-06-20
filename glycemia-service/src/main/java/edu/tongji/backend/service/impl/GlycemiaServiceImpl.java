@@ -188,11 +188,6 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         // 遍历时间点，每1天一次，直到当前时间
         while (startDate.isBefore(endTime)) {
             log.debug(startDate.toString());
-            if(!history_glycemia_bf.mightContain(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter))){
-                log.debug("No data found at" + startDate.format(formatter));
-                startDate = startDate.plusDays(1);
-                continue;
-            }
             String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
             Statistics glycemiaValue=new Statistics();
             if(StrUtil.isNotBlank(glycemiaJson))
@@ -205,7 +200,6 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                     startDate = startDate.plusDays(1);
                     continue;
                 }
-                history_glycemia_bf.put(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
                 stringRedisTemplate.opsForValue().set(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),JSON.toJSONString(glycemiaValue));
                 stringRedisTemplate.expire(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter),
                         (long)(CACHE_HISTORY_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);

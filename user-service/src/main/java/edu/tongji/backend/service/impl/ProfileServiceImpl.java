@@ -146,6 +146,11 @@ public class ProfileServiceImpl extends ServiceImpl<ProfileMapper, Profile> impl
     }
 
     @Override
+    public String getContact2(Integer patientId) {
+        return userMapper.getContact(patientId.toString());
+    }
+
+    @Override
     public Integer getUserAge(Integer userId) {
         return profileMapper.getUserAge(userId);
     }
