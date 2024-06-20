@@ -2,6 +2,7 @@ package edu.tongji.backend.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.emory.mathcs.backport.java.util.Arrays;
+import edu.tongji.backend.dto.DoctorDTO3;
 import edu.tongji.backend.dto.PatientList;
 import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.dto.applyList;
@@ -17,10 +18,8 @@ import org.springframework.stereotype.Service;
 import edu.tongji.backend.mapper.SubscriptionMapper;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.service.DoctorInteractService;
@@ -41,15 +40,47 @@ public class DoctorInteractImpl implements DoctorInteractService {
     StringRedisTemplate stringRedisTemplate;
 //医生获取患者列表
     @Override
-    public PatientList[] getPatientList() {
-        PatientList[] p_list=doctorInteractMapper.getPatientList();
-        return p_list;
+    public PatientList[] getPatientList() throws JsonProcessingException {
+        Long size = stringRedisTemplate.opsForZSet().size(PATIENT_SET);
+        if(size==0) {
+            PatientList[] p_list = doctorInteractMapper.getPatientList();
+            for (PatientList patientList : p_list) {
+                stringRedisTemplate.opsForZSet().add(PATIENT_SET,patientList.toString(),Double.valueOf(patientList.getPatientId()));
+            }
+            stringRedisTemplate.expire(PATIENT_SET,PATIENT_SET_TTL,TimeUnit.DAYS);
+            return p_list;
+        }else{
+            List<PatientList> lists=new ArrayList<>();
+            Set<String> range = stringRedisTemplate.opsForZSet().range(PATIENT_SET, 0, -1);
+            for (String s : range) {
+                lists.add(new PatientList(s));
+            }
+            return lists.toArray(new PatientList[size.intValue()]);
+        }
     }
 
     @Override
     public SinglePatientInfo getSinglePatientInfo(String patientId) {
-        SinglePatientInfo p_info=doctorInteractMapper.getSinglePatientInfo(patientId);
-        return p_info;
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(PATIENT_LIST_PREFIX + patientId);
+        if(entries==null||entries.size()==0) {
+            SinglePatientInfo p_info = doctorInteractMapper.getSinglePatientInfo(patientId);
+            Map<String,String> maps=new HashMap<>();
+            maps.put("gender",p_info.getGender());
+            maps.put("type",p_info.getType());
+            maps.put("age",p_info.getAge().toString());
+            maps.put("weight",p_info.getWeight().toString());
+            maps.put("height",p_info.getHeight().toString());
+            maps.put("diagnosed_year",p_info.getDiagnosed_year().toString());
+            stringRedisTemplate.opsForHash().putAll(PATIENT_LIST_PREFIX+patientId,maps);
+            stringRedisTemplate.expire(PATIENT_LIST_PREFIX+patientId,PATIENT_LIST_TTL,TimeUnit.DAYS);
+            return p_info;
+        }else{
+            SinglePatientInfo singlePatientInfo = new SinglePatientInfo(entries.get("gender").toString(),
+                    entries.get("type").toString(), Integer.valueOf(entries.get("age").toString()),
+                    Integer.valueOf(entries.get("weight").toString()),Integer.valueOf( entries.get("height").toString()),
+                    Integer.valueOf(entries.get("diagnosed_year").toString()));
+            return singlePatientInfo;
+        }
     }
 
     @Override
@@ -159,5 +190,29 @@ public class DoctorInteractImpl implements DoctorInteractService {
         lists.add(SUBSRIBE_DOCTOR_KEY);
         stringRedisTemplate.execute(REM_APPL_SCRIPT, lists, messageId,doctor_id);
         return true;
+    }
+
+    @Override
+    public DoctorDTO3 getDoctorInfo(String doctor_id) {
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(VERBOSE_DOCTOR_INFO + doctor_id);
+        if(entries==null||entries.size()==0) {
+            Map<String,String> maps=new HashMap<>();
+            DoctorDTO3 verboseDoctorInfo = doctorInteractMapper.getVerboseDoctorInfo(doctor_id);
+            maps.put("user_name",verboseDoctorInfo.getUser_name());
+            maps.put("user_id",verboseDoctorInfo.getUser_id());
+            maps.put("department",verboseDoctorInfo.getDepartment());
+            maps.put("title",verboseDoctorInfo.getTitle());
+            maps.put("user_group",verboseDoctorInfo.getUser_group());
+            maps.put("hospital_name",verboseDoctorInfo.getHospital_name());
+            maps.put("user_phone",verboseDoctorInfo.getUser_phone());
+            stringRedisTemplate.opsForHash().putAll(VERBOSE_DOCTOR_INFO+doctor_id,maps);
+            stringRedisTemplate.expire(VERBOSE_DOCTOR_INFO+doctor_id,VERBOSE_DOCTOR_INFO_TTL, TimeUnit.DAYS);
+            return verboseDoctorInfo;
+        }else{
+            DoctorDTO3 res=new DoctorDTO3(entries.get("user_name"),entries.get("user_group"),
+                    entries.get("user_phone"),entries.get("user_id"),entries.get("hospital_name"),
+                    entries.get("department"),entries.get("title"));
+            return res;
+        }
     }
 }

@@ -24,11 +24,17 @@ public class PatientList {
     public PatientList(String rawJson) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(rawJson);
-        patientId = jsonNode.get("patientId").toString();
-        patientName=jsonNode.get("patientName").toString();
-        patientAvatar=jsonNode.get("patientAvatar").toString();
-        timestamp=jsonNode.get("timestamp").toString();
-        patientAge=Integer.valueOf(jsonNode.get("patientAge").toString());
+        patientId = jsonNode.get("patientId").asText();
+        patientName=jsonNode.get("patientName").asText();
+        patientAvatar=jsonNode.get("patientAvatar").asText();
+        if(jsonNode.get("timestamp")==null)
+            timestamp=null;
+        else
+            timestamp=jsonNode.get("timestamp").toString();
+        if(jsonNode.get("patientAge")==null)
+            patientAge=0;
+        else
+           patientAge=Integer.valueOf(jsonNode.get("patientAge").toString());
     }
     public String toString(){
         return JSONObject.toJSONString(this);

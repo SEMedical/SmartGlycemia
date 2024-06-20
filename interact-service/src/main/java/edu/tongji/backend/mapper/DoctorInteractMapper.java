@@ -1,5 +1,6 @@
 package edu.tongji.backend.mapper;
 
+import edu.tongji.backend.dto.DoctorDTO3;
 import edu.tongji.backend.dto.PatientList;
 
 import edu.tongji.backend.dto.SinglePatientInfo;
@@ -18,4 +19,5 @@ public interface DoctorInteractMapper {
     SinglePatientInfo getSinglePatientInfo(String patientId);
     @Select("select patient_id,name as patientName,age as PatientAge from user u RIGHT JOIN profile p  ON  u.user_id = p.patient_id where u.user_id=#{user_id} limit 1")
     PatientList getPatientInfo(String user_id);
+    DoctorDTO3 getVerboseDoctorInfo(String doctor_id);
 }

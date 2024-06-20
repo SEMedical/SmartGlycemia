@@ -1,10 +1,7 @@
 package edu.tongji.backend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.tongji.backend.dto.PatientList;
-import edu.tongji.backend.dto.UserDTO;
-import edu.tongji.backend.dto.applyList;
-import edu.tongji.backend.dto.SinglePatientInfo;
+import edu.tongji.backend.dto.*;
 import edu.tongji.backend.util.Response;
 import edu.tongji.backend.service.DoctorInteractService;
 import edu.tongji.backend.util.UserHolder;
@@ -32,7 +29,7 @@ public class DoctorInteractController {
     private DoctorInteractService doctorInteractService;
     //医生获取患者列表
     @GetMapping("/getPatientList")
-    public Response<PatientList[]> doctorGetPatientList() {
+    public Response<PatientList[]> doctorGetPatientList() throws JsonProcessingException {
         PatientList[] p_list = doctorInteractService.getPatientList();
         return Response.success(p_list, "success");
     }
@@ -101,6 +98,12 @@ public class DoctorInteractController {
         SinglePatientInfo p_info=doctorInteractService.getSinglePatientInfo(patientId);
         return Response.success(p_info, "success");
     }
-
+    @GetMapping("/DoctorInfo")
+    public Response<DoctorDTO3> getDoctorInfo(){
+        UserDTO user= UserHolder.getUser();
+        String user_id= user.getUserId();
+        DoctorDTO3 doctorInfo = doctorInteractService.getDoctorInfo(user_id);
+        return Response.success(doctorInfo,"You've get the verbose information about yourself");
+    }
 
 }

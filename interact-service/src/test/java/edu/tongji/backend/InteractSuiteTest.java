@@ -37,7 +37,18 @@ public class InteractSuiteTest {
         testKeyWordSearch("Ear");
         testKeyWordSearch("瑞金");
     }
-
+    @Test
+    public void getDoctorInfoBatch(){
+        doctorInteractService.getDoctorInfo("108");
+    }
+    @Test
+    public void getPatientList() throws JsonProcessingException {
+        doctorInteractService.getPatientList();
+    }
+    @Test
+    public void getPatientInfoBatch(){
+        doctorInteractService.getSinglePatientInfo("8");
+    }
     @Test
     public void testGetFollowerList() throws JsonProcessingException {
         List<PatientList> followerList = doctorInteractService.getFollowerList("121");

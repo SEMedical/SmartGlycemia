@@ -36,6 +36,8 @@ public class SinglePatientInfo {
     }
 
     public Integer getAge() {
+        if(age==null)
+            return -1;
         return age;
     }
 
@@ -44,6 +46,8 @@ public class SinglePatientInfo {
     }
 
     public Integer getHeight() {
+        if(height==null)
+            height=-1;
         return height;
     }
 
@@ -52,6 +56,8 @@ public class SinglePatientInfo {
     }
 
     public Integer getWeight() {
+        if(weight==null)
+            return -1;
         return weight;
     }
 
@@ -60,6 +66,8 @@ public class SinglePatientInfo {
     }
 
     public Integer getDiagnosed_year() {
+        if(diagnosed_year==null)
+            return 1970;
         return diagnosed_year;
     }
 
