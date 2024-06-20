@@ -23,4 +23,6 @@ public interface DoctorInteractService {
     Integer getFolloweesNum(String userId);
 
     List<PatientList> getFollowerList(String doctor_id) throws JsonProcessingException;
+
+    Boolean discardPatient(String messageId, String userId);
 }

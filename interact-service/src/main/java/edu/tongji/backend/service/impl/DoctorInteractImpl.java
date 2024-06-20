@@ -1,6 +1,7 @@
 package edu.tongji.backend.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.tongji.backend.dto.PatientList;
 import edu.tongji.backend.dto.SinglePatientInfo;
 import edu.tongji.backend.dto.applyList;
@@ -9,7 +10,9 @@ import edu.tongji.backend.service.DoctorInteractService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.list.TreeList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import edu.tongji.backend.mapper.SubscriptionMapper;
 
@@ -24,6 +27,7 @@ import edu.tongji.backend.service.DoctorInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static edu.tongji.backend.service.impl.PatientInteractServiceImpl.BOTH_DEC_SCRIPT;
 import static edu.tongji.backend.util.RedisConstants.*;
 
 @Slf4j
@@ -57,13 +61,18 @@ public class DoctorInteractImpl implements DoctorInteractService {
         String id = entries.get("id").toString();
         log.info("The doctor"+doctor_id+" wants to confirm "+id);
         Integer subscribed = subscriptionMapper.Subscribed(doctor_id, id);
-        stringRedisTemplate.delete(FOLLOWER_KEY+messageId);
-        stringRedisTemplate.opsForList().remove(SUBSRIBE_DOCTOR_KEY+doctor_id,0,FOLLOWER_KEY+messageId);
+        List<String> lists=new ArrayList<>();
+        lists.add(FOLLOWER_KEY);
+        lists.add(SUBSRIBE_DOCTOR_KEY);
+        stringRedisTemplate.execute(REM_APPL_SCRIPT, lists, messageId,doctor_id);
         if(subscribed>0){
             throw new IllegalArgumentException("The patient "+id+" has followed you!");
         }
-        stringRedisTemplate.opsForValue().increment(FOLLOWEES_NUM_KEY + id);
-        stringRedisTemplate.opsForValue().increment(FOLLOWERS_NUM_KEY + doctor_id);
+        //Make the increment of followers and followees atomic
+        List<String> lists2=new ArrayList<>();
+        lists2.add(FOLLOWEES_NUM_KEY + id);
+        lists2.add(FOLLOWERS_NUM_KEY + doctor_id);
+        stringRedisTemplate.execute(BOTH_DEC_SCRIPT,lists2,"INCR");
         return subscriptionMapper.addSubscription(doctor_id,id);
     }
 
@@ -130,5 +139,25 @@ public class DoctorInteractImpl implements DoctorInteractService {
             }
             return followerList;
         }
+    }
+    private static final DefaultRedisScript<String> REM_APPL_SCRIPT;
+    static {
+        REM_APPL_SCRIPT=new DefaultRedisScript<>();
+        REM_APPL_SCRIPT.setLocation(new ClassPathResource("rem_appl.lua"));
+        REM_APPL_SCRIPT.setResultType(String.class);
+    }
+    @Override
+    public Boolean discardPatient(String messageId, String doctor_id) {
+        Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(FOLLOWER_KEY + messageId);
+        if(entries.size()==0){
+            throw new NullPointerException("The message you found doesn't exist!");
+        }
+        String id = entries.get("id").toString();
+        log.info("The doctor"+doctor_id+" wants to discard "+id);
+        List<String> lists=new ArrayList<>();
+        lists.add(FOLLOWER_KEY);
+        lists.add(SUBSRIBE_DOCTOR_KEY);
+        stringRedisTemplate.execute(REM_APPL_SCRIPT, lists, messageId,doctor_id);
+        return true;
     }
 }

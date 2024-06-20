@@ -7,15 +7,14 @@ import edu.tongji.backend.mapper.PatientInteractMapper;
 import edu.tongji.backend.mapper.SubscriptionMapper;
 import edu.tongji.backend.service.PatientInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.RedisConstants.*;
@@ -35,7 +34,18 @@ public class PatientInteractServiceImpl implements PatientInteractService {
         List<DoctorDTO2> D=patientInteractMapper.searchAll(keyword);
         return D;
     }
-
+    private static final DefaultRedisScript<String> SUB_SCRIPT;
+    static {
+        SUB_SCRIPT=new DefaultRedisScript<>();
+        SUB_SCRIPT.setLocation(new ClassPathResource("subscribe.lua"));
+        SUB_SCRIPT.setResultType(String.class);
+    }
+    public static final DefaultRedisScript<String> BOTH_DEC_SCRIPT;
+    static {
+        BOTH_DEC_SCRIPT=new DefaultRedisScript<>();
+        BOTH_DEC_SCRIPT.setLocation(new ClassPathResource("both_inc_dec.lua"));
+        BOTH_DEC_SCRIPT.setResultType(String.class);
+    }
     @Override
     public void subscribeDoctor(int userId,int doctorId) throws IllegalArgumentException {
         Integer subscribed = subscriptionMapper.Subscribed(String.valueOf(doctorId), String.valueOf(userId));
@@ -45,17 +55,12 @@ public class PatientInteractServiceImpl implements PatientInteractService {
         SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
         Date date = new Date(System.currentTimeMillis());
         String format = formatter.format(date);
-        stringRedisTemplate.opsForList().leftPush(SUBSRIBE_DOCTOR_KEY+doctorId,FOLLOWER_KEY+format);
-        Map<String,String> maps=new TreeMap<>();
-        maps.put("id", String.valueOf(userId));//Scalability can't change it to KV
+        List<String> lists=new ArrayList<>();
+        lists.add(SUBSRIBE_DOCTOR_KEY+doctorId);
+        lists.add(FOLLOWER_KEY+format);
         PatientList patientInfo = doctorInteractMapper.getPatientInfo(String.valueOf(userId));
-        if(patientInfo!=null) {
-            maps.put("name", patientInfo.getPatientName());
-            if (patientInfo.getPatientAge() != null)
-                maps.put("age", patientInfo.getPatientAge().toString());
-        }
-        stringRedisTemplate.expire(FOLLOWER_KEY+format,FOLLOWER_KEY_TTL, TimeUnit.DAYS);
-        stringRedisTemplate.opsForHash().putAll(FOLLOWER_KEY+format,maps);
+        stringRedisTemplate.execute(SUB_SCRIPT,lists,String.valueOf(userId),patientInfo.getPatientName()
+        ,patientInfo.getPatientAge().toString(),String.valueOf(FOLLOWER_KEY_TTL*86400));
     }
 
     @Override
@@ -69,8 +74,10 @@ public class PatientInteractServiceImpl implements PatientInteractService {
         if(subscribed==0){
             throw new IllegalArgumentException("You don't follow the "+doctorId);
         }
-        stringRedisTemplate.opsForValue().decrement(FOLLOWEES_NUM_KEY + user_id.toString());
-        stringRedisTemplate.opsForValue().decrement(FOLLOWERS_NUM_KEY + doctorId);
+        List<String> lists=new ArrayList<>();
+        lists.add(FOLLOWEES_NUM_KEY + user_id.toString());
+        lists.add(FOLLOWERS_NUM_KEY + doctorId);
+        stringRedisTemplate.execute(BOTH_DEC_SCRIPT,lists,"DECR");
         return subscriptionMapper.removeSubscription(String.valueOf(doctorId),user_id.toString());
     }
 

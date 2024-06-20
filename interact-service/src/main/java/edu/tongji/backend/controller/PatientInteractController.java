@@ -68,7 +68,7 @@ public class PatientInteractController {
             if(e instanceof IllegalArgumentException){
                 return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
             }else
-                return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(Response.success(null,"Kicked successfully"),HttpStatus.NO_CONTENT);
     }
@@ -84,7 +84,7 @@ public class PatientInteractController {
             if(e instanceof IllegalArgumentException){
                 return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.OK);
             }else
-                return new ResponseEntity<>(Response.fail("Redis connect failed"),HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(Response.success(null,"subscribed successfully"),HttpStatus.NO_CONTENT);
     }
