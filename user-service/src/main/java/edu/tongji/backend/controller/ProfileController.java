@@ -43,6 +43,8 @@ public class ProfileController {
     @GetMapping("/doctor/health-record") //对应的api路径
     public Response<ProfileDTO> getHealthRecordForDoctor(Integer patient_id) throws ParseException {
         ProfileDTO profileDTO = profileService.getCompleteProfile(patient_id);
+        profileDTO.setName(profileService.getUserName(patient_id));
+        profileDTO.setContact(profileService.getContact2(patient_id));
 //        if (profileDTO == null) {
 //            return Response.fail("查询健康档案失败");
 //        }

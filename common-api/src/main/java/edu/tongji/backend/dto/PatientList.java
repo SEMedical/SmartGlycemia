@@ -1,53 +1,42 @@
 package edu.tongji.backend.dto;
 
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class PatientList {
     String patientId;
     String patientName;
     String patientAvatar = "none";
 
-    public PatientList() {
-    }
-
-    public Integer getPatientAge() {
-        return patientAge;
-    }
-
-    public void setPatientAge(Integer patientAge) {
-        this.patientAge = patientAge;
-    }
+    String timestamp;
 
     Integer patientAge;
     // 构造方法
 
-    public PatientList(String patientId, String patientName, String patientAvatar, Integer patientAge) {
-        this.patientId = patientId;
-        this.patientName = patientName;
-        this.patientAvatar = patientAvatar;
-        this.patientAge = patientAge;
+    public PatientList(String rawJson) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(rawJson);
+        patientId = jsonNode.get("patientId").asText();
+        patientName=jsonNode.get("patientName").asText();
+        patientAvatar=jsonNode.get("patientAvatar").asText();
+        if(jsonNode.get("timestamp")==null)
+            timestamp=null;
+        else
+            timestamp=jsonNode.get("timestamp").toString();
+        if(jsonNode.get("patientAge")==null)
+            patientAge=0;
+        else
+           patientAge=Integer.valueOf(jsonNode.get("patientAge").toString());
     }
-
-    // 可选：添加getter和setter方法
-    public String getPatientId() {
-        return patientId;
-    }
-
-    public void setPatientId(String patientId) {
-        this.patientId = patientId;
-    }
-
-    public String getPatientName() {
-        return patientName;
-    }
-
-    public void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
-
-    public String getPatientAvatar() {
-        return patientAvatar;
-    }
-
-    public void setPatientAvatar(String patientAvatar) {
-        this.patientAvatar = patientAvatar;
+    public String toString(){
+        return JSONObject.toJSONString(this);
     }
 }

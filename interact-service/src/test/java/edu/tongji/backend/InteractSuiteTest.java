@@ -1,6 +1,8 @@
 package edu.tongji.backend;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.tongji.backend.dto.DoctorDTO2;
+import edu.tongji.backend.dto.PatientList;
 import edu.tongji.backend.service.DoctorInteractService;
 import edu.tongji.backend.service.PatientInteractService;
 import edu.tongji.backend.service.impl.DoctorInteractImpl;
@@ -34,6 +36,23 @@ public class InteractSuiteTest {
         testKeyWordSearch("Dean");
         testKeyWordSearch("Ear");
         testKeyWordSearch("瑞金");
+    }
+    @Test
+    public void getDoctorInfoBatch(){
+        doctorInteractService.getDoctorInfo("108");
+    }
+    @Test
+    public void getPatientList() throws JsonProcessingException {
+        doctorInteractService.getPatientList();
+    }
+    @Test
+    public void getPatientInfoBatch(){
+        doctorInteractService.getSinglePatientInfo("8");
+    }
+    @Test
+    public void testGetFollowerList() throws JsonProcessingException {
+        List<PatientList> followerList = doctorInteractService.getFollowerList("121");
+        System.out.println(followerList);
     }
     void testKeyWordSearch(String keyword){
         List<DoctorDTO2> doctors = patientInteractService.searchAll(keyword);

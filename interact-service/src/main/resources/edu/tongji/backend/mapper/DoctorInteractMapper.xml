@@ -1,0 +1,21 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.tongji.backend.mapper.DoctorInteractMapper">
+    <resultMap id="DoctorInfoMap" type="edu.tongji.backend.dto.DoctorDTO3">
+        <result property="user_name" column="user_name"/>
+        <result property="user_group" column="user_group"/>
+        <result property="user_phone" column="user_phone"/>
+        <result property="user_id" column="user_id"/>
+        <result property="department" column="department"/>
+        <result property="title" column="title"/>
+        <result property="hospital_name" column="hospital_name"/>
+    </resultMap>
+    <select id="getVerboseDoctorInfo" resultMap="DoctorInfoMap">
+        select name as user_name,role as user_group,contact as user_phone,
+        user_id,department,title,hospital_name from user u
+        RIGHT JOIN doctor d ON u.user_id=d.doctor_id
+        RIGHT JOIN hospital h ON h.hospital_id=d.hospital_id
+        where d.doctor_id=#{ doctor_id }
+    </select>
+</mapper>
