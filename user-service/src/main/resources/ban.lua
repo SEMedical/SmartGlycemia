@@ -12,13 +12,13 @@ if size ~= nil and size > 50 then
 end
 
 local count = redis.call('ZCOUNT', session_set, begin_t, now)
-if count < 3 then
+if count < 10 then
     redis.call('ZADD', session_set, now,token)
     redis.call('HSET',token,'icon',icon)
     redis.call('HSET',token,'name',name)
     redis.call('HSET',token,'userId',user_id)
     redis.call('HSET',token,'role',role)
-    redis.call('EXPIRE', token, 30 * 60* 1000)
+    redis.call('EXPIRE', token, 30 * 60)
     return true
 else
     return false
