@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/user-service"
     schedule:
       interval: "weekly"
