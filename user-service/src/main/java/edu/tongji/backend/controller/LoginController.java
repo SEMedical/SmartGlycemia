@@ -17,11 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
-import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
+import static edu.tongji.backend.util.RedisConstants.*;
 
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -180,6 +181,19 @@ public class LoginController {
         log.info("登录成功");
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
+    }
+    @CrossOrigin
+    @DeleteMapping("/logout")
+    public ResponseEntity<Response<Void>> logout(HttpServletRequest request){
+        UserDTO user= UserHolder.getUser();
+        String userId = user.getUserId();
+        String authorization = request.getHeader("Authorization");
+        try {
+            userService.logout(authorization, userId);
+        }catch (Exception e){
+            return new ResponseEntity<>(Response.success(null,"logged out failed!"+e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(Response.success(null,"You've logged out!"),HttpStatus.OK);
     }
     @GetMapping("/getContactForAdmin")
     String getContactForAdmin(@RequestParam("userId") String userId){

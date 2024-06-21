@@ -195,6 +195,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         BAN_SCRIPT.setLocation(new ClassPathResource("ban.lua"));
         BAN_SCRIPT.setResultType(Boolean.class);
     }
+    private static final DefaultRedisScript<Boolean> LOGOUT_SCRIPT;
+    static {
+        LOGOUT_SCRIPT=new DefaultRedisScript<>();
+        LOGOUT_SCRIPT.setLocation(new ClassPathResource("logout.lua"));
+        LOGOUT_SCRIPT.setResultType(Boolean.class);
+    }
     @Override
     public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
         LoginDTO loginDTO = new LoginDTO();
@@ -380,5 +386,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Boolean updateAdminInfo(String adminId,String name, String contact) {
         return userMapper.updateAdmin(adminId,name,contact);
+    }
+
+    @Override
+    public void logout(String authorization,String userId) {
+        List<String> lists=new ArrayList<>();
+        lists.add(SHARED_SESSION_KEY+userId);
+        lists.add(LOGIN_TOKEN_KEY+authorization);
+        stringRedisTemplate.execute(LOGOUT_SCRIPT,lists,"");
     }
 }
