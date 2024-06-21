@@ -13,3 +13,23 @@ updates:
     directory: "/user-service"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/exercise-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/glycemia-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/gateway"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/oa-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/interact-service"
+    schedule:
+      interval: "weekly"
