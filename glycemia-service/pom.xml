@@ -155,7 +155,7 @@
                     <artifactId>mybatis-spring</artifactId>
                 </exclusion>
             </exclusions>
-            <version>3.2.0</version>
+            <version>3.5.5</version>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
