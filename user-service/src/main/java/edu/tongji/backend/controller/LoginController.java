@@ -171,10 +171,11 @@ public class LoginController {
         {
             stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
             Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
-            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
             String msg="You can only try no more than"+ String.valueOf(i)+" times";
             log.warn(msg);
             return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);  //返回错误信息
+        }else if(loginDTO.getName().equals("-1")&&loginDTO.getRole().equals("-1")){
+            return new ResponseEntity<>(Response.fail("You've reached the maximum device limit 3"),HttpStatus.CONFLICT);
         }
         log.info("登录成功");
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
