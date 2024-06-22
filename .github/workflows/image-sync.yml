@@ -1,8 +1,7 @@
 name: Docker Image Sync
 on:
-  pull_request:
-    pull_request:
-      branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * 0'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,13 +15,11 @@ jobs:
           docker pull redis:6.2.14
           docker pull nginx:latest
           docker pull mysql:5.7.43
-          docker pull elasticsearch:7.17.22
       - name: Tar all images
         run: |
           docker save -o redis.tar redis:6.2.14
           docker save -o nginx.tar nginx:latest
           docker save -o mysql.tar mysql:5.7.43
-          docker save -o es.tar elasticsearch:7.17.22
       - name: Upload images
         uses: actions/upload-artifact@v2
         with:
@@ -31,4 +28,3 @@ jobs:
             redis.tar
             nginx.tar
             mysql.tar
-            es.tar
