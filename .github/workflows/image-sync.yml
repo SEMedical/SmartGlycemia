@@ -4,14 +4,15 @@ on:
     branches: [ "*" ]
   push:
     branches: [ "main" ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   project-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: docker build
-        run: docker compose up -d
-      - name: docker run All Applications
+      - name: docker run Redis and Nginx images
         run: |
           docker run -d -p 6379:6379 redis:6.2.14
           docker run -d -p 5173:5173 nginx:latest
