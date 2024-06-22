@@ -1,23 +1,36 @@
 version: "3.8"
 services:
+  # NOTICE: AOF and RDB needs to be at /tmp/redis/data
   redis:
     image: redis:6.2.14
     command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes --daemonize no
-    restart: always
     volumes:
       - /tmp/redis/redis.conf:/usr/local/etc/redis/redis.conf
       - /tmp/redis/data:/data
     ports:
       - 6379:6379
+  # NOTICE: 4 ENV variables are required for the following services,you can define them in web-variables.env
+  mysql:
+    image: mysql:5.7.43
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    env_file:
+      - ./web-variables.env
+    volumes:
+      - /tmp/mysql/data:/var/lib/mysql
+    ports:
+      - 3306:3306
+  # NOTICE: you should deploy the 1st website at /tmp/nginx/html/admin,the 2nd at /tmp/nginx/html/doctor
   nginx:
     image: nginx:latest
     ports:
-      - "5173:80"
+      - "5672:5672"
+      - "5173:5173"
+      - "8858:8858"
     volumes:
-      - /tmp/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
-      - /tmp/nginx/conf/conf.d:/etc/nginx/conf.d
+      - /tmp/nginx/conf:/etc/nginx
       - /tmp/nginx/logs:/var/log/nginx
-      - /tmp/nginx/html1:/usr/share/nginx/html
+      - /tmp/nginx/html:/usr/share/nginx/html
   user-service:
     build: ./user-service
     ports:
