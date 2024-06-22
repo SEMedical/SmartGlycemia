@@ -14,12 +14,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: docker run Redis and Nginx images
         run: |
-          docker run -d -p 6379:6379 redis:6.2.14
-          docker run -d -p 5173:5173 nginx:latest
+          docker pull redis:6.2.14
+          docker pull nginx:latest
+          docker pull mysql:5.7.43
       - name: Tar all images
         run: |
           docker save -o redis.tar redis:6.2.14
           docker save -o nginx.tar nginx:latest
+          docker save -o mysql.tar mysql:5.7.43
       - name: Upload images
         uses: actions/upload-artifact@v2
         with:
