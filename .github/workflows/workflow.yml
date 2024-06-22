@@ -105,7 +105,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
       - name: docker build
-        run: docker compose up -d
+        run: docker compose up -d user-service glycemia-service gateway interact-service oa-service exercise-service
       - name: docker run All Applications
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
