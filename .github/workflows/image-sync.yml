@@ -29,3 +29,4 @@ jobs:
           path: |
             redis.tar
             nginx.tar
+            mysql.tar
