@@ -1,0 +1,28 @@
+name: Docker Image Sync
+on:
+  pull_request:
+    branches: [ "*" ]
+  push:
+    branches: [ "main" ]
+jobs:
+  project-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker build
+        run: docker compose up -d
+      - name: docker run All Applications
+        run: |
+          docker run -d -p 6379:6379 redis:6.2.14
+          docker run -d -p 5173:5173 nginx:latest
+      - name: Tar all images
+        run: |
+          docker save -o redis.tar redis:6.2.14
+          docker save -o nginx.tar nginx:latest
+      - name: Upload images
+        uses: actions/upload-artifact@v2
+        with:
+          name: images
+          path: |
+            redis.tar
+            nginx.tar
