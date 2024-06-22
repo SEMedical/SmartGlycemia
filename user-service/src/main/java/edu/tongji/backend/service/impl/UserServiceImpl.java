@@ -369,12 +369,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setName(name);
         user.setContact(contact);
         user.setPassword(hexString);
-        user.setRole("patient");
+        user.setRole("admin");
         synchronized (GlobalLock.UserIDLock) {
             user.setUserId(userMapper.getMaxUserId() + 1);
         }
         int userNum = userMapper.insert(user);
-        return userMapper.getMaxUserId() + 1;
+        return userMapper.getMaxUserId();
     }
 
     @Override

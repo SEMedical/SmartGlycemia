@@ -15,6 +15,6 @@ public interface HospitalMapper extends BaseMapper<Hospital> {
     Boolean InfoRepeated(String contact,String name,String address);
     @Select("SELECT admin_id from hospital where hospital_id=#{hospitalId};")
     String havaAdministrator(String hospitalId);
-    @Update("UPDATE hospital set adminId=#{adminId} where hospital_id=#{hospitalId};")
+    @Update("UPDATE hospital set admin_id=#{adminId} where hospital_id=#{hospitalId};")
     Boolean setAdministrator(String hospitalId,String adminId);
 }

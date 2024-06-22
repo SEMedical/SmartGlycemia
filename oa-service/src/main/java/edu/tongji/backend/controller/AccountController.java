@@ -416,7 +416,6 @@ public class AccountController {
         if(hospitalId==null){
             return new ResponseEntity<>(Response.fail("邀请码已被使用或无效验证码"), HttpStatus.OK);
         }else{
-            stringRedisTemplate.delete(ADMIN_PERM_CODE + inviteCode);
             if (info.getContact() == null || info.getPassword() == null)  //如果请求中的内容不完整
             {
                 return new ResponseEntity<>(Response.fail("手机号或密码为空"),HttpStatus.OK);
@@ -447,6 +446,7 @@ public class AccountController {
                 return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.OK);
             }
             hospitalMapper.setAdministrator(hospitalId,result.toString());
+            stringRedisTemplate.delete(ADMIN_PERM_CODE + inviteCode);
             return new ResponseEntity<>(Response.success(true, "管理员注册成功"),HttpStatus.OK);
         }
     }

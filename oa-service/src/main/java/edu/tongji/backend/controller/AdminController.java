@@ -49,7 +49,7 @@ public class AdminController {
                     HttpStatus.OK);
         }
         //The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.
-        if (name==null||(name.equals("0216958120")&&(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$")))) {
+        if (name==null||(name.equals("0216598120")&&(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$")))) {
             return new ResponseEntity<>(Response.fail("After 2024/1/7,register rules are updated!"+
                     "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters."),
                     HttpStatus.OK);
