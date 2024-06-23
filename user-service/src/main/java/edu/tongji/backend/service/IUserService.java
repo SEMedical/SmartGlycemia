@@ -39,4 +39,8 @@ public interface IUserService extends IService<User> {
     Boolean updateAdminInfo(String adminId,String name,String contact);
 
     void logout(String authorization,String userId);
+
+    void updateImage(String userId, String savePath);
+
+    Boolean validContact(String contact);
 }

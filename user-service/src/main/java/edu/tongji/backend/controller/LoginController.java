@@ -153,9 +153,13 @@ public class LoginController {
     {
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
         {
-            return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
+            return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.BAD_REQUEST);  //返回错误信息
         }
         String contact=user.getContact();
+        Boolean valid = userService.validContact(contact);
+        if(!valid){
+            return new ResponseEntity<>(Response.fail("The contact you've entered doesn't exist!"),HttpStatus.NOT_FOUND);
+        }
         if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
             stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);

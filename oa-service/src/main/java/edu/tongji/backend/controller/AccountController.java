@@ -221,14 +221,18 @@ public class AccountController {
     @PostMapping("/addAccount")
     public ResponseEntity<Response<String>> addAccount2(@RequestBody DoctorDTO1 doctor)
             throws IOException, JSONException{
-        return addAccount(doctor.getHospital_id(), doctor.getId_card(), doctor.getDepartment(),
+        return addAccount(doctor.getHospital_id(),doctor.getName(), doctor.getId_card(), doctor.getDepartment(),
                 doctor.getTitle(),doctor.getPhoto_path(),
                 doctor.getContact());
     }
 
-    public ResponseEntity<Response<String>> addAccount(@RequestParam int hospital_id, @RequestParam String id_card, @RequestParam String department,
-                                                       @RequestParam String title, @RequestParam String photo_path, @RequestParam String contact)
+    public ResponseEntity<Response<String>> addAccount(int hospital_id,String name, String id_card, String department,
+                                                       String title, String photo_path, String contact)
             throws IOException, JSONException {
+        if(name!=null||name.length()==0)
+            return new ResponseEntity<>(Response.fail("The doctor name can't be empty"),HttpStatus.OK);
+        if(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$"))
+            return new ResponseEntity<>(Response.fail("The name must be pure English or Chinese"),HttpStatus.OK);
         if(id_card.length()!=18&& id_card.length()!=15)
             return new ResponseEntity<>(Response.fail("the length of ID must be 18 or 15"),HttpStatus.OK);
         String addr;
@@ -332,15 +336,17 @@ public class AccountController {
     @PostMapping("/GenInviteCode")
     public ResponseEntity<Response<String>> GenerateInvitationCode(@RequestParam String hospitalId){
         if(hospitalId==null||hospitalId.length()==0||hospitalId.equals("")){
-            return new ResponseEntity<>(Response.fail("The Hospital Code can't be empty"), HttpStatus.OK);
+            return new ResponseEntity<>(Response.fail("The Hospital Code can't be empty"), HttpStatus.BAD_REQUEST);
         }
         if(hospitalMapper.havaAdministrator(hospitalId)!=null){
             return new ResponseEntity<>(Response.fail("The hospital has administrator already!"),HttpStatus.OK);
         }
+        if(!hospitalMapper.ValidHospitalId(hospitalId)){
+            return new ResponseEntity<>(Response.fail("The hospital id doesn't exist!"),HttpStatus.BAD_REQUEST);
+        }
         RandomGenerator randomGenerator = new RandomGenerator(40);
         String substring = randomGenerator.generate().substring(0, 25);
-        stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId);
-        stringRedisTemplate.expire(ADMIN_PERM_CODE + substring,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
         return new ResponseEntity<>(Response.success(substring,"The Invitation Code has been generated successfully!"), HttpStatus.OK);
     }
     @PutMapping("/editAccount")

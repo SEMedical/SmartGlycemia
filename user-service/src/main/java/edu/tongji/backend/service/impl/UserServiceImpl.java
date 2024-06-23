@@ -203,6 +203,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
     @Override
     public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
+
         LoginDTO loginDTO = new LoginDTO();
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.select("user_id", "role", "name","password")
@@ -394,5 +395,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         lists.add(SHARED_SESSION_KEY+userId);
         lists.add(LOGIN_TOKEN_KEY+authorization);
         stringRedisTemplate.execute(LOGOUT_SCRIPT,lists,"");
+    }
+
+    @Override
+    public void updateImage(String userId, String savePath) {
+        userMapper.updateImage(userId,savePath);
+    }
+
+    @Override
+    public Boolean validContact(String contact) {
+        return userMapper.existContact(contact);
     }
 }
