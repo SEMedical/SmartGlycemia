@@ -16,6 +16,4 @@ public interface IGlycemiaService extends IService<Glycemia> {
     public GlycemiaLevel GetGlycemiaLevel(Double age, LocalDateTime date, Double data);
     CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate);
     Double getLatestGlycemia(String user_id);
-
-    void Init_LatestGlycemiaDiagram();
 }

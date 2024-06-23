@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.BloomFilterUtil.*;
 import static edu.tongji.backend.util.RedisConstants.*;
+import static edu.tongji.backend.util.RedisConstants.CACHE_DAILY_GLYCEMIA_TTL;
 
 @Service
 public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> implements IGlycemiaService {
@@ -43,43 +45,32 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             date=LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //Just for initialization
-        LocalDateTime endTime=LocalDateTime.now();
         List<Map<LocalDateTime,Double>> res=new ArrayList<>();
-
-        LocalDateTime startDateTime = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
-        if(type.equals("Realtime")) {
-            endTime=LocalDateTime.now();
-        }
-        else if(type.equals("History")) {
-            endTime=startDateTime.plusDays(1);
-        }
-        // 设置时间间隔为15分钟
-        Duration interval = Duration.ofMinutes(15);
-
-        // 遍历时间点，每15分钟一次，直到当前时间
-        while (startDateTime.isBefore(endTime)) {
-            log.debug(startDateTime.toString());
-            startDateTime = startDateTime.plus(interval);
-            String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
-            Double glycemiaValue;
-            if(StrUtil.isNotBlank(glycemiaJson)){//Cache hit
-                glycemiaValue=Double.valueOf(glycemiaJson);
-            }else {
-                glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
-                if (glycemiaValue == null) {
-                    log.warn("(Penetration!)No data found at" + startDateTime.format(formatter));
-                    continue;
-                }
-                stringRedisTemplate.opsForValue().set(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),glycemiaValue.toString());
-                stringRedisTemplate.expire(CACHE_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
-                        (long)(CACHE_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);
+        String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Long size = stringRedisTemplate.opsForHash().size(CACHE_GLYCEMIA_KEY + user_id + ":" + formattedDate);
+        if(size!=null&&size>0){
+            Map<Object,Object> glycemiaMap=stringRedisTemplate.opsForHash().entries(CACHE_GLYCEMIA_KEY + user_id + ":" + formattedDate);
+            for(Map.Entry<Object,Object> entry:glycemiaMap.entrySet()){
+                Map<LocalDateTime,Double> data = new HashMap<>();
+                data.put(LocalDateTime.parse(entry.getKey().toString(),formatter),Double.valueOf(entry.getValue().toString()));
+                res.add(data);
             }
+            chart.setData(res);
+            return chart;
+        }else{
+            stringRedisTemplate.expire(CACHE_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                    (long)(CACHE_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);
+        }
+        // 遍历时间点，每15分钟一次，直到当前时间
+        List<GlycemiaDTO> glycemiaDTOS = glycemiaMapper.selectByIdAndTime(user_id, formattedDate);
+        for (GlycemiaDTO glycemiaDTO : glycemiaDTOS) {
             Map<LocalDateTime,Double> data = new HashMap<>();
-            data.put(startDateTime,glycemiaValue);
+            data.put(LocalDateTime.parse(glycemiaDTO.getRecordTime(),formatter),glycemiaDTO.getGlycemia());
             res.add(data);
+            stringRedisTemplate.opsForHash().put(CACHE_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                    glycemiaDTO.getRecordTime(),glycemiaDTO.getGlycemia().toString());
         }
         chart.setData(res);
-        //chart.setError_code(200);
         return chart;
     }
     @Override
@@ -88,40 +79,36 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         //Just for initialization
         LocalDateTime startDateTime =LocalDateTime.of(date, LocalTime.MIN);
-        LocalDateTime endTime=LocalDateTime.of(date, LocalTime.MAX);
         List<Map<LocalDateTime,Double>> res=new ArrayList<>();
-        // 设置时间间隔为15分钟
-        Duration interval = Duration.ofMinutes(15);
         Integer eu_count=0,hypo_count=0,hyper_count=0;
-        // 遍历时间点，每15分钟一次，直到当前时间
-        while (startDateTime.isBefore(endTime)) {
-            log.debug(startDateTime.toString());
-            startDateTime = startDateTime.plus(interval);
-            if(!daily_glycemia_bf.mightContain(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter))) {
-                log.debug("No data found around" + startDateTime.format(formatter));
-                continue;
-            }
-            String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
-            Double glycemiaValue;
-            if(StrUtil.isNotBlank(glycemiaJson))
-                glycemiaValue=Double.valueOf(glycemiaJson);
-            else {
-                //log.debug(startDateTime.format(formatter));
-
-                glycemiaValue = glycemiaMapper.selectByIdAndTime(user_id, startDateTime.format(formatter));
-                if (glycemiaValue == null) {
-                    log.debug("(Penetration)No data found around" + startDateTime.format(formatter));
+        String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Long size = stringRedisTemplate.opsForHash().size(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate);
+        if(size!=null&&size>0){
+            Map<Object,Object> glycemiaMap=stringRedisTemplate.opsForHash().entries(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate);
+            for(Map.Entry<Object,Object> entry:glycemiaMap.entrySet()){
+                Map<LocalDateTime,Double> data = new HashMap<>();
+                try {
+                    data.put(LocalDateTime.parse(entry.getKey().toString(), formatter), Double.valueOf(entry.getValue().toString()));
+                }catch (DateTimeParseException e){
                     continue;
                 }
-                daily_glycemia_bf.put(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter));
-                stringRedisTemplate.opsForValue().set(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
-                        glycemiaValue.toString());
-                stringRedisTemplate.expire(CACHE_DAILY_GLYCEMIA_KEY+user_id+":"+startDateTime.format(formatter),
-                        (long)(CACHE_DAILY_GLYCEMIA_TTL*86400+1000*Math.random()), TimeUnit.SECONDS);
+                res.add(data);
             }
+            chart.setLowSta(Double.valueOf(glycemiaMap.get("hypo_count").toString()));
+            chart.setNormalSta(Double.valueOf(glycemiaMap.get("eu_count").toString()));
+            chart.setHighSta(Double.valueOf(glycemiaMap.get("hyper_count").toString()));
+            chart.setEntry(res);
+            return chart;
+        }else{
+            stringRedisTemplate.expire(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                    (long)(CACHE_DAILY_GLYCEMIA_TTL*86400+1000*Math.random()),TimeUnit.SECONDS);
+        }
+        // 遍历时间点，每15分钟一次，直到当前时间
+        List<GlycemiaDTO> glycemiaDTOS = glycemiaMapper.selectByIdAndTime(user_id, formattedDate);
+        for (GlycemiaDTO glycemiaDTO : glycemiaDTOS) {
             Map<LocalDateTime,Double> data = new HashMap<>();
-            data.put(startDateTime,glycemiaValue);
-            GlycemiaLevel level=GetGlycemiaLevel(Double.valueOf(userMapper.selectById(user_id).getAge()),startDateTime,glycemiaValue);
+            data.put(LocalDateTime.parse(glycemiaDTO.getRecordTime(),formatter),glycemiaDTO.getGlycemia());
+            GlycemiaLevel level=GetGlycemiaLevel(Double.valueOf(userMapper.selectById(user_id).getAge()),startDateTime,glycemiaDTO.getGlycemia());
             if(level==GlycemiaLevel.HYPOGLYCEMIA)
                 hypo_count++;
             else if(level==GlycemiaLevel.EUGLYCEMIA)
@@ -129,43 +116,21 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             else
                 hyper_count++;
             res.add(data);
+            stringRedisTemplate.opsForHash().put(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                    glycemiaDTO.getRecordTime(),glycemiaDTO.getGlycemia().toString());
         }
+        stringRedisTemplate.opsForHash().put(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                "eu_count",String.valueOf(eu_count*100.0/res.size()));
+        stringRedisTemplate.opsForHash().put(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                "hypo_count",String.valueOf(hypo_count*100.0/res.size()));
+        stringRedisTemplate.opsForHash().put(CACHE_DAILY_GLYCEMIA_KEY + user_id + ":" + formattedDate,
+                "hyper_count",String.valueOf(hyper_count*100.0/res.size()));
+
         chart.setLowSta(eu_count*100.0/res.size());
         chart.setNormalSta(hypo_count*100.0/res.size());
         chart.setHighSta(hyper_count*100.0/res.size());
         chart.setEntry(res);
         return chart;
-    }
-    @PostConstruct
-    public void Init_LatestGlycemiaDiagram(){
-
-        QueryWrapper<Glycemia> queryWrapper = new QueryWrapper<>();
-        List<Glycemia> exercises = glycemiaMapper.selectList(queryWrapper);
-        exercises.forEach(element->latest_glycemia_bf.put(
-                CACHE_LATEST_GLYCEMIA_KEY+element.getPatientId()));
-        exercises.clear();
-
-        exercises = glycemiaMapper.selectList(queryWrapper);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        exercises.forEach(element->history_glycemia_bf.put(
-                CACHE_HISTORY_GLYCEMIA_KEY+element.getPatientId()+":"+
-                        element.getRecordTime().toLocalDateTime().format(formatter)));
-        exercises.clear();
-
-        List<Glycemia> glycemias = glycemiaMapper.selectList(queryWrapper);
-        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        glycemias.forEach(element-> {
-            LocalDateTime dateTime = element.getRecordTime().toLocalDateTime().minusHours(8);
-            int minute = dateTime.getMinute();
-            int nearestMultipleOf15 = (int) Math.floor(minute / 15.0) * 15;
-            dateTime=dateTime.withMinute(nearestMultipleOf15).withSecond(0);
-            daily_glycemia_bf.put(
-                    CACHE_DAILY_GLYCEMIA_KEY + element.getPatientId() + ":" +
-                            dateTime.format(formatter2));
-            dateTime=null;
-        });
-        glycemias.clear();
     }
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
@@ -265,8 +230,6 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     //实时的标准是15分钟以内
     @Override
     public Double getLatestGlycemia(String user_id) {
-        if(!latest_glycemia_bf.mightContain(CACHE_LATEST_GLYCEMIA_KEY +user_id))
-            throw new GlycemiaException("All the glycemia data is not accessible!");
         String valjson=stringRedisTemplate.opsForValue().get(CACHE_LATEST_GLYCEMIA_KEY +user_id);
         GlycemiaDTO val;
         if(StrUtil.isNotBlank(valjson)) {
@@ -277,7 +240,6 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 //TODO:CACHE PENETRATION!
                 throw new GlycemiaException("All the glycemia data is not accessible(Cache Penetration)!");
             }
-            latest_glycemia_bf.put(CACHE_LATEST_GLYCEMIA_KEY +user_id);
             stringRedisTemplate.opsForValue().set(CACHE_LATEST_GLYCEMIA_KEY +user_id,JSON.toJSONString(val));
             stringRedisTemplate.expire(CACHE_LATEST_GLYCEMIA_KEY +user_id, (long) (LATEST_GLYCEMIA_TTL*60+Math.random()*30),TimeUnit.SECONDS);
         }

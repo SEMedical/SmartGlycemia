@@ -229,7 +229,7 @@ public class AccountController {
     public ResponseEntity<Response<String>> addAccount(int hospital_id,String name, String id_card, String department,
                                                        String title, String photo_path, String contact)
             throws IOException, JSONException {
-        if(name!=null||name.length()==0)
+        if(name==null||name.length()==0)
             return new ResponseEntity<>(Response.fail("The doctor name can't be empty"),HttpStatus.OK);
         if(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$"))
             return new ResponseEntity<>(Response.fail("The name must be pure English or Chinese"),HttpStatus.OK);
