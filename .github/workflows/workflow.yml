@@ -1,20 +1,7 @@
 name: Glycemia SE Huangjie
 on:
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'user-service/**'
-      - 'glycemia-service/**'
-      - 'gateway/**'
-      - 'interact-service/**'
-      - 'oa-service/**'
-      - 'exercise-service/**'
-      - 'common-api/**'
-      - 'pom.xml'
-    paths-ignore:
-      - 'github/workflows/**'
-      - 'docker-compose.yml'
-      - '**/Dockerfile'
+  schedule:
+    - cron: '0 0 */3 * *'
   push:
     branches: [ "main" ]
 concurrency:
