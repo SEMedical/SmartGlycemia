@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: 🗑 Delete deployment
-        uses: strumwolf/delete-deployment-environment@v2
+        uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: SERVER_WITH_PUBLIC_IP
@@ -45,7 +45,7 @@ jobs:
           distribution: 'adopt'
 
       - name: Set up the Maven dependencies caching
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -71,7 +71,7 @@ jobs:
           target: $JAR_HOME
       - name: Deploy the application
         if: ${{ github.ref == 'refs/heads/main2' }}
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
@@ -84,7 +84,7 @@ jobs:
             docker compose stop
       - name: Upload JARs as Artifact
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Maven Jar File
           path: |
@@ -113,7 +113,7 @@ jobs:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}
           NACOS_NAMESPACE: ${{ secrets.NACOS_NAMESPACE }}
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v4.5.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false

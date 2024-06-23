@@ -13,11 +13,11 @@ on:
         description: 'Docker Image name'
         required: true
         default: 'redis'
-      args2:
+      arg2:
         description: 'Docker Image version'
         required: true
         default: 'latest'
-      args3:
+      arg3:
         description: 'Artifact name'
         required: true
         default: 'redis-image'
@@ -37,7 +37,7 @@ jobs:
         run: |
           docker save -o ${{ github.event.inputs.arg3 }}.tar ${{ github.event.inputs.arg1 }}:${{ github.event.inputs.arg2 }}
       - name: Upload images
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.inputs.arg3 }}
           path: |
