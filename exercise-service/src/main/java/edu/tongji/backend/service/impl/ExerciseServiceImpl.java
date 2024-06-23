@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.BloomFilterUtil.exercise_running_bf;
-import static edu.tongji.backend.util.BloomFilterUtil.glycemia_bf;
 import static edu.tongji.backend.util.RedisConstants.*;
 @Slf4j
 @Service
@@ -176,13 +175,6 @@ public class ExerciseServiceImpl extends ServiceImpl<ExerciseMapper, Exercise> i
             }
         }else
             return -1;
-    }
-    public void Init_exerciseRunning(){
-        QueryWrapper<Running> queryWrapper = new QueryWrapper<>();
-        List<Running> glycemias = runningMapper.selectList(queryWrapper);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        glycemias.forEach(element->glycemia_bf.put(
-                CACHE_GLYCEMIA_KEY+element.getExerciseId()));
     }
     //TODO
     @Override
