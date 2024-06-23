@@ -1,9 +1,25 @@
 name: Glycemia SE Huangjie
 on:
   pull_request:
-    branches: [ "*" ]
+    branches: [ "main" ]
+    paths:
+      - 'user-service/**'
+      - 'glycemia-service/**'
+      - 'gateway/**'
+      - 'interact-service/**'
+      - 'oa-service/**'
+      - 'exercise-service/**'
+      - 'common-api/**'
+      - 'pom.xml'
+    paths-ignore:
+      - 'github/workflows/**'
+      - 'docker-compose.yml'
+      - '**/Dockerfile'
   push:
     branches: [ "main" ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -102,7 +118,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
       - name: docker build
-        run: docker compose up -d
+        run: docker compose up -d user-service glycemia-service gateway interact-service oa-service exercise-service
       - name: docker run All Applications
         env:
           NACOS_ADDR: ${{ secrets.NACOS_ADDR }}

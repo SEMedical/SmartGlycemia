@@ -1,0 +1,44 @@
+name: Docker Image Sync
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Specify which workflow you want to build'
+        required: true
+        default: 'redis-docker-build'
+        type: choice
+        options:
+          - redis-docker-build
+      arg1:
+        description: 'Docker Image name'
+        required: true
+        default: 'redis'
+      args2:
+        description: 'Docker Image version'
+        required: true
+        default: 'latest'
+      args3:
+        description: 'Artifact name'
+        required: true
+        default: 'redis-image'
+  #Manually Triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  redis-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker run ${{ github.event.inputs.arg1 }} image
+        run: |
+          docker pull ${{ github.event.inputs.arg1 }}:${{ github.event.inputs.arg2 }}
+      - name: Tar Redis image
+        run: |
+          docker save -o ${{ github.event.inputs.arg3 }}.tar ${{ github.event.inputs.arg1 }}:${{ github.event.inputs.arg2 }}
+      - name: Upload images
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.event.inputs.arg3 }}
+          path: |
+            ${{ github.event.inputs.arg3 }}.tar

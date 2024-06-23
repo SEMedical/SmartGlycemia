@@ -21,8 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,8 @@ import javax.servlet.http.HttpSession;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -185,8 +189,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return hexString.toString();
     }
+    private static final DefaultRedisScript<Boolean> BAN_SCRIPT;
+    static {
+        BAN_SCRIPT=new DefaultRedisScript<>();
+        BAN_SCRIPT.setLocation(new ClassPathResource("ban.lua"));
+        BAN_SCRIPT.setResultType(Boolean.class);
+    }
+    private static final DefaultRedisScript<Boolean> LOGOUT_SCRIPT;
+    static {
+        LOGOUT_SCRIPT=new DefaultRedisScript<>();
+        LOGOUT_SCRIPT.setLocation(new ClassPathResource("logout.lua"));
+        LOGOUT_SCRIPT.setResultType(Boolean.class);
+    }
     @Override
     public LoginDTO login(String contact, String password) throws NoSuchAlgorithmException {
+
         LoginDTO loginDTO = new LoginDTO();
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.select("user_id", "role", "name","password")
@@ -209,15 +226,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         loginDTO.setToken(jwt);
         loginDTO.setRole(result.getRole());
         loginDTO.setName(result.getName());
-        UserDTO userDTO= BeanUtil.copyProperties(result,UserDTO.class);
-        Map<String,Object> userMap=BeanUtil.beanToMap(userDTO,new HashMap<>(),
-                CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor(
-                        (fieldName,fieldValue)->fieldValue!=null?fieldValue.toString():"NULL"
-                ));
-        stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+jwt,userMap);
-        stringRedisTemplate.expire(LOGIN_TOKEN_KEY+jwt,LOGIN_TOKEN_TTL,TimeUnit.MINUTES);
-
-        return loginDTO;
+        List<String> lists=new ArrayList<>();
+        lists.add(SHARED_SESSION_KEY+result.getUserId().toString());
+        lists.add(LOGIN_TOKEN_KEY + jwt);
+        Boolean session_limited = stringRedisTemplate.execute(BAN_SCRIPT, lists, "NULL", result.getUserId().toString(),
+                result.getRole(), result.getName(), String.valueOf(Instant.now().toEpochMilli()));
+        if(session_limited)
+            return loginDTO;
+        else {
+            log.warn("You've reached the shared device limit now!");
+            return new LoginDTO("-1", "-1", "-1", "-1");
+        }
     }
 
     // 病人注册
@@ -351,12 +370,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setName(name);
         user.setContact(contact);
         user.setPassword(hexString);
-        user.setRole("patient");
+        user.setRole("admin");
         synchronized (GlobalLock.UserIDLock) {
             user.setUserId(userMapper.getMaxUserId() + 1);
         }
         int userNum = userMapper.insert(user);
-        return userMapper.getMaxUserId() + 1;
+        return userMapper.getMaxUserId();
     }
 
     @Override
@@ -368,5 +387,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Boolean updateAdminInfo(String adminId,String name, String contact) {
         return userMapper.updateAdmin(adminId,name,contact);
+    }
+
+    @Override
+    public void logout(String authorization,String userId) {
+        List<String> lists=new ArrayList<>();
+        lists.add(SHARED_SESSION_KEY+userId);
+        lists.add(LOGIN_TOKEN_KEY+authorization);
+        stringRedisTemplate.execute(LOGOUT_SCRIPT,lists,"");
+    }
+
+    @Override
+    public void updateImage(String userId, String savePath) {
+        userMapper.updateImage(userId,savePath);
+    }
+
+    @Override
+    public Boolean validContact(String contact) {
+        return userMapper.existContact(contact);
     }
 }

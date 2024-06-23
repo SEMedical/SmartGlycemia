@@ -1,9 +1,12 @@
 name: Glycemia SE Doc
 on:
   pull_request:
-    branches: [ "*" ]
+    branches: [ "main" ]
   push:
     branches: [ "main" ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   doc-generate:
     runs-on: ubuntu-latest

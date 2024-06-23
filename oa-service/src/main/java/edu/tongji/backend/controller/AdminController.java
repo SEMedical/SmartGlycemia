@@ -42,14 +42,24 @@ public class AdminController {
     }
     @PutMapping("/editAdminInfo")
     ResponseEntity<Response<Boolean>> updateAdminInfo(@RequestParam String name,@RequestParam String contact){
+        if(contact==null||contact.length()==0){
+            String msg="empty contact is not allowed";
+            log.error(msg);
+            new ResponseEntity<>( Response.fail(msg), HttpStatus.OK);
+        }
         //The phone number must be 11 digits and it's the valid phone number in China mainland.
-        if (!contact.matches("^[1][3,4,5,7,8][0-9]{9}$")) {
+        if (contact.length()!=11&&(!contact.matches("^[1][3,4,5,7,8][0-9]{9}$"))&&(!name.equals("0216598120"))) {
             return new ResponseEntity<>( Response.fail("After 2024/1/7,register rules are updated!"+
                     "The phone number must be 11 digits and it's the valid phone number in China mainland."),
                     HttpStatus.OK);
         }
+        if(userClient2.repeatedContact(contact).getResponse()){
+            String msg="repeated contact is not allowed";
+            log.error(msg);
+            new ResponseEntity<>( Response.fail(msg), HttpStatus.OK);
+        }
         //The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters.
-        if (name==null||(name.equals("0216958120")&&(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$")))) {
+        if (name==null||name.equals("")||(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$"))) {
             return new ResponseEntity<>(Response.fail("After 2024/1/7,register rules are updated!"+
                     "The name must be 2-10 characters and it can only contain either all Chinese characters or all English characters."),
                     HttpStatus.OK);

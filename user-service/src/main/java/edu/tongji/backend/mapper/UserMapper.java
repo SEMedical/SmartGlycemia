@@ -23,4 +23,8 @@ public interface UserMapper extends BaseMapper<User> {
     static Integer UserIdLock = 1;
     @Update("UPDATE user SET name=#{name},contact=#{contact} WHERE user_id=#{adminId};")
     Boolean updateAdmin(String adminId,String name, String contact);
+    @Update("UPDATE user SET avatar=#{savePath} WHERE user_id=#{userId};")
+    void updateImage(String userId, String savePath);
+    @Select("SELECT COUNT(*)>=1 FROM user WHERE contact=#{contact}")
+    Boolean existContact(String contact);
 }

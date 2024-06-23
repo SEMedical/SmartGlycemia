@@ -17,11 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
-import static edu.tongji.backend.util.RedisConstants.LOGIN_LIMIT;
+import static edu.tongji.backend.util.RedisConstants.*;
 
 @Slf4j
 @RestController  //用于处理 HTTP 请求并返回 JSON 格式的数据
@@ -152,9 +153,13 @@ public class LoginController {
     {
         if (user.getContact() == null || user.getPassword() == null)  //如果请求中的内容不完整
         {
-            return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
+            return new ResponseEntity<>(Response.fail("手机号或密码为空"), HttpStatus.BAD_REQUEST);  //返回错误信息
         }
         String contact=user.getContact();
+        Boolean valid = userService.validContact(contact);
+        if(!valid){
+            return new ResponseEntity<>(Response.fail("The contact you've entered doesn't exist!"),HttpStatus.NOT_FOUND);
+        }
         if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
             stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
@@ -171,14 +176,28 @@ public class LoginController {
         {
             stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
             Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
-            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
             String msg="You can only try no more than"+ String.valueOf(i)+" times";
             log.warn(msg);
             return new ResponseEntity<>(Response.fail(msg),HttpStatus.BAD_REQUEST);  //返回错误信息
+        }else if(loginDTO.getName().equals("-1")&&loginDTO.getRole().equals("-1")){
+            return new ResponseEntity<>(Response.fail("You've reached the maximum device limit 3"),HttpStatus.CONFLICT);
         }
         log.info("登录成功");
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
+    }
+    @CrossOrigin
+    @DeleteMapping("/logout")
+    public ResponseEntity<Response<Void>> logout(HttpServletRequest request){
+        UserDTO user= UserHolder.getUser();
+        String userId = user.getUserId();
+        String authorization = request.getHeader("Authorization");
+        try {
+            userService.logout(authorization, userId);
+        }catch (Exception e){
+            return new ResponseEntity<>(Response.success(null,"logged out failed!"+e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(Response.success(null,"You've logged out!"),HttpStatus.OK);
     }
     @GetMapping("/getContactForAdmin")
     String getContactForAdmin(@RequestParam("userId") String userId){

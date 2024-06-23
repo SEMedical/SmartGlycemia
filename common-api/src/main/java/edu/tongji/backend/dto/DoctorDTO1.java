@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DoctorDTO1 {
     int hospital_id;
+    String name;
     String id_card;
     String department;
     String title;

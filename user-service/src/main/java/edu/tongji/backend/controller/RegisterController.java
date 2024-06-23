@@ -1,5 +1,6 @@
 package edu.tongji.backend.controller;
 
+import cn.hutool.captcha.generator.RandomGenerator;
 import com.netflix.ribbon.proxy.annotation.Http;
 import edu.tongji.backend.dto.UserDTO;
 import edu.tongji.backend.mapper.ProfileMapper;
@@ -16,9 +17,16 @@ import edu.tongji.backend.dto.RegisterDTO;
 import edu.tongji.backend.util.Response;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import static edu.tongji.backend.util.RedisConstants.ADMIN_PERM_CODE;
 
@@ -57,8 +65,49 @@ public class RegisterController {
             return new ResponseEntity<>(Response.success(unregistered,"The unregisterPatient Function haven't been implemented yet"),
                     HttpStatus.OK);
     }
+    @CrossOrigin("*")
+    @PostMapping("/upload_image")
+    public Response<String> upload(MultipartFile file, HttpSession session) throws IOException {
+        if (file.isEmpty()) {
+            return Response.fail("The image is empty");
+        }
+        if(file.getSize()>1024*1024*5){
+            return Response.fail("The avatar is too large,the maximum size is 5MB");
+        }
+        if (file.getOriginalFilename().lastIndexOf(".") == -1 || file.getOriginalFilename().lastIndexOf(".") != file.getOriginalFilename().lastIndexOf(".")) {
+            return Response.fail("The image name is invalid,must be xxx.zz");
+        }
+        if (!file.getOriginalFilename().matches("^[\\x00-\\x7F]+$")) {
+            return Response.fail("The image name is invalid,must be ASCII");
+        }
+        String[] allowedType = {"jpeg", "jpg", "png", "gif", "bmp", "webp"};
+        String fileType = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+        Boolean allowed = false;
+        for (String type : allowedType) {
+            if (type.equals(fileType)) {
+                allowed = true;
+                break;
+            }
+        }
+        if (!allowed) {
+            return Response.fail("The image type is invalid,only support jpeg,jpg,png,gif,bmp,webp");
+        }
+        String uuidFilename = UUID.randomUUID().toString();
 
+        String randomDir = LocalDate.now().toString();
 
+        File fileDir = new File("/data/images/" + randomDir);
+        if (!fileDir.exists()) {
+            fileDir.mkdirs();
+        }
+        File newFile = new File("/data/images/" + randomDir, uuidFilename);
+        file.transferTo(newFile);
+        String savePath = randomDir + "/" + uuidFilename;
+        UserDTO user = UserHolder.getUser();
+        user.setIcon(savePath);
+        userService.updateImage(user.getUserId(), savePath);
+        return Response.success(savePath,"The image has been uploaded successfully");
+    }
     /**
      * @apiNote
      * <ol>
