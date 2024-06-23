@@ -84,7 +84,7 @@ jobs:
             docker compose stop
       - name: Upload JARs as Artifact
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Maven Jar File
           path: |
