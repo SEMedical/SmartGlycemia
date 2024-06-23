@@ -13,11 +13,11 @@ on:
         description: 'Docker Image name'
         required: true
         default: 'redis'
-      args2:
+      arg2:
         description: 'Docker Image version'
         required: true
         default: 'latest'
-      args3:
+      arg3:
         description: 'Artifact name'
         required: true
         default: 'redis-image'
