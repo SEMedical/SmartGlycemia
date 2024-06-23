@@ -7,10 +7,9 @@ local name=ARGV[4]
 local now=tonumber(ARGV[5])
 local begin_t=now - 30 * 60* 1000
 local size = redis.call('ZCARD', session_set)
-if size ~= nil and size > 50 then
-    redis.call('ZREMRANGEBYRANK', session_set, 50, size - 1)
-end
-
+redis.call('ZREMRANGEBYSCORE', session_set, -math.huge,begin_t)
+local size2 = redis.call('ZCARD', session_set)
+redis.log(redis.LOG_NOTICE, size-size2 .. " sessions are removed")
 local count = redis.call('ZCOUNT', session_set, begin_t, now)
 if count < 10 then
     redis.call('ZADD', session_set, now,token)

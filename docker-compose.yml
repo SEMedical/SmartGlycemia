@@ -31,6 +31,21 @@ services:
       - /tmp/nginx/conf:/etc/nginx
       - /tmp/nginx/logs:/var/log/nginx
       - /tmp/nginx/html:/usr/share/nginx/html
+  elastic-search:
+    container_name: es
+    image: elasticsearch:7.17.22
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - discovery.type=single-node
+    volumes:
+      - /tmp/es-data:/usr/share/elasticsearch/data
+      - /tmp/es-plugins:/usr/share/elasticsearch/plugins
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - es-net
+    privileged: yes
   user-service:
     build: ./user-service
     ports:
