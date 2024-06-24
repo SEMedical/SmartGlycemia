@@ -10,6 +10,7 @@ import edu.tongji.backend.exception.GlycemiaException;
 import edu.tongji.backend.mapper.GlycemiaMapper;
 import edu.tongji.backend.mapper.ProfileMapper;
 import edu.tongji.backend.service.IGlycemiaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.RedisSystemException;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static edu.tongji.backend.util.RedisConstants.*;
-
+@Slf4j
 @Service
 public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> implements IGlycemiaService {
     @Autowired
@@ -47,8 +48,8 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         //Just for initialization
         List<Map<LocalDateTime, Double>> res = new ArrayList<>();
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String startTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusHours(8)).getTime());
-        String endTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusDays(1).plusHours(8)).getTime());
+        String startTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay()).getTime());
+        String endTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusDays(1)).getTime());
         List<List> lists = stringRedisTemplate.execute(TS_SCRIPT2, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id),
                 startTime, endTime);
         int TSSize = lists.size();
@@ -71,7 +72,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             Map<LocalDateTime,Double> data = new HashMap<>();
             data.put(LocalDateTime.parse(glycemiaDTO.getRecordTime(),formatter),glycemiaDTO.getGlycemia());
             res.add(data);
-            GlycemiaLevel level=GetGlycemiaLevel(Double.valueOf(userMapper.selectById(user_id).getAge()),date.atStartOfDay().plusHours(8),glycemiaDTO.getGlycemia());
+            GlycemiaLevel level=GetGlycemiaLevel(Double.valueOf(userMapper.selectById(user_id).getAge()),date.atStartOfDay(),glycemiaDTO.getGlycemia());
             if(level==GlycemiaLevel.HYPOGLYCEMIA)
                 hypo_count++;
             else if(level==GlycemiaLevel.EUGLYCEMIA)
@@ -91,7 +92,10 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             Timestamp timestamp = Timestamp.valueOf(glycemiaDTO.getRecordTime());
             stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id),String.valueOf(timestamp.getTime()),glycemiaDTO.getGlycemia().toString());
         }
-        avg=avg/res.size();
+        if(res.size()!=0)
+            avg=avg/res.size();
+        else
+            avg=0.0;
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":avg"),
                 startTime,avg.toString());
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":max"),
@@ -118,8 +122,8 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         Double min_val= Double.MAX_VALUE,max_val=Double.MIN_VALUE;
         Double avg=0.0;
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String startTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusHours(8)).getTime());
-        String endTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusDays(1).plusHours(8)).getTime());
+        String startTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay()).getTime());
+        String endTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusDays(1)).getTime());
         List<List> lists = stringRedisTemplate.execute(TS_SCRIPT2, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id),
                 startTime, endTime);
         int TSSize = lists.size();
@@ -179,6 +183,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         }
         if(res.size()!=0)
             avg=avg/res.size();
+        assert (Long.valueOf(startTime)%86400000L==57600000);
         stringRedisTemplate.execute(TS_SCRIPT, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id + ":avg"),
                 startTime, avg.toString());
         stringRedisTemplate.execute(TS_SCRIPT, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id + ":max"),
@@ -186,11 +191,11 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":min"),
                 startTime,min_val.toString());
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hyper"),
-                startTime,hyper_count.toString());
+                startTime,String.valueOf(hypo_count*100.0/res.size()));
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":eu"),
-                startTime,eu_count.toString());
+                startTime, String.valueOf(eu_count*100.0/res.size()));
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hypo"),
-                startTime,hypo_count.toString());
+                startTime,String.valueOf(hypo_count*100.0/res.size()));
         chart.setLowSta(eu_count*100.0/res.size());
         chart.setNormalSta(hypo_count*100.0/res.size());
         chart.setHighSta(hyper_count*100.0/res.size());
@@ -217,6 +222,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
     }
     @Override
     public CompositeChart showGlycemiaHistoryDiagram(String span, String user_id, LocalDate startDate) {
+        log.error("span is"+span+"user_id"+user_id+"startDate"+startDate);
         CompositeChart chart = new CompositeChart();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         //Just for initialization
@@ -241,32 +247,33 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         // 遍历时间点，每1天一次，直到当前时间
         while (startDate.isBefore(endTime)) {
             log.debug(startDate.toString());
-            String startTime = String.valueOf(Timestamp.valueOf(startDate.atStartOfDay().plusHours(8)).getTime());
-            String endTimeStr=String.valueOf(Timestamp.valueOf(startDate.atStartOfDay().plusHours(32)).getTime());
+            String startTime = String.valueOf(Timestamp.valueOf(startDate.atStartOfDay()).getTime());
+            String endTimeStr=String.valueOf(Timestamp.valueOf(startDate.atStartOfDay().plusDays(1)).getTime());
             List<List> lists = stringRedisTemplate.execute(TS_SCRIPT2, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id),
                   startTime, endTimeStr);
             int size = lists.size();
             if(size==0){
-                stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id),startTime,"-1");
+                showDailyGlycemiaDiagram(user_id,startDate);
+                assert (Long.valueOf(startTime)%86400000L==57600000);
+                stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hyper"),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hypo"),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":eu"),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":avg"),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":min"),startTime,"0");
                 stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":max"),startTime,"0");
-                showDailyGlycemiaDiagram(user_id,startDate);
             }
             startDate = startDate.plusDays(1);
         }
         startDate=originalStartDate;
         while (startDate.isBefore(endTime)){
             log.debug(startDate.toString());
-            String startTime = String.valueOf(Timestamp.valueOf(startDate.atStartOfDay().plusHours(8)).getTime());
-            String endTimeStr=String.valueOf(Timestamp.valueOf(endTime.atStartOfDay().plusHours(8)).getTime());
+            String startTime = String.valueOf(Timestamp.valueOf(startDate.atStartOfDay()).getTime());
+            String endTimeStr=String.valueOf(Timestamp.valueOf(endTime.atStartOfDay()).getTime());
             //String glycemiaJson=stringRedisTemplate.opsForValue().get(CACHE_HISTORY_GLYCEMIA_KEY+user_id+":"+startDate.format(formatter));
             Statistics glycemiaValue=new Statistics();
-            Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
             // 计算总的血糖比例
+            assert (Long.valueOf(startTime)%86400000L==57600000);
             List<List> hypo_list = stringRedisTemplate.execute(TS_SCRIPT3, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id+":hypo"),
                     startTime,endTimeStr);
             List<List> eu_list = stringRedisTemplate.execute(TS_SCRIPT3, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id+":eu"),
@@ -281,6 +288,7 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                     startTime,endTimeStr);
             Integer listLength=max_list.size();
             for(int i=0;i<listLength;i++){
+                Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
                 glycemiaValue.setHypoglycemiaPercentage(Double.valueOf(hypo_list.get(i).get(1).toString()));
                 glycemiaValue.setEuGlycemiaPercentage(Double.valueOf(eu_list.get(i).get(1).toString()));
                 glycemiaValue.setHyperglycemiaPercentage(Double.valueOf(hyper_list.get(i).get(1).toString()));
@@ -288,11 +296,11 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 glycemiaValue.setMaxValue(Double.valueOf(max_list.get(i).get(1).toString()));
                 glycemiaValue.setAverageValue(Double.valueOf(avg_list.get(i).get(1).toString()));
                 glycemiaValue.setTime(startTime);
-                startTime=String.valueOf(Long.valueOf(startTime)+86400000);
                 StatisticsCondensed glycemiaCondensed = new StatisticsCondensed();
-                glycemiaCondensed.setTime(Instant.ofEpochMilli(Long.valueOf(startTime))
+                LocalDate localDate = Instant.ofEpochMilli(Long.valueOf(startTime))
                         .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime().toLocalDate());
+                        .toLocalDateTime().toLocalDate();
+                glycemiaCondensed.setTime(localDate);
                 glycemiaCondensed.setMaxValue(glycemiaValue.getMaxValue());
                 glycemiaCondensed.setMinValue(glycemiaValue.getMinValue());
                 if(glycemiaValue.getEuGlycemiaPercentage()!=null)
@@ -301,9 +309,11 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                     hypotoll+=glycemiaValue.getHypoglycemiaPercentage();
                 if(glycemiaValue.getHyperglycemiaPercentage()!=null)
                     hypertoll+=glycemiaValue.getHyperglycemiaPercentage();
-                data.put(startDate,glycemiaCondensed);
+                data.put(localDate,glycemiaCondensed);
                 Res.add(data);
+                startTime=String.valueOf(Long.valueOf(startTime)+86400000);
             }
+
             startDate = endTime;
         }
         eutoll/=Res.size();
