@@ -124,6 +124,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         String startTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay()).getTime());
         String endTime = String.valueOf(Timestamp.valueOf(date.atStartOfDay().plusDays(1)).getTime());
+        if(date.equals(LocalDate.now())){
+            endTime=String.valueOf(Timestamp.valueOf(LocalDateTime.now().minusMinutes(15)).getTime());
+        }
         List<List> lists = stringRedisTemplate.execute(TS_SCRIPT2, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id),
                 startTime, endTime);
         int TSSize = lists.size();
@@ -181,8 +184,9 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
             Timestamp timestamp = Timestamp.valueOf(glycemiaDTO.getRecordTime());
             stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id),String.valueOf(timestamp.getTime()),glycemiaDTO.getGlycemia().toString());
         }
-        if(res.size()!=0)
-            avg=avg/res.size();
+        if(res.size()!=0) {
+            avg = avg / res.size();
+        }
         assert (Long.valueOf(startTime)%86400000L==57600000);
         stringRedisTemplate.execute(TS_SCRIPT, Collections.singletonList(CACHE_GLYCEMIA_KEY + user_id + ":avg"),
                 startTime, avg.toString());
@@ -190,15 +194,17 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                 startTime, max_val.toString());
         stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":min"),
                 startTime,min_val.toString());
-        stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hyper"),
+        if(res.size()!=0){
+            stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hyper"),
                 startTime,String.valueOf(hypo_count*100.0/res.size()));
-        stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":eu"),
+            stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":eu"),
                 startTime, String.valueOf(eu_count*100.0/res.size()));
-        stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hypo"),
+            stringRedisTemplate.execute(TS_SCRIPT,Collections.singletonList(CACHE_GLYCEMIA_KEY+user_id+":hypo"),
                 startTime,String.valueOf(hypo_count*100.0/res.size()));
-        chart.setLowSta(eu_count*100.0/res.size());
-        chart.setNormalSta(hypo_count*100.0/res.size());
-        chart.setHighSta(hyper_count*100.0/res.size());
+            chart.setLowSta(eu_count*100.0/res.size());
+            chart.setNormalSta(hypo_count*100.0/res.size());
+            chart.setHighSta(hyper_count*100.0/res.size());
+        }
         chart.setEntry(res);
         return chart;
     }
