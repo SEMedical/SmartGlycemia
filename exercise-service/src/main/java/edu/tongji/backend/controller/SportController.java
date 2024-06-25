@@ -85,7 +85,19 @@ public class SportController {
             return Response.fail(e.getMessage());
         }
     }
-
+    @GetMapping("/doctor/sportRecord")
+    public Response<SportRecordDTO> getTotalRecord(String user_id,HttpServletRequest request){
+        try {
+            SportRecordDTO ans= exerciseService.getSportRecord(user_id);
+            if(ans !=null)
+                return Response.success(ans,"成功获取运动记录");
+            else
+                return Response.fail("运动记录不存在");
+        }catch (Exception e){
+            log.info(e.getMessage());
+            return Response.fail(e.getMessage());
+        }
+    }
     @GetMapping("/sportRecord") //对应的api路径
     public Response<SportRecordDTO> getTotalRecord(HttpServletRequest request)//把请求中的内容映射到user
     {

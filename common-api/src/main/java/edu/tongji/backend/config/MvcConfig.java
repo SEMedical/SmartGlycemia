@@ -18,7 +18,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry){
         registry.addInterceptor(new DoctorInterceptor()).
-                addPathPatterns("/api/glycemia/doctor/*","/api/health/doctor/*","/api/interaction/*")
+                addPathPatterns("/api/glycemia/doctor/*","/api/health/doctor/*","/api/interaction/*","/api/sports/doctor/*")
                 .order(1);
         //Admin Login
         registry.addInterceptor(new AdminInterceptor())
@@ -26,7 +26,7 @@ public class MvcConfig implements WebMvcConfigurer {
                         "/api/glycemia/*","/api/exercise/*","/api/sports/*","/api/login/getMaxUserId","/api/oa/register",
                         "/api/register/refresh",
                         "/api/interaction/*","/api/interaction/patient/*",
-                        "/api/health/doctor/*","/api/glycemia/doctor/*",
+                        "/api/health/doctor/*","/api/glycemia/doctor/*","/api/sports/doctor/*",
                         "/api/login/getContactForAdmin","/api/login/updateAdminInfo","/api/register/registerHelper")
                 .order(1);
         //Login
@@ -34,7 +34,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/error","/api/login/captcha","/api/login/phone","/api/register/doctor",
                 "/api/register/patient","/api/login/pass","/api/oa/*","/api/register/addUser","/api/register/rmUser",
                 "/api/interaction/*",
-                "/api/health/doctor/*","/api/glycemia/doctor/*",
+                "/api/health/doctor/*","/api/glycemia/doctor/*","/api/sports/doctor/*",
                 "/api/login/repeatedContact","/api/login/getMaxUserId"
                         ,"/api/register/refresh","/api/login/getContactForAdmin"
                         ,"/api/login/updateAdminInfo","/api/register/registerHelper")

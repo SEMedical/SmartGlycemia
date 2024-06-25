@@ -288,6 +288,10 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
                     startTime,endTimeStr);
             Integer listLength=max_list.size();
             for(int i=0;i<listLength;i++){
+                if(Double.valueOf(min_list.get(i).get(1).toString())==Double.MAX_VALUE) {
+                    startTime=String.valueOf(Long.valueOf(startTime)+86400000);
+                    continue;
+                }
                 Map<LocalDate,StatisticsCondensed> data = new HashMap<>();
                 glycemiaValue.setHypoglycemiaPercentage(Double.valueOf(hypo_list.get(i).get(1).toString()));
                 glycemiaValue.setEuGlycemiaPercentage(Double.valueOf(eu_list.get(i).get(1).toString()));
@@ -316,9 +320,12 @@ public class GlycemiaServiceImpl extends ServiceImpl<GlycemiaMapper, Glycemia> i
 
             startDate = endTime;
         }
-        eutoll/=Res.size();
-        hypotoll/=Res.size();
-        hypertoll/=Res.size();
+        Double total=eutoll+hypertoll+hypotoll;
+        if(total!=0) {
+            eutoll /= total;
+            hypotoll /= total;
+            hypertoll /= total;
+        }
         chart.setData(Res);
         chart.setEuGlycemiaPercentage(eutoll);
         chart.setHypoglycemiaPercentage(hypotoll);
