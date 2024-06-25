@@ -10,27 +10,13 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "/user-service"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker"
-    directory: "/exercise-service"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker"
-    directory: "/glycemia-service"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker"
-    directory: "/gateway"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker"
-    directory: "/oa-service"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "docker"
-    directory: "/interact-service"
+    directories: 
+      - "/user-service"
+      - "/glycemia-service"
+      - "/exercise-service"
+      - "/oa-service"
+      - "/interact-service"
+      - "/gateway"
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"
