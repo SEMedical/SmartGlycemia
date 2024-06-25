@@ -18,7 +18,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry){
         registry.addInterceptor(new DoctorInterceptor()).
-                addPathPatterns("/api/glycemia/doctor/*","/api/health/doctor/*","/api/interaction/*","/api/sports/doctor/*","/api/login/getContactForAdmin","/api/login/updateAdminInfo")
+                addPathPatterns("/api/glycemia/doctor/*","/api/health/doctor/*","/api/interaction/*","/api/sports/doctor/*","/api/login/updateAdminInfo")
                 .order(1);
         //Admin Login
         registry.addInterceptor(new AdminInterceptor())

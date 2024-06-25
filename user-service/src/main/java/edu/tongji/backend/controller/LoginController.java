@@ -186,7 +186,7 @@ public class LoginController {
         stringRedisTemplate.delete(LOGIN_LIMIT+contact);
         return new ResponseEntity<>(Response.success(loginDTO,"登录成功"),HttpStatus.OK);  //返回成功信息
     }
-    @CrossOrigin
+    @CrossOrigin("*")
     @DeleteMapping("/logout")
     public ResponseEntity<Response<Void>> logout(HttpServletRequest request){
         UserDTO user= UserHolder.getUser();
