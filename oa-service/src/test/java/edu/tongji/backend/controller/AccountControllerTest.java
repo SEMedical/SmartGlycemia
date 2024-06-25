@@ -212,7 +212,7 @@ class AccountControllerTest {
         String photoPath = "/data/0001.jpg";
         String contact = "02165990001";
 
-        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, "momo",idCard, department,
                 title, photoPath, contact);
 
         Assertions.assertEquals("the length of ID must be 18 or 15",
@@ -228,7 +228,7 @@ class AccountControllerTest {
         String photoPath = "/data/0002.jpg";
         String contact = "02165990002";
 
-        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, "momo",idCard, department,
                 title, photoPath, contact);
 
         Assertions.assertEquals("There's no region code" + idCard.substring(0, 6),
@@ -244,7 +244,7 @@ class AccountControllerTest {
         String photoPath = "/data/0003.jpg";
         String contact = "02165990003";
 
-        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, "momo",idCard, department,
                 title, photoPath, contact);
 
         Assertions.assertEquals("The date must reside before today!",
@@ -276,7 +276,7 @@ class AccountControllerTest {
         String photoPath = "/data/0005.jpg";
         String contact = "02165990005";
 
-        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+        ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, "momo",idCard, department,
                 title, photoPath, contact);
 
         Assertions.assertEquals("The ID is invalid though the region code and birth date is valid!",
@@ -292,7 +292,7 @@ class AccountControllerTest {
         String photoPath = "/data/0006.jpg";
         String contact = "12345678913";
         try {
-            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId,"momo", idCard, department,
                     title, photoPath, contact);
 
             Assertions.assertEquals("repeated contact is not allowed",
@@ -311,7 +311,7 @@ class AccountControllerTest {
         String photoPath = "/data/0007.jpg";
         String contact = "02165990007";
         try {
-            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId,"momo", idCard, department,
                     title, photoPath, contact);
 
             Assertions.assertEquals("repeated ID card is not allowed",
@@ -330,7 +330,7 @@ class AccountControllerTest {
         String photoPath = "/data/0008.jpg";
         String contact = "02165990008";
         try {
-            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId, idCard, department,
+            ResponseEntity<Response<String>> response = accountController.addAccount(hospitalId,"momo", idCard, department,
                     title, photoPath, contact);
 
             Assertions.assertEquals("hospital does not exist",

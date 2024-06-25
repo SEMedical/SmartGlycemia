@@ -10,11 +10,13 @@ import org.apache.ibatis.annotations.Update;
 public interface HospitalMapper extends BaseMapper<Hospital> {
     @Select("SELECT MAX(hospital_id) FROM hospital;")
     Integer getMaxId();
+    @Select("SELECT COUNT(*)>=1 from hospital where hospital_id=#{hospital_id}")
+    Boolean ValidHospitalId(String hospital_id);
     @Select("SELECT EXISTS(SELECT * from hospital where hospital_phone=CONCAT(\"\",#{ contact } ,\"\")" +
             "or hospital_name=CONCAT(\"\", #{ name },\"\") or address=CONCAT(\"\",#{ address },\"\") )")
     Boolean InfoRepeated(String contact,String name,String address);
     @Select("SELECT admin_id from hospital where hospital_id=#{hospitalId};")
     String havaAdministrator(String hospitalId);
-    @Update("UPDATE hospital set adminId=#{adminId} where hospital_id=#{hospitalId};")
+    @Update("UPDATE hospital set admin_id=#{adminId} where hospital_id=#{hospitalId};")
     Boolean setAdministrator(String hospitalId,String adminId);
 }

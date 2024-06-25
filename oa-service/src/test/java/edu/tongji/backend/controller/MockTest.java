@@ -140,7 +140,7 @@ public class MockTest {
         maps.put("id","0");
         maps.put("role","admin");
         stringRedisTemplate.opsForHash().putAll(LOGIN_TOKEN_KEY+token,maps);
-        DoctorDTO1 doctor=new DoctorDTO1(hospitalId,idCard,department,title,photoPath,contact);
+        DoctorDTO1 doctor=new DoctorDTO1(hospitalId,"momo",idCard,department,title,photoPath,contact);
         String jsonString = JSONObject.toJSONString(doctor);
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders
                 .post("/api/oa/addAccount")
