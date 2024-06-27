@@ -1,23 +1,30 @@
-version: "3.8"
+version: "3.2"
 services:
-  # NOTICE: AOF and RDB needs to be at /tmp/redis/data
-  redis:
-    image: redis:6.2.14
-    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes --daemonize no
-    volumes:
-      - /tmp/redis/redis.conf:/usr/local/etc/redis/redis.conf
-      - /tmp/redis/data:/data
+  # NOTICE: AOF and RDB needs to be at /tmp/redis/local-data,ACL needs to be set at the client
+  redis-stack:
+    image: redis-stack:6.2.6-v10
+    environment:
+      - CONFFILE=etc/redis-stack.conf
+      - REDIS_ARGS="--logfile redis.log"
     ports:
       - 6379:6379
+      - 8001:8001
+    volumes:
+        - /tmp/redis/local-data:/data
   # NOTICE: 4 ENV variables are required for the following services,you can define them in web-variables.env
   mysql:
-    image: mysql:5.7.43
+    image: mysql:8.0.32
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     env_file:
       - ./web-variables.env
     volumes:
       - /tmp/mysql/data:/var/lib/mysql
+    environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - 3306:3306
   # NOTICE: you should deploy the 1st website at /tmp/nginx/html/admin,the 2nd at /tmp/nginx/html/doctor
@@ -31,21 +38,30 @@ services:
       - /tmp/nginx/conf:/etc/nginx
       - /tmp/nginx/logs:/var/log/nginx
       - /tmp/nginx/html:/usr/share/nginx/html
-  elastic-search:
-    container_name: es
-    image: elasticsearch:7.17.22
-    environment:
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - discovery.type=single-node
-    volumes:
-      - /tmp/es-data:/usr/share/elasticsearch/data
-      - /tmp/es-plugins:/usr/share/elasticsearch/plugins
-    ports:
-      - 9200:9200
-      - 9300:9300
-    networks:
-      - es-net
-    privileged: yes
+#  elastic-search:
+#    container_name: es
+#    image: elasticsearch:7.12.1
+#    environment:
+#      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+#      - discovery.type=single-node
+#    volumes:
+#      - /tmp/es-data:/usr/share/elasticsearch/data
+#      - /tmp/es-plugins:/usr/share/elasticsearch/plugins
+#    ports:
+#      - 9200:9200
+#      - 9300:9300
+#    networks:
+#      - es-net
+#    privileged: yes
+#  kibana:
+#    container_name: kibana
+#    image: kibana:7.12.1
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://es:9200
+#    ports:
+#      - 5601:5601
+#    networks:
+#      - es-net
   user-service:
     build: ./user-service
     ports:
@@ -106,3 +122,6 @@ services:
     volumes:
       - /tmp/logs/exercise:/logs
       - /tmp/logs/exercise/csp:/root/logs
+networks:
+  es-net:
+    driver: bridge
