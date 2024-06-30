@@ -1,11 +1,15 @@
-version: "3.2"
+version: "3.8"
 services:
   # NOTICE: AOF and RDB needs to be at /tmp/redis/local-data,ACL needs to be set at the client
   redis-stack:
-    image: redis-stack:6.2.6-v10
+    image: redis/redis-stack:6.2.6-v10
     environment:
       - CONFFILE=etc/redis-stack.conf
-      - REDIS_ARGS="--logfile redis.log"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "6379:6379"
       - "8001:8001"
@@ -41,30 +45,34 @@ services:
       - /tmp/nginx/logs:/var/log/nginx
       - /tmp/nginx/html:/usr/share/nginx/html
     profiles: ["infra"]
-#  elastic-search:
-#    container_name: es
-#    image: elasticsearch:7.12.1
-#    environment:
-#      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-#      - discovery.type=single-node
-#    volumes:
-#      - /tmp/es-data:/usr/share/elasticsearch/data
-#      - /tmp/es-plugins:/usr/share/elasticsearch/plugins
-#    ports:
-#      - 9200:9200
-#      - 9300:9300
-#    networks:
-#      - es-net
-#    privileged: yes
-#  kibana:
-#    container_name: kibana
-#    image: kibana:7.12.1
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://es:9200
-#    ports:
-#      - 5601:5601
-#    networks:
-#      - es-net
+  elastic-search:
+    container_name: es
+    image: elasticsearch:7.12.1
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - discovery.type=single-node
+    volumes:
+      - /tmp/es-data:/usr/share/elasticsearch/data
+      - /tmp/es-plugins:/usr/share/elasticsearch/plugins
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - es-net
+    privileged: yes
+    profiles: ["infra"]
+  kibana:
+    container_name: kibana
+    image: kibana:7.12.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es:9200
+    ports:
+      - 5601:5601
+    networks:
+      - es-net
+    profiles: ["infra"]
+    depends_on:
+      - elastic-search
   user-service:
     build: ./user-service
     ports:
@@ -103,8 +111,10 @@ services:
       - /tmp/logs/gateway/csp:/root/logs
     profiles: ["app","core"]
     depends_on:
-      - mysql
-      - redis-stack
+      mysql:
+        condition: service_healthy
+      redis-stack:
+        condition: service_started
   interact-service:
     build: ./interact-service
     ports:
@@ -115,7 +125,7 @@ services:
     volumes:
       - /tmp/logs/oa-service:/logs
       - /tmp/logs/oa-service/csp:/root/logs
-    profiles: ["app"]
+    profiles: ["app","exten"]
     depends_on:
       - gateway
   oa-service:
@@ -128,7 +138,7 @@ services:
     volumes:
       - /tmp/logs/oa-service:/logs
       - /tmp/logs/oa-service/csp:/root/logs
-    profiles: ["app"]
+    profiles: ["app","exten"]
     depends_on:
       - gateway
   exercise-service:
@@ -141,7 +151,7 @@ services:
     volumes:
       - /tmp/logs/exercise:/logs
       - /tmp/logs/exercise/csp:/root/logs
-    profiles: ["app"]
+    profiles: ["app","exten"]
     depends_on:
       - gateway
 networks:

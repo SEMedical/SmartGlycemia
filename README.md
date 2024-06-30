@@ -77,11 +77,32 @@ You can run the MySQL service under the protection of firewall.
 in the future even the Nacos will be replaced by the [Kubernetes](https://kubernetes.io/).
 ### Spring Cloud Service Series
 ```shell
-mvn package
-docker compose down --rmi all
-docker compose up -d
+mvn package --DskipTests=true
+docker compose down 
+docker compose up --profiles app
 ```
 执行以上命令用于版本更新后更新服务。
-
+## RIOT
+We can use riot to import data from MySQL to Redis.
+### Prerequisites
+In the page of latest release of riot,you can find the download link of the riot,
+and you should choose Linux(glibc) standalone version,like this:
+[riot-standalone-4.0.4-linux_musl-x86_64.zip](https://github.com/redis/riot/releases/download/v4.0.4/riot-standalone-4.0.4-linux-x86_64.zip
+)
+After uncompressed the zip file,you can find the executable file in the bin directory.
+### Import data
+Now,you can import the data,here's an example:
+```shell
+bin/riot db-import "SELECT UNIX_TIMESTAMP(rounded_time)*1000 AS record_ts,\
+ patient_id, (SELECT glycemia FROM glycemia WHERE CONCAT(DATE_FORMAT(record_time\
+ , '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(record_time) / 15) * 15, 2, '0'), ':00') =\
+  rt.rounded_time LIMIT 1) AS glycemia FROM (SELECT DISTINCT CONCAT(DATE_FORMAT\
+  (record_time, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(record_time) / 15) * 15, 2, '0')\
+  , ':00') AS rounded_time, patient_id FROM glycemia) rt ORDER BY rounded_time;" \
+  --url {JDBC_URL} --username **** --password ***************\
+   --threads 3 ts.add --keyspace cache:glycemia --timestamp record_ts --key patient_id \
+   --value glycemia
+```
+You can find more in the file [RIOT-SCRIPTS](./riot-scripts.sh)
 ## Test coverage
 [<img src="https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F">](https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F)
