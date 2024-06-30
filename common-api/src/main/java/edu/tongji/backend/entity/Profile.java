@@ -1,7 +1,6 @@
 package edu.tongji.backend.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
