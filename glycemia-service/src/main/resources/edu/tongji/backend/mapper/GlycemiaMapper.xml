@@ -6,6 +6,10 @@
         <result property="glycemia" column="glycemia"/>
         <result property="recordTime" column="record_time"/>
     </resultMap>
+    <resultMap id="glycemiaDTOResultMap2" type="edu.tongji.backend.dto.GlycemiaDTO">
+        <result property="glycemia" column="glycemia"/>
+        <result property="recordTime" column="rounded_time"/>
+    </resultMap>
     <resultMap id="statisticsResultMap" type="edu.tongji.backend.dto.Statistics">
         <result property="time" column="record_date"/>
         <result property="minValue" column="min_glycemia"/>
@@ -15,11 +19,21 @@
         <result property="euGlycemiaPercentage" column="eu_percent"/>
         <result property="hypoglycemiaPercentage" column="hypo_percent"/>
     </resultMap>
-    <select id="selectByIdAndTime" resultType="java.lang.Double">
-        SELECT glycemia FROM glycemia WHERE patient_id = #{id}
-        and record_time BETWEEN #{time} -INTERVAL(MINUTE( #{time} )%15) MINUTE
-                                      AND  #{time}  -INTERVAL(MINUTE( #{time} )%15-15) MINUTE
-        limit 1;
+    <select id="selectByIdAndTime" resultMap="glycemiaDTOResultMap2">
+        SELECT
+        rounded_time,
+        (SELECT glycemia
+        FROM glycemia
+        WHERE patient_id = #{id}
+        AND DATE(record_time) = #{time}
+        AND CONCAT(DATE_FORMAT(record_time, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(record_time) / 15) * 15, 2, '0'), ':00') = rt.rounded_time
+        LIMIT 1) AS glycemia
+        FROM (
+        SELECT DISTINCT CONCAT(DATE_FORMAT(record_time, '%Y-%m-%d %H:'), LPAD(FLOOR(MINUTE(record_time) / 15) * 15, 2, '0'), ':00') AS rounded_time
+        FROM glycemia
+        WHERE patient_id = #{id} AND DATE(record_time) = #{time}
+        ) rt
+        ORDER BY rounded_time;
     </select>
     <select id="selectDailyArchive" resultMap="statisticsResultMap">
         SELECT max_glycemia,min_glycemia,avg_glycemia,hypo_percent,eu_percent,hyper_percent,record_date

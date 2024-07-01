@@ -12,9 +12,9 @@ import java.util.Map;
 @NoArgsConstructor
 public class DailyChart {
     List<Map<LocalDateTime,Double>> entry;
-    Double highSta;//高血糖范围
-    Double normalSta;//低血糖范围
-    Double lowSta;//正常血糖范围
+    Double highSta=0.0;//高血糖范围
+    Double normalSta=0.0;//低血糖范围
+    Double lowSta=0.0;//正常血糖范围
     @Override
     public String toString() {
         String res="";
@@ -23,9 +23,9 @@ public class DailyChart {
                 res+="At "+entry.getKey().toString()+" the value of glycemia is"+entry.getValue().toString()+"\n";
             }
         }
-        res+="The percentage of hyperglycemia is "+ highSta.toString()+"\n";
-        res+="The percentage of hypoglycemia is "+ normalSta.toString()+"\n";
-        res+="The percentage of euGlycemia is "+ lowSta.toString()+"\n";
+        res+="The percentage of hyperglycemia is "+String.valueOf(highSta)+"\n";
+        res+="The percentage of hypoglycemia is "+String.valueOf(normalSta)+"\n";
+        res+="The percentage of euGlycemia is "+ String.valueOf(lowSta)+"\n";
         return res;
     }
 }

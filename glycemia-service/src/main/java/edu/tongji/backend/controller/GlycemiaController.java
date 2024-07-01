@@ -77,7 +77,7 @@ public class GlycemiaController {
     //Check if the format of date is valid and is in the range of (start,end)
     private LocalDate checkDate(String date,LocalDate start,LocalDate end){
         if(date !=null&&!date.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$"))
-            throw new GlycemiaException("date must be yyyy-mm-dd");
+            throw new GlycemiaException("date*"+date+ "*must be yyyy-mm-dd");
         LocalDate formattedDate=LocalDate.parse(date);
         if(formattedDate.isBefore(start))
             throw new GlycemiaException("date must bigger than "+start);
@@ -200,13 +200,13 @@ public class GlycemiaController {
         try {
             //check regex pattern for date must be yyyy-mm-dd and must older than 2023-12-01
             LocalDate formattedDate = this.checkDate(date, LocalDate.of(2023, 12, 1), LocalDate.now().plusDays(1));
-
             DailyChart result = glycemiaService.showDailyGlycemiaDiagram(user_id, formattedDate);
-            log.debug(result.toString());
+            //log.debug(result.toString());
             return new ResponseEntity<>(Response.success(result,"dailychart API has passed!"),HttpStatus.OK);
-        }catch (GlycemiaException e){
+        }catch (Exception e){
             log.debug(e.getMessage());
-            return new ResponseEntity<>(Response.fail("Expected internal business exception"+e.getMessage()),HttpStatus.BAD_REQUEST);
+            e.printStackTrace();
+            return new ResponseEntity<>(Response.fail(e.getMessage()+"user id is"+user_id+": date is"+date),HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -219,10 +219,14 @@ public class GlycemiaController {
      *      * along with which,there're percentages of hyperglycemia/euglycemia/hypoglycemia(高/正常/低血压)
      */
     @GetMapping("/dailyHistory")
-    public ResponseEntity<Response<DailyChart>> GetDailyChart(@RequestParam String date){
-        UserDTO user= UserHolder.getUser();
-        String user_id= user.getUserId();
-        return GetDailyChart(user_id,date);
+    public ResponseEntity<Response<DailyChart>> GetDailyChart(@RequestParam String date,HttpServletRequest request){
+        try {
+            UserDTO user = UserHolder.getUser();
+            String user_id = user.getUserId();
+            return GetDailyChart(user_id, date);
+        }catch (Exception e){
+            return new ResponseEntity<>(Response.fail(e.getMessage()),HttpStatus.BAD_REQUEST);
+        }
     }
     @GetMapping("/doctor/dailyHistory")
     public ResponseEntity<Response<DailyChart>> GetDailyChartForDoctor(@RequestParam String date,@RequestParam Integer patient_id){

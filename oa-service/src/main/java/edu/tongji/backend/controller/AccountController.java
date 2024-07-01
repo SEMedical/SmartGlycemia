@@ -229,7 +229,7 @@ public class AccountController {
     public ResponseEntity<Response<String>> addAccount(int hospital_id,String name, String id_card, String department,
                                                        String title, String photo_path, String contact)
             throws IOException, JSONException {
-        if(name!=null||name.length()==0)
+        if(name==null||name.length()==0)
             return new ResponseEntity<>(Response.fail("The doctor name can't be empty"),HttpStatus.OK);
         if(!name.matches("^[\\u4e00-\\u9fa5]{2,15}$") && !name.matches("^[a-zA-Z]{2,50}$"))
             return new ResponseEntity<>(Response.fail("The name must be pure English or Chinese"),HttpStatus.OK);
@@ -346,7 +346,8 @@ public class AccountController {
         }
         RandomGenerator randomGenerator = new RandomGenerator(40);
         String substring = randomGenerator.generate().substring(0, 25);
-        stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
+        stringRedisTemplate.opsForHash().put(ADMIN_PERM_CODE,substring,hospitalId);
+        //stringRedisTemplate.opsForValue().set(ADMIN_PERM_CODE + substring,hospitalId,ADMIN_PERM_CODE_TIMEOUT, TimeUnit.DAYS);
         return new ResponseEntity<>(Response.success(substring,"The Invitation Code has been generated successfully!"), HttpStatus.OK);
     }
     @PutMapping("/editAccount")
@@ -418,7 +419,7 @@ public class AccountController {
     public ResponseEntity<Response<Boolean>> registerAdmin(@RequestParam String inviteCode,@RequestParam String name,
                                                            @RequestParam String contact,@RequestParam String password) throws NoSuchAlgorithmException {
         RegisterDTO info=new RegisterDTO(name,password,contact,null,null);
-        String hospitalId = stringRedisTemplate.opsForValue().get(ADMIN_PERM_CODE + inviteCode);
+        String hospitalId = stringRedisTemplate.opsForHash().get(ADMIN_PERM_CODE, inviteCode).toString();
         if(hospitalId==null){
             return new ResponseEntity<>(Response.fail("邀请码已被使用或无效验证码"), HttpStatus.OK);
         }else{
@@ -452,7 +453,7 @@ public class AccountController {
                 return new ResponseEntity<>(Response.fail("管理员手机号已被注册"),HttpStatus.OK);
             }
             hospitalMapper.setAdministrator(hospitalId,result.toString());
-            stringRedisTemplate.delete(ADMIN_PERM_CODE + inviteCode);
+            stringRedisTemplate.opsForHash().delete(ADMIN_PERM_CODE,inviteCode);
             return new ResponseEntity<>(Response.success(true, "管理员注册成功"),HttpStatus.OK);
         }
     }

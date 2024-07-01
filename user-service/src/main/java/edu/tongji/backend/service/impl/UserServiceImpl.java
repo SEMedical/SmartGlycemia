@@ -115,7 +115,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if(cachecode==null||!cachecode.equals(code)){
             stringRedisTemplate.opsForValue().decrement(LOGIN_LIMIT+contact);
             Integer i = Integer.valueOf(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact));
-            stringRedisTemplate.opsForValue().set(LOGIN_LIMIT+contact,String.valueOf(i-1));
             String msg="You can only try no more than"+ String.valueOf(i)+" times";
             if(cachecode==null)
                 return new ResponseEntity<>(Response.fail("verification failed because of no cache code"+msg),HttpStatus.BAD_REQUEST);

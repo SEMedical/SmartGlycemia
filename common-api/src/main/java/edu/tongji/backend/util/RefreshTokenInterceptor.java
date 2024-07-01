@@ -12,11 +12,12 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_KEY;
-import static edu.tongji.backend.util.RedisConstants.LOGIN_TOKEN_TTL;
+import static edu.tongji.backend.util.RedisConstants.*;
+
 @Slf4j
 public class RefreshTokenInterceptor implements HandlerInterceptor {
     public RefreshTokenInterceptor(StringRedisTemplate stringRedisTemplate) {
@@ -45,7 +46,8 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         UserHolder.saveUser(userDTO);
         //TODO Refresh expiration of the token
         stringRedisTemplate.expire(LOGIN_TOKEN_KEY+token,LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
-
+        stringRedisTemplate.opsForZSet().add(SHARED_SESSION_KEY+userDTO.getUserId().toString(),LOGIN_TOKEN_KEY+token,
+                Instant.now().toEpochMilli());
         return true;
     }
     @Override
