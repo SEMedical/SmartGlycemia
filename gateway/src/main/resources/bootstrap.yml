@@ -36,12 +36,12 @@ spring:
         - id: exercise-service
           uri: lb://exercise-service
           predicates:
-            - Path=/api/sports/**
+            - Path=/api/sports/**,/api/sports/doctor/**
     nacos:
       server-addr: ${NACOS_ADDR}
       discovery:
         cluster-name: Shanghai
-        namespace: ${NACOS_PRO_NAMESPACE}
+        namespace: ${NACOS_NAMESPACE}
         ephemeral: false
         group: PATIENT
         ip: ${SELF_IP:localhost}
