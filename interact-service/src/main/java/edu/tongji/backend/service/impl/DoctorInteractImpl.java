@@ -1,5 +1,30 @@
 package edu.tongji.backend.service.impl;
 
+/*-
+ * #%L
+ * Tangxiaozhi
+ * %%
+ * Copyright (C) 2024 Victor Hu
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+
+
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.tongji.backend.dto.DoctorDTO3;
@@ -25,6 +50,8 @@ import edu.tongji.backend.mapper.DoctorInteractMapper;
 import edu.tongji.backend.service.DoctorInteractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 import static edu.tongji.backend.service.impl.PatientInteractServiceImpl.BOTH_DEC_SCRIPT;
 import static edu.tongji.backend.util.RedisConstants.*;
@@ -106,9 +133,31 @@ public class DoctorInteractImpl implements DoctorInteractService {
         stringRedisTemplate.execute(BOTH_DEC_SCRIPT,lists2,"INCR");
         return subscriptionMapper.addSubscription(doctor_id,id);
     }
-
+    public static final DefaultRedisScript<Boolean> CFE_SCRIPT;
+    static {
+        CFE_SCRIPT=new DefaultRedisScript<>();
+        CFE_SCRIPT.setLocation(new ClassPathResource("bfexists.lua"));
+        CFE_SCRIPT.setResultType(Boolean.class);
+    }
+    public static final DefaultRedisScript<String> CF_SCRIPT;
+    static {
+        CF_SCRIPT=new DefaultRedisScript<>();
+        CF_SCRIPT.setLocation(new ClassPathResource("bf.lua"));
+        CF_SCRIPT.setResultType(String.class);
+    }
+    @PostConstruct
+    public void init(){
+        List<String> doctorList = doctorInteractMapper.getDoctorList();
+        stringRedisTemplate.execute(CF_SCRIPT,doctorList ,"doctor","ADD");
+        List<String> idList = doctorInteractMapper.getIDList();
+        stringRedisTemplate.execute(CF_SCRIPT,idList ,"idcard","ADD");
+    }
     @Override
     public applyList[] doctorGetApplicationList(String doctorId) {
+        Boolean existed = stringRedisTemplate.execute(CFE_SCRIPT, Collections.singletonList(doctorId), "doctor");
+        if(!existed){
+            return null;
+        }
         List<String> messages = stringRedisTemplate.opsForList().range(SUBSRIBE_DOCTOR_KEY + doctorId, 0, -1);
 
         applyList[] applyList = new applyList[messages.size()];

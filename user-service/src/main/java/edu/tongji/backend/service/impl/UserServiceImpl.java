@@ -1,5 +1,30 @@
 package edu.tongji.backend.service.impl;
 
+/*-
+ * #%L
+ * Tangxiaozhi
+ * %%
+ * Copyright (C) 2024 Victor Hu
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+
+
+
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
@@ -31,6 +56,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.security.MessageDigest;
@@ -97,6 +124,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         int profileNum = profileMapper.insert(profile);
         log.info("userNum: " + userNum + ", profileNum: " + profileNum);
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
+    }
+
+    @Override
+    @PostConstruct
+    public void initContactBF(){
+        List<String> contacts = userMapper.scanContact();
+        stringRedisTemplate.execute(BF_SCRIPT, contacts,"contact","SET");
+    }
+    @Override
+    @PreDestroy
+    public void rmContactBF(){
+        stringRedisTemplate.execute(BF_SCRIPT, null,"DEL");
     }
     @Override
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
@@ -194,6 +233,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         BAN_SCRIPT.setLocation(new ClassPathResource("ban.lua"));
         BAN_SCRIPT.setResultType(Boolean.class);
     }
+    private static final DefaultRedisScript<Boolean> BF_SCRIPT;
+    static {
+        BF_SCRIPT=new DefaultRedisScript<>();
+        BF_SCRIPT.setLocation(new ClassPathResource("bf.lua"));
+        BF_SCRIPT.setResultType(Boolean.class);
+    }
     private static final DefaultRedisScript<Boolean> LOGOUT_SCRIPT;
     static {
         LOGOUT_SCRIPT=new DefaultRedisScript<>();
@@ -269,6 +314,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             log.info("userNum: " + userNum + ", profileNum: " + profileNum);
             if(userNum==1&&profileNum==0)
                 throw new RuntimeException("Register failed,rollback!");
+            stringRedisTemplate.execute(BF_SCRIPT,Collections.singletonList(contact),"contact");
             return userNum == 1 && profileNum == 1 ? 1 : 0;
 
     }
@@ -395,7 +441,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         lists.add(LOGIN_TOKEN_KEY+authorization);
         stringRedisTemplate.execute(LOGOUT_SCRIPT,lists,"");
     }
-
+    public static final DefaultRedisScript<Boolean> BFE_SCRIPT;
+    static {
+        BFE_SCRIPT=new DefaultRedisScript<>();
+        BFE_SCRIPT.setLocation(new ClassPathResource("bfexists.lua"));
+        BFE_SCRIPT.setResultType(Boolean.class);
+    }
     @Override
     public void updateImage(String userId, String savePath) {
         userMapper.updateImage(userId,savePath);
@@ -404,5 +455,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Boolean validContact(String contact) {
         return userMapper.existContact(contact);
+    }
+
+    @Override
+    public Boolean repeatContact(String contact) {
+        Boolean existing = stringRedisTemplate.execute(BFE_SCRIPT, Collections.singletonList(contact), "contact");
+        if(!existing)
+            return false;
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.select("user_id")
+                .eq("contact", contact);
+        User result = userMapper.selectOne(wrapper);
+        return result != null;
     }
 }

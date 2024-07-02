@@ -24,7 +24,12 @@
         <spring-boot.version>2.2.1.RELEASE</spring-boot.version>
         <spring.version>5.2.1.RELEASE</spring.version>
         <spring.cloud.alibaba.version>2.2.1.RELEASE</spring.cloud.alibaba.version>
+
+        <maven-checkstyle-plugin.failsOnError>true</maven-checkstyle-plugin.failsOnError>
+        <maven-checkstyle-plugin.failsOnViolation>true</maven-checkstyle-plugin.failsOnViolation>
+        <maven-checkstyle-plugin.includeTestSourceDirectory>true</maven-checkstyle-plugin.includeTestSourceDirectory>
     </properties>
+
     <packaging>pom</packaging>
     <groupId>edu.tongji</groupId>
     <artifactId>backend</artifactId>
@@ -50,6 +55,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -206,9 +212,46 @@
             <version>3.5.5</version>
         </dependency>
     </dependencies>
-
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.4.0</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.4.0</version>
+                <executions>
+                    <execution>
+                        <id>aggregate-download-licenses</id>
+                        <goals>
+                            <goal>aggregate-download-licenses</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <organizationName>SEMedical</organizationName>
+                    <copyrightOwners>Victor Hu</copyrightOwners>
+                    <inceptionYear>2024</inceptionYear>
+                    <licenseName>gpl_v3</licenseName>
+                    <licenseFile>LICENSE</licenseFile>
+                    <outputDirectory>${project.basedir}</outputDirectory>
+                    <projectName>Tangxiaozhi</projectName>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

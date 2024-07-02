@@ -1,5 +1,30 @@
 package edu.tongji.backend.controller;
 
+/*-
+ * #%L
+ * Tangxiaozhi
+ * %%
+ * Copyright (C) 2024 Victor Hu
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+
+
+
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,7 +36,9 @@ import edu.tongji.backend.service.IUserService;
 import edu.tongji.backend.util.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +47,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import static edu.tongji.backend.service.impl.UserServiceImpl.BFE_SCRIPT;
 import static edu.tongji.backend.util.RedisConstants.*;
 
 @Slf4j
@@ -32,6 +61,7 @@ public class LoginController {
     IUserService userService;
     @Autowired
     UserMapper userMapper;
+
 
     /**
      *
@@ -63,6 +93,10 @@ public class LoginController {
             return new ResponseEntity<>(Response.fail("手机号或验证码为空"), HttpStatus.NOT_FOUND);  //返回错误信息
         }
         String contact=loginForm.getContact();
+        Boolean existing = stringRedisTemplate.execute(BFE_SCRIPT, Collections.singletonList(contact), "contact");
+        if(existing==null||!existing){
+            return new ResponseEntity<>(Response.fail("The contact you've entered doesn't exist!"),HttpStatus.NOT_FOUND);
+        }
         if(!StrUtil.isNotBlank(stringRedisTemplate.opsForValue().get(LOGIN_LIMIT+contact))) {
             stringRedisTemplate.opsForValue().set(LOGIN_LIMIT + contact, String.valueOf(5));
             stringRedisTemplate.expire(LOGIN_LIMIT + contact,12, TimeUnit.HOURS);
@@ -112,11 +146,8 @@ public class LoginController {
      */
     @GetMapping("/repeatedContact")
     public Response<Boolean> repeatedContact(@RequestParam("contact") String contact){
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.select("user_id")
-                .eq("contact", contact);
-        User result = userMapper.selectOne(wrapper);
-        if (result != null) {
+        Boolean existing = userService.repeatContact(contact);
+        if (existing) {
             return Response.success(true, "The phone number has been registered");  // 手机号已被注册
         }
         return Response.success(false, "The phone number is available");
