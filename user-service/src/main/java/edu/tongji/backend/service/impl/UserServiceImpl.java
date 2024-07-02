@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.security.MessageDigest;
@@ -97,6 +99,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         int profileNum = profileMapper.insert(profile);
         log.info("userNum: " + userNum + ", profileNum: " + profileNum);
         return userNum == 1 && profileNum == 1 ? Result.ok() : Result.fail("Create user failed");
+    }
+
+    @Override
+    @PostConstruct
+    public void initContactBF(){
+        List<String> contacts = userMapper.scanContact();
+        stringRedisTemplate.execute(BF_SCRIPT, contacts,"contact","SET");
+    }
+    @Override
+    @PreDestroy
+    public void rmContactBF(){
+        stringRedisTemplate.execute(BF_SCRIPT, null,"DEL");
     }
     @Override
     public ResponseEntity<Response<LoginDTO>> loginByPhone(@RequestBody LoginFormDTO loginForm, HttpSession session){
@@ -194,6 +208,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         BAN_SCRIPT.setLocation(new ClassPathResource("ban.lua"));
         BAN_SCRIPT.setResultType(Boolean.class);
     }
+    private static final DefaultRedisScript<Boolean> BF_SCRIPT;
+    static {
+        BF_SCRIPT=new DefaultRedisScript<>();
+        BF_SCRIPT.setLocation(new ClassPathResource("bf.lua"));
+        BF_SCRIPT.setResultType(Boolean.class);
+    }
     private static final DefaultRedisScript<Boolean> LOGOUT_SCRIPT;
     static {
         LOGOUT_SCRIPT=new DefaultRedisScript<>();
@@ -269,6 +289,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             log.info("userNum: " + userNum + ", profileNum: " + profileNum);
             if(userNum==1&&profileNum==0)
                 throw new RuntimeException("Register failed,rollback!");
+            stringRedisTemplate.execute(BF_SCRIPT,Collections.singletonList(contact),"contact");
             return userNum == 1 && profileNum == 1 ? 1 : 0;
 
     }
@@ -395,7 +416,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         lists.add(LOGIN_TOKEN_KEY+authorization);
         stringRedisTemplate.execute(LOGOUT_SCRIPT,lists,"");
     }
-
+    public static final DefaultRedisScript<Boolean> BFE_SCRIPT;
+    static {
+        BFE_SCRIPT=new DefaultRedisScript<>();
+        BFE_SCRIPT.setLocation(new ClassPathResource("bfexists.lua"));
+        BFE_SCRIPT.setResultType(Boolean.class);
+    }
     @Override
     public void updateImage(String userId, String savePath) {
         userMapper.updateImage(userId,savePath);
@@ -404,5 +430,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Boolean validContact(String contact) {
         return userMapper.existContact(contact);
+    }
+
+    @Override
+    public Boolean repeatContact(String contact) {
+        Boolean existing = stringRedisTemplate.execute(BFE_SCRIPT, Collections.singletonList(contact), "contact");
+        if(!existing)
+            return false;
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.select("user_id")
+                .eq("contact", contact);
+        User result = userMapper.selectOne(wrapper);
+        return result != null;
     }
 }

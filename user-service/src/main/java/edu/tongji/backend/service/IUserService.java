@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import java.security.NoSuchAlgorithmException;
 
@@ -22,7 +23,8 @@ public interface IUserService extends IService<User> {
     @Transactional
     Result createUserWithPhone(String contact, QueryWrapper<User> wrapper);
     Integer register(String name, String password, String contact, String gender, Integer age) throws NoSuchAlgorithmException;
-
+    void initContactBF();
+    void rmContactBF();
     ResponseEntity<Response<Integer>> sign(UserDTO user);
     //Consecutive sign
     ResponseEntity<Response<Integer>> signCount(UserDTO user);
@@ -43,4 +45,6 @@ public interface IUserService extends IService<User> {
     void updateImage(String userId, String savePath);
 
     Boolean validContact(String contact);
+
+    Boolean repeatContact(String contact);
 }

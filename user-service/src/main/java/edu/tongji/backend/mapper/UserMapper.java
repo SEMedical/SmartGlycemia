@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     @Select("select * from user where name= #{name};")
@@ -14,6 +16,8 @@ public interface UserMapper extends BaseMapper<User> {
     User selectById(int id);
     @Select("SELECT contact from user where user_id=#{userId};")
     String getContact(String userId);
+    @Select("SELECT contact from user;")
+    List<String> scanContact();
     @Update("UPDATE user SET password=#{new_password} WHERE user_id=#{user_id} and password =#{old_password}")
     int changePassword(@Param("userId") int user_id, @Param("new_password") String new_password, @Param("old_password") String old_password);
     @Select("select name from user where user_id= #{id};")

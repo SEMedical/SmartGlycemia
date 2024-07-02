@@ -11,10 +11,15 @@ import edu.tongji.backend.service.IAccountService;
 import edu.tongji.backend.util.GlobalLock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -73,6 +78,9 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         User user = new User(doctorId, address, "Alice", contact, defaultPassword, "doctor");
         userClient2.addUser(user);
         doctorMapper.insert(doctor);
+        stringRedisTemplate.execute(CF_SCRIPT, Collections.singletonList(doctor.getIdCard()), "idcard");
+        stringRedisTemplate.execute(CF_SCRIPT, Collections.singletonList(doctor.getDoctorId().toString()), "doctor");
+        stringRedisTemplate.execute(CF_SCRIPT,Collections.singletonList(user.getContact()),"contact");
         return doctorId;
     }
 
@@ -88,12 +96,34 @@ public class AccountServiceImpl extends ServiceImpl<DoctorMapper, Doctor> implem
         }
         return;
     }
-
+    public static final DefaultRedisScript<Boolean> CFE_SCRIPT;
+    static {
+        CFE_SCRIPT=new DefaultRedisScript<>();
+        CFE_SCRIPT.setLocation(new ClassPathResource("bfexists.lua"));
+        CFE_SCRIPT.setResultType(Boolean.class);
+    }
+    public static final DefaultRedisScript<Boolean> CF_SCRIPT;
+    static {
+        CF_SCRIPT=new DefaultRedisScript<>();
+        CF_SCRIPT.setLocation(new ClassPathResource("bf.lua"));
+        CF_SCRIPT.setResultType(Boolean.class);
+    }
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
     @Override
     public Boolean repeatedIdCard(String idCard) {
+        Boolean execute = stringRedisTemplate.execute(CFE_SCRIPT, Collections.singletonList(idCard), "idcard");
+        if(!execute)
+            return false;
         return doctorMapper.repeatedIdCard(idCard);
     }
-
+    @Override
+    public Boolean repeatedIdCard(String idCard, StringRedisTemplate stringRedisTemplate) {
+        Boolean execute = stringRedisTemplate.execute(CFE_SCRIPT, Collections.singletonList(idCard), "idcard");
+        if(!execute)
+            return false;
+        return doctorMapper.repeatedIdCard(idCard);
+    }
     @Override
     public Boolean updateAccount(Doctor doctor) {
         Boolean res=doctorMapper.updateDoctor(doctor.getDoctorId(),doctor.getIdCard(),doctor.getDepartment(),doctor.getTitle(),doctor.getPhotoPath());

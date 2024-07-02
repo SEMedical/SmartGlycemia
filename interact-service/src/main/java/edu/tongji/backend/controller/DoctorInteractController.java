@@ -84,12 +84,12 @@ public class DoctorInteractController {
         }
         return new ResponseEntity<>(Response.success(result, "success"),HttpStatus.OK);
     }
-
 //    医生获取申请列表
     @GetMapping("/getApplicationList")
     public  Response<applyList[]> doctorGetApplicationList(){
         UserDTO user= UserHolder.getUser();
         String user_id= user.getUserId();
+
         applyList[] p_list = doctorInteractService.doctorGetApplicationList(user_id);
         return Response.success(p_list, "success");
     }

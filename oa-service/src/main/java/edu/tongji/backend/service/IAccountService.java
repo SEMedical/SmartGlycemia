@@ -2,6 +2,7 @@ package edu.tongji.backend.service;
 
 import edu.tongji.backend.dto.DoctorInfoDTO;
 import edu.tongji.backend.entity.Doctor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -12,6 +13,6 @@ public interface IAccountService {
     public void deleteAccount(int doctorId);
 
     Boolean repeatedIdCard(String idCard);
-
+    Boolean repeatedIdCard(String idCard, StringRedisTemplate stringRedisTemplate);
     Boolean updateAccount(Doctor doctor);
 }
