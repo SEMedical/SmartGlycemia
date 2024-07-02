@@ -243,7 +243,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <organizationName>SEMedical</organizationName>
+                    <organizationName>SEMedical，Tongji University</organizationName>
                     <copyrightOwners>Victor Hu</copyrightOwners>
                     <inceptionYear>2024</inceptionYear>
                     <licenseName>gpl_v3</licenseName>

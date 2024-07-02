@@ -25,6 +25,7 @@ package edu.tongji.backend.clients;
 
 
 
+
 import edu.tongji.backend.config.FeignConfig;
 import edu.tongji.backend.util.Response;
 import org.springframework.cloud.openfeign.FeignClient;

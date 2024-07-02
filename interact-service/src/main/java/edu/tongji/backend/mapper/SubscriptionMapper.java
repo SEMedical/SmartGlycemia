@@ -4,7 +4,7 @@ package edu.tongji.backend.mapper;
  * #%L
  * Tangxiaozhi
  * %%
- * Copyright (C) 2024 Victor Hu
+ * Copyright (C) 2024 LEAVE-cshj,Dawson128
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +21,7 @@ package edu.tongji.backend.mapper;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 
 
 

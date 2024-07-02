@@ -112,6 +112,7 @@ You can find more in the file [RIOT-SCRIPTS](./riot-scripts.sh)
 ## Test coverage
 [<img src="https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F">](https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F)
 ## Copyright
-Copyright (C) 2024 Victor Hu
+Copyright (C) 2024 Victor Hu,UltraTempest10,a-little-dust,rmEleven,Dawson128,LEAVE-cshj
+All rights reserved.
 ## License
 [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
