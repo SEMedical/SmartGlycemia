@@ -6,6 +6,11 @@
 
 血糖项目后端
 
+> [!CAUTION]
+> This project will be used as Curriculum Vitae material,and the following works will focus on infrastructure and interview.
+> Only those who has contributed to this repo can use this project as a CV material,any modification is welcome,even the declaration of copyright,
+> but copyright information can only be appended by the eligible and any modification of original information will be forbidden.
+
 ## How to run it?
 ### Prerequisites
 First,you should prepare a directory ```tmp``` in the root directory of the project.
@@ -106,3 +111,7 @@ bin/riot db-import "SELECT UNIX_TIMESTAMP(rounded_time)*1000 AS record_ts,\
 You can find more in the file [RIOT-SCRIPTS](./riot-scripts.sh)
 ## Test coverage
 [<img src="https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F">](https://codecov.io/gh/SEMedical/Backend/graphs/tree.svg?token=ZBBAGREM4F)
+## Copyright
+Copyright (C) 2024 Victor Hu
+## License
+[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
