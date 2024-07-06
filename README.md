@@ -108,7 +108,7 @@ docker compose down
 docker compose up --profiles app
 ```
 执行以上命令用于版本更新后更新服务。
-## RIOT
+## RIOT(Optional)
 We can use riot to import data from MySQL to Redis.
 ### Prerequisites
 In the page of latest release of riot,you can find the download link of the riot,
