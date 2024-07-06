@@ -56,7 +56,7 @@ Before you run,you should set the redis.conf file
 
 ```shell
 port 6379
-#ACL List
+#ACL List(For simplicity,the following 2 lines can be altered by the requirepass attribute)
 user jehovah on #80fffded578c7cb0b10a44275662fd0317fe34d6c07d1efd6397d652e5e8ccd0 ~* &* +@all
 user default on #86915a6b7ef6d0de37698ac3b36f77c2423f4c376fb0a386595be248f5381e6a ~* &* +@all -@slow -bzpopmin -role -lastsave -bzpopmax -swapdb
 
@@ -108,7 +108,7 @@ docker compose down
 docker compose up --profiles app
 ```
 执行以上命令用于版本更新后更新服务。
-## RIOT(Optional)
+## RIOT
 We can use riot to import data from MySQL to Redis.
 ### Prerequisites
 In the page of latest release of riot,you can find the download link of the riot,
