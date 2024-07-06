@@ -1,4 +1,5 @@
 version: "3.8"
+name: smart-glycemia
 services:
   # NOTICE: AOF and RDB needs to be at /tmp/redis/local-data,ACL needs to be set at the client
   redis-stack:
