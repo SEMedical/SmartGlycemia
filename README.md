@@ -26,17 +26,12 @@ Here is the tree:
 │   ├── gateway
 │   └── oa
 ├── redis
-│   ├── local-data
-│   │       ├── dump.rdb
-│   │       ├── appendonly.aof
-│   │       ├── redis.log
 │   ├── conf
 │           ├── redis.conf
-└── mysql
-│   ├── data
-|   ├── schema
-|         ├── glycemia.sql
-|         ├── data.sql
+├── mysql
+│   ├── schema
+│         ├── glycemia.sql
+│         ├── data.sql
 └── nginx
     ├── conf
     ├── logs
