@@ -1,21 +1,19 @@
 version: "3.8"
+name: sg
 services:
   # NOTICE: AOF and RDB needs to be at /tmp/redis/local-data,ACL needs to be set at the client
   redis-stack:
     image: redis/redis-stack:6.2.6-v10
+    container_name: redis
     environment:
       - CONFFILE=etc/redis-stack.conf
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    restart: always
     ports:
       - "6379:6379"
       - "8001:8001"
     volumes:
-        - /tmp/redis/local-data:/data
-    profiles: ["infra"]
+      - sg-redis-data:/data
+      - /tmp/redis/conf/redis.conf:/opt/redis-stack/etc/redis-stack.conf
   # NOTICE: 4 ENV variables are required for the following services,you can define them in web-variables.env
   mysql:
     image: mysql:8.0.32
@@ -24,7 +22,7 @@ services:
     env_file:
       - ./web-variables.env
     volumes:
-      - /tmp/mysql/data:/var/lib/mysql
+      - sg-mysql-data:/var/lib/mysql
     environment:
         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
         MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -157,3 +155,7 @@ services:
 networks:
   es-net:
     driver: bridge
+volumes:
+  redis-data:
+  mysql-data:
+
